@@ -1,0 +1,32 @@
+{
+  "name": "xhs-layout-generator",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "小红书排版生成器 - AI驱动的爆款文案排版工具",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "deploy": "npm run build && echo '部署到 Cloudflare Pages: 将 dist 文件夹上传'"
+  },
+  "dependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "vite": "^8.0.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
