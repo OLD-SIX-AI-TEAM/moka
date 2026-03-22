@@ -804,7 +804,7 @@ function App() {
                       >
                         ‹
                       </button>
-                      <div style={{ flex: 1, overflow: "hidden", boxShadow: "0 6px 28px rgba(0,0,0,.14)", borderRadius: 12 }}>
+                      <div style={{ width: 375, overflow: "hidden", boxShadow: "0 6px 28px rgba(0,0,0,.14)", borderRadius: 12, margin: "0 auto" }}>
                         <div>
                           {renderSlide(slides[slideIdx], slideIdx, slides.length, makeSlideEd(slideIdx))}
                         </div>
@@ -877,10 +877,10 @@ function App() {
                             <div style={{ width: 60, height: 80, overflow: "hidden", position: "relative", flexShrink: 0, borderRadius: "6px 6px 0 0" }}>
                               <div
                                 style={{
-                                  width: 300,
-                                  height: 400,
+                                  width: 375,
+                                  height: 500,
                                   transformOrigin: "0 0",
-                                  transform: "scale(0.2)",
+                                  transform: "scale(0.16)",
                                   pointerEvents: "none",
                                   position: "absolute",
                                   top: 0,
