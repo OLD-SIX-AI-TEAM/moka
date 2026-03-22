@@ -32,7 +32,6 @@
   transition: background 0.15s;
   cursor: text;
   outline: none !important;
-  display: inline;
 }
 
 .ef:hover {

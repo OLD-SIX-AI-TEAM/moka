@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback } from "react";
 import { useHtml2Canvas, snapElement } from "./hooks/useHtml2Canvas";
+import { snapElementToImage } from "./hooks/useHtmlToImage";
 import { useDragReorder } from "./hooks/useDragReorder";
 import { Dots } from "./components/common/Icons";
-import { Editorial, Notecard, Minimal } from "./components/templates/single";
-import { VividCover, VividContent, VividEnd, CleanCover, CleanContent, CleanEnd, DarkCover, DarkContent, DarkEnd } from "./components/templates/split";
-import { createLLMClient, SYSTEM_PROMPTS, extractJSON, LLM_PROVIDERS } from "./services/llm";
-import { SPLIT_STYLES, TEMPLATES, PALETTES, FONT_FAMILY, DEFAULT_LLM_CONFIG, MAX_TOKENS } from "./constants";
+import { Editorial, Notecard, Minimal, Stamp, BoldCard, Dark, Newspaper, Film, LabelCard } from "./components/templates/single";
+import { VividCover, VividContent, VividEnd, CleanCover, CleanContent, CleanEnd, DarkCover, DarkContent, DarkEnd, PaperCover, PaperContent, PaperEnd, EdCover, EdContent, EdEnd, GrCover, GrContent, GrEnd } from "./components/templates/split";
+import { createLLMClient, SYSTEM_PROMPTS, extractJSON, getEnvLLMConfig, isEnvConfigValid } from "./services/llm";
+import { SPLIT_STYLES, TEMPLATES, PALETTES, FONT_FAMILY, MAX_TOKENS } from "./constants";
 import "./App.css";
 
 // 单页模板渲染器映射
@@ -13,6 +14,12 @@ const SINGLE_RENDERERS = {
   editorial: Editorial,
   notecard: Notecard,
   minimal: Minimal,
+  stamp: Stamp,
+  bold: BoldCard,
+  dark: Dark,
+  newspaper: Newspaper,
+  film: Film,
+  label: LabelCard,
 };
 
 // 分页模板渲染器映射
@@ -20,6 +27,9 @@ const SPLIT_RENDERERS = {
   vivid: { Cover: VividCover, Content: VividContent, End: VividEnd },
   clean: { Cover: CleanCover, Content: CleanContent, End: CleanEnd },
   dark: { Cover: DarkCover, Content: DarkContent, End: DarkEnd },
+  paper: { Cover: PaperCover, Content: PaperContent, End: PaperEnd },
+  editorial: { Cover: EdCover, Content: EdContent, End: EdEnd },
+  gradient: { Cover: GrCover, Content: GrContent, End: GrEnd },
 };
 
 function App() {
@@ -38,9 +48,9 @@ function App() {
   const [exporting, setExporting] = useState(false);
   const [expMsg, setExpMsg] = useState("");
 
-  // LLM 配置状态
-  const [llmConfig, setLlmConfig] = useState(DEFAULT_LLM_CONFIG);
-  const [showLlmConfig, setShowLlmConfig] = useState(false);
+  // LLM 配置从环境变量获取
+  const llmConfig = getEnvLLMConfig();
+  const envConfigValid = isEnvConfigValid();
 
   // Refs
   const cardRef = useRef(null);
@@ -126,9 +136,8 @@ function App() {
   // 生成内容
   const generate = useCallback(async () => {
     if (!input.trim()) return;
-    if (!llmConfig.apiKey) {
-      setError("请先配置 LLM API Key");
-      setShowLlmConfig(true);
+    if (!envConfigValid) {
+      setError("请在 .env 文件中配置 VITE_LLM_API_KEY");
       return;
     }
 
@@ -154,6 +163,7 @@ function App() {
           maxTokens: MAX_TOKENS.single,
         });
 
+        console.log("[LLM Response]", response);
         const data = extractJSON(response.content);
         setSingleData(data);
       } else {
@@ -174,26 +184,41 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [input, mode, platform, llmConfig]);
+  }, [input, mode, platform, llmConfig, envConfigValid]);
 
-  // 导出功能
+  // 导出功能 - 优先使用 html-to-image，失败时回退到 html2canvas
   const exportSingle = useCallback(
-    async (scale = 2) => {
-      if (!cardRef.current || !window.html2canvas) return;
+    async (quality = "hd") => {
+      if (!cardRef.current) return;
 
       setExporting(true);
       setExpMsg("渲染中…");
 
       try {
-        const canvas = await snapElement(cardRef.current, scale);
+        // 超清：4x 缩放，高清：2x 缩放
+        const scale = quality === "ultra" ? 4 : 2;
         const name = (singleData?.title || "排版").replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, "");
+
+        let dataUrl;
+        try {
+          // 优先使用 html-to-image，渲染效果更好
+          dataUrl = await snapElementToImage(cardRef.current, scale, "png");
+        } catch (imgErr) {
+          console.log("html-to-image 失败，回退到 html2canvas:", imgErr);
+          // 回退到 html2canvas
+          if (!window.html2canvas) throw new Error("html2canvas not loaded");
+          const canvas = await snapElement(cardRef.current, scale);
+          dataUrl = canvas.toDataURL("image/png", 1);
+        }
+
         const link = document.createElement("a");
-        link.download = `${name}_${scale}x.png`;
-        link.href = canvas.toDataURL("image/png", 1);
+        link.download = `${name}_${quality}.png`;
+        link.href = dataUrl;
         link.click();
         setExpMsg("✓ 已保存");
         setTimeout(() => setExpMsg(""), 2000);
-      } catch {
+      } catch (err) {
+        console.error("导出失败:", err);
         setExpMsg("导出失败");
         setTimeout(() => setExpMsg(""), 2000);
       } finally {
@@ -204,22 +229,36 @@ function App() {
   );
 
   const exportSlide = useCallback(
-    async (idx, scale = 2) => {
+    async (idx, quality = "hd") => {
       const el = slideRefs.current[idx];
-      if (!el || !window.html2canvas) return;
+      if (!el) return;
 
       setExporting(true);
       setExpMsg("渲染中…");
 
       try {
-        const canvas = await snapElement(el, scale);
+        // 超清：4x 缩放，高清：2x 缩放
+        const scale = quality === "ultra" ? 4 : 2;
+
+        let dataUrl;
+        try {
+          // 优先使用 html-to-image
+          dataUrl = await snapElementToImage(el, scale, "png");
+        } catch (imgErr) {
+          console.log("html-to-image 失败，回退到 html2canvas:", imgErr);
+          if (!window.html2canvas) throw new Error("html2canvas not loaded");
+          const canvas = await snapElement(el, scale);
+          dataUrl = canvas.toDataURL("image/png", 1);
+        }
+
         const link = document.createElement("a");
-        link.download = `slide_${idx + 1}_${scale}x.png`;
-        link.href = canvas.toDataURL("image/png", 1);
+        link.download = `slide_${idx + 1}_${quality}.png`;
+        link.href = dataUrl;
         link.click();
         setExpMsg("✓ 已保存");
         setTimeout(() => setExpMsg(""), 1500);
-      } catch {
+      } catch (err) {
+        console.error("导出失败:", err);
         setExpMsg("导出失败");
         setTimeout(() => setExpMsg(""), 2000);
       } finally {
@@ -230,22 +269,39 @@ function App() {
   );
 
   const exportAll = useCallback(
-    async (scale = 2) => {
-      if (!slides || !window.html2canvas) return;
+    async () => {
+      if (!slides) return;
 
       setExporting(true);
+      // 导出全部默认使用超清 4x 缩放
+      const scale = 4;
       for (let i = 0; i < slides.length; i++) {
         setExpMsg(`导出 ${i + 1}/${slides.length}…`);
         const el = slideRefs.current[i];
-        if (!el) continue;
+        if (!el) {
+          console.warn(`第 ${i + 1} 页元素未找到，跳过`);
+          continue;
+        }
         try {
-          const canvas = await snapElement(el, scale);
+          let dataUrl;
+          try {
+            // 优先使用 html-to-image
+            dataUrl = await snapElementToImage(el, scale, "png");
+          } catch (imgErr) {
+            console.log(`第 ${i + 1} 页 html-to-image 失败，回退到 html2canvas:`, imgErr);
+            if (!window.html2canvas) continue;
+            const canvas = await snapElement(el, scale);
+            dataUrl = canvas.toDataURL("image/png", 1);
+          }
+
           const link = document.createElement("a");
-          link.download = `slide_${i + 1}.png`;
-          link.href = canvas.toDataURL("image/png", 1);
+          link.download = `slide_${i + 1}_ultra.png`;
+          link.href = dataUrl;
           link.click();
-          await new Promise((r) => setTimeout(r, 400));
-        } catch {}
+          await new Promise((r) => setTimeout(r, 800));
+        } catch (err) {
+          console.error(`第 ${i + 1} 页导出失败:`, err);
+        }
       }
       setExpMsg("✓ 全部完成");
       setTimeout(() => setExpMsg(""), 2500);
@@ -286,134 +342,6 @@ function App() {
             9 种模板 · 8 套配色 · 分页拆分 · <span style={{ color: palette.a, fontWeight: 700 }}>点击文字可直接编辑</span>
           </p>
         </div>
-
-        {/* LLM Config Toggle */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-          <button
-            onClick={() => setShowLlmConfig(!showLlmConfig)}
-            style={{
-              padding: "6px 14px",
-              borderRadius: 8,
-              border: `1.5px solid ${showLlmConfig ? palette.a : "#ddd"}`,
-              background: showLlmConfig ? palette.a + "15" : "#fff",
-              color: showLlmConfig ? palette.a : "#666",
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <span>⚙️</span>
-            <span>LLM 配置 {llmConfig.apiKey ? "✓" : "⚠️"}</span>
-          </button>
-        </div>
-
-        {/* LLM Config Panel */}
-        {showLlmConfig && (
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 13,
-              padding: 17,
-              marginBottom: 18,
-              boxShadow: "0 2px 10px rgba(0,0,0,.05)",
-              animation: "rise .35s ease",
-            }}
-          >
-            <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 12 }}>
-              🤖 LLM API 配置
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {/* Provider Selection */}
-              <div style={{ display: "flex", gap: 8 }}>
-                {Object.entries(LLM_PROVIDERS).map(([key, { name }]) => (
-                  <button
-                    key={key}
-                    onClick={() => setLlmConfig((prev) => ({ ...prev, provider: key }))}
-                    style={{
-                      flex: 1,
-                      padding: "8px 12px",
-                      borderRadius: 8,
-                      border: `1.5px solid ${llmConfig.provider === key ? palette.a : "#eee"}`,
-                      background: llmConfig.provider === key ? palette.a + "10" : "#fafafa",
-                      color: llmConfig.provider === key ? palette.a : "#555",
-                      fontSize: 12,
-                      fontWeight: llmConfig.provider === key ? 800 : 600,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {name}
-                  </button>
-                ))}
-              </div>
-
-              {/* Base URL */}
-              <div>
-                <label style={{ fontSize: 11, color: "#888", marginBottom: 4, display: "block" }}>
-                  Base URL (可选，默认: {LLM_PROVIDERS[llmConfig.provider].defaultBaseUrl})
-                </label>
-                <input
-                  type="text"
-                  value={llmConfig.baseUrl}
-                  onChange={(e) => setLlmConfig((prev) => ({ ...prev, baseUrl: e.target.value }))}
-                  placeholder="https://api.xxx.com/v1"
-                  style={{
-                    width: "100%",
-                    padding: "8px 11px",
-                    border: "1.5px solid #eee",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontFamily: "inherit",
-                  }}
-                />
-              </div>
-
-              {/* API Key */}
-              <div>
-                <label style={{ fontSize: 11, color: "#888", marginBottom: 4, display: "block" }}>
-                  API Key <span style={{ color: "#e05a4b" }}>*</span>
-                </label>
-                <input
-                  type="password"
-                  value={llmConfig.apiKey}
-                  onChange={(e) => setLlmConfig((prev) => ({ ...prev, apiKey: e.target.value }))}
-                  placeholder="sk-..."
-                  style={{
-                    width: "100%",
-                    padding: "8px 11px",
-                    border: "1.5px solid #eee",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontFamily: "inherit",
-                  }}
-                />
-              </div>
-
-              {/* Model */}
-              <div>
-                <label style={{ fontSize: 11, color: "#888", marginBottom: 4, display: "block" }}>
-                  Model ID (可选，默认: {LLM_PROVIDERS[llmConfig.provider].defaultModel})
-                </label>
-                <input
-                  type="text"
-                  value={llmConfig.model}
-                  onChange={(e) => setLlmConfig((prev) => ({ ...prev, model: e.target.value }))}
-                  placeholder="模型 ID"
-                  style={{
-                    width: "100%",
-                    padding: "8px 11px",
-                    border: "1.5px solid #eee",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontFamily: "inherit",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Mode toggle */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
@@ -668,7 +596,7 @@ function App() {
                         </span>
                       )}
                       <button
-                        onClick={() => exportSingle(2)}
+                        onClick={() => exportSingle("hd")}
                         disabled={exporting || !h2cOk}
                         style={{
                           padding: "5px 11px",
@@ -682,10 +610,10 @@ function App() {
                           opacity: exporting ? 0.6 : 1,
                         }}
                       >
-                        {exporting ? <Dots /> : "⬇ 2x"}
+                        {exporting ? <Dots /> : "⬇ 高清"}
                       </button>
                       <button
-                        onClick={() => exportSingle(3)}
+                        onClick={() => exportSingle("ultra")}
                         disabled={exporting || !h2cOk}
                         style={{
                           padding: "5px 11px",
@@ -699,7 +627,7 @@ function App() {
                           opacity: exporting ? 0.6 : 1,
                         }}
                       >
-                        {exporting ? <Dots /> : "⬇ 高清 3x"}
+                        {exporting ? <Dots /> : "⬇ 超清 4K"}
                       </button>
                     </div>
                   )}
@@ -816,7 +744,7 @@ function App() {
                           </span>
                         )}
                         <button
-                          onClick={() => exportSlide(slideIdx, 2)}
+                          onClick={() => exportSlide(slideIdx, "hd")}
                           disabled={exporting || !h2cOk}
                           style={{
                             padding: "5px 10px",
@@ -833,7 +761,7 @@ function App() {
                           {exporting ? <Dots /> : "⬇ 当前页"}
                         </button>
                         <button
-                          onClick={() => exportAll(2)}
+                          onClick={() => exportAll()}
                           disabled={exporting || !h2cOk}
                           style={{
                             padding: "5px 10px",
@@ -877,7 +805,7 @@ function App() {
                         ‹
                       </button>
                       <div style={{ flex: 1, overflow: "hidden", boxShadow: "0 6px 28px rgba(0,0,0,.14)", borderRadius: 12 }}>
-                        <div ref={(el) => (slideRefs.current[slideIdx] = el)}>
+                        <div>
                           {renderSlide(slides[slideIdx], slideIdx, slides.length, makeSlideEd(slideIdx))}
                         </div>
                       </div>
@@ -946,14 +874,12 @@ function App() {
                               cursor: "grab",
                             }}
                           >
-                            <div style={{ width: 60, height: 80, overflow: "hidden", position: "relative", flexShrink: 0 }}>
+                            <div style={{ width: 60, height: 80, overflow: "hidden", position: "relative", flexShrink: 0, borderRadius: "6px 6px 0 0" }}>
                               <div
-                                ref={(el) => {
-                                  if (i !== slideIdx) slideRefs.current[i] = el;
-                                }}
                                 style={{
                                   width: 300,
-                                  transformOrigin: "top left",
+                                  height: 400,
+                                  transformOrigin: "0 0",
                                   transform: "scale(0.2)",
                                   pointerEvents: "none",
                                   position: "absolute",
@@ -979,6 +905,23 @@ function App() {
                           </div>
                         );
                       })}
+                    </div>
+
+                    {/* 隐藏的导出容器 - 包含所有 slides 的完整尺寸版本 */}
+                    <div 
+                      aria-hidden="true" 
+                      style={{ 
+                        position: "absolute", 
+                        left: -9999, 
+                        top: 0,
+                        width: 375,
+                      }}
+                    >
+                      {slides.map((s, i) => (
+                        <div key={i} ref={(el) => (slideRefs.current[i] = el)}>
+                          {renderSlide(s, i, slides.length, undefined)}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

@@ -6,7 +6,7 @@ export function DarkCover({ s, a, total, ed }) {
   return (
     <div
       style={{
-        background: "#0e0f14",
+        background: "#fff",
         width: "100%",
         aspectRatio: "3/4",
         fontFamily: FONT_FAMILY,
@@ -50,8 +50,7 @@ export function DarkCover({ s, a, total, ed }) {
           width: 200,
           height: 200,
           borderRadius: "50%",
-          background: `${a}12`,
-          filter: "blur(40px)",
+          background: `${a}15`,
         }}
       />
       <div style={{ position: "relative", zIndex: 1 }}>
@@ -74,14 +73,16 @@ export function DarkCover({ s, a, total, ed }) {
           v={s.title}
           on={ed?.title}
           block
-          dk
           style={{
             fontSize: 26,
             fontWeight: 900,
-            color: "#f0eee8",
-            lineHeight: 1.2,
+            color: "#111",
+            lineHeight: 1.4,
             marginBottom: 12,
             letterSpacing: "-0.5px",
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            display: "block",
           }}
         />
         {s.subtitle && (
@@ -89,11 +90,10 @@ export function DarkCover({ s, a, total, ed }) {
             v={s.subtitle}
             on={ed?.subtitle}
             block
-            dk
-            style={{ fontSize: 13, color: "#666", lineHeight: 1.65, marginBottom: 28 }}
+            style={{ fontSize: 13, color: "#666", lineHeight: 1.65, marginBottom: 20, whiteSpace: "normal", wordBreak: "break-word", display: "block" }}
           />
         )}
-        <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10 }}>
           {Array.from({ length: total }).map((_, i) => (
             <div
               key={i}
@@ -115,7 +115,7 @@ export function DarkContent({ s, a, idx, total, ed }) {
   return (
     <div
       style={{
-        background: "#111318",
+        background: "#fff",
         width: "100%",
         aspectRatio: "3/4",
         fontFamily: FONT_FAMILY,
@@ -149,19 +149,20 @@ export function DarkContent({ s, a, idx, total, ed }) {
           {idx}/{total - 2}
         </span>
       </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 16 }}>
-        <EditableText
-          v={s.heading}
-          on={ed?.heading}
-          block
-          dk
-          style={{ fontSize: 20, fontWeight: 900, color: "#f0eee8", lineHeight: 1.3 }}
-        />
-        <div style={{ height: 1, background: `linear-gradient(90deg,${a}cc,${a}22,transparent)` }} />
-        <EditableText v={s.text} on={ed?.text} block dk style={{ fontSize: 14, color: "#7a7878", lineHeight: 1.9 }} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "20px 0" }}>
+        <div>
+          <EditableText
+            v={s.heading}
+            on={ed?.heading}
+            block
+            style={{ fontSize: 20, fontWeight: 900, color: "#111", lineHeight: 1.4, marginBottom: 16, display: "block" }}
+          />
+          <div style={{ height: 1, background: `linear-gradient(90deg,${a}cc,${a}22,transparent)`, marginBottom: 16 }} />
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#444", lineHeight: 2, display: "block" }} />
+        </div>
         {s.extra && (
-          <div style={{ padding: "11px 14px", border: `1px solid ${a}33`, borderRadius: 7, background: `${a}0a` }}>
-            <EditableText v={s.extra} on={ed?.extra} block dk style={{ fontSize: 12, color: "#666", lineHeight: 1.7 }} />
+          <div style={{ padding: "14px 16px", border: `1px solid ${a}33`, borderRadius: 7, background: `${a}0a`, marginTop: "auto" }}>
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 12, color: "#555", lineHeight: 1.7, display: "block" }} />
           </div>
         )}
       </div>
@@ -196,7 +197,7 @@ export function DarkEnd({ s, a, ed }) {
   return (
     <div
       style={{
-        background: "#0e0f14",
+        background: "#fff",
         width: "100%",
         aspectRatio: "3/4",
         fontFamily: FONT_FAMILY,
@@ -241,15 +242,13 @@ export function DarkEnd({ s, a, ed }) {
           v={s.cta}
           on={ed?.cta}
           block
-          dk
-          style={{ fontSize: 20, fontWeight: 900, color: "#f0eee8", marginBottom: 8, lineHeight: 1.3 }}
+          style={{ fontSize: 20, fontWeight: 900, color: "#111", marginBottom: 8, lineHeight: 1.3, display: "block" }}
         />
         <EditableText
           v={s.sub}
           on={ed?.sub}
           block
-          dk
-          style={{ fontSize: 13, color: "#555", marginBottom: 26, lineHeight: 1.6 }}
+          style={{ fontSize: 13, color: "#666", marginBottom: 26, lineHeight: 1.6, display: "block" }}
         />
         <div style={{ height: 1, background: `linear-gradient(90deg,transparent,${a}66,transparent)`, marginBottom: 20 }} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 7, justifyContent: "center" }}>

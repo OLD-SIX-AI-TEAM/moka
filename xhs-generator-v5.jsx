@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { extractJSON } from "./src/services/llm.js";
 
 /* ══════════════════ html2canvas ══════════════════ */
 function useH2C() {
@@ -703,8 +704,8 @@ export default function App() {
       try {
         const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system: sys, messages: [{ role: "user", content: input }] }) });
         const json = await res.json();
-        const txt = json.content?.map(c => c.text || "").join("").replace(/```json|```/g, "").trim();
-        setSingleData(JSON.parse(txt));
+        const txt = json.content?.map(c => c.text || "").join("");
+        setSingleData(extractJSON(txt));
       } catch { setError("生成失败，请重试"); }
       finally { setLoading(false); }
     } else {
@@ -718,8 +719,8 @@ export default function App() {
       try {
         const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1200, system: sys, messages: [{ role: "user", content: input }] }) });
         const json = await res.json();
-        const txt = json.content?.map(c => c.text || "").join("").replace(/```json|```/g, "").trim();
-        const parsed = JSON.parse(txt);
+        const txt = json.content?.map(c => c.text || "").join("");
+        const parsed = extractJSON(txt);
         setSlides(parsed.slides);
         slideRefs.current = new Array(parsed.slides.length).fill(null);
       } catch { setError("生成失败，请重试"); }

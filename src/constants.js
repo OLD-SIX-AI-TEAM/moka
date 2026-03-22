@@ -1,5 +1,5 @@
 /**
- * 小红书排版生成器 - 常量配置
+ * 常量配置
  */
 
 // 分页风格配置
@@ -37,11 +37,19 @@ export const PALETTES = [
   { id: "pine", label: "松针", a: "#2d6a4f", bg: "#f0faf5", tc: "#0a1e14", bc: "#1e4432" },
 ];
 
-// 字体配置
+// 字体
 export const FONT_FAMILY = "'PingFang SC','Hiragino Sans GB',sans-serif";
 
-// 最大 Token 配置
+// 默认 LLM 配置
+export const DEFAULT_LLM_CONFIG = {
+  provider: "anthropic",
+  baseUrl: "",
+  apiKey: "",
+  model: "",
+};
+
+// 最大 Token 数 (Kimi K2.5 最大支持 65536 tokens，这里设置输出限制)
 export const MAX_TOKENS = {
-  single: 1000,
-  split: 1200,
+  single: 4000,
+  split: 4000,
 };

@@ -1,4 +1,9 @@
 export { Editorial } from "./Editorial";
 export { Notecard } from "./Notecard";
 export { Minimal } from "./Minimal";
-// 其他模板将在后续添加
+export { Stamp } from "./Stamp";
+export { BoldCard } from "./BoldCard";
+export { Dark } from "./Dark";
+export { Newspaper } from "./Newspaper";
+export { Film } from "./Film";
+export { LabelCard } from "./LabelCard";
