@@ -10,6 +10,28 @@ export const SPLIT_STYLES = [
   { id: "paper", name: "手账风", icon: "📮", desc: "格纹底 + 邮票框" },
   { id: "editorial", name: "杂志风", icon: "📰", desc: "分色块 + 双线" },
   { id: "gradient", name: "渐变风", icon: "🌅", desc: "渐变封面 + 白内容" },
+  // 新增分页风格 - 小红书热门风格
+  { id: "creamy", name: "奶油风", icon: "🧁", desc: "柔和圆润 + 温暖治愈" },
+  { id: "retro", name: "复古风", icon: "📻", desc: "怀旧色调 + 胶片质感" },
+  { id: "forest", name: "森系风", icon: "🌲", desc: "自然清新 + 植物元素" },
+  { id: "ins", name: "ins风", icon: "📷", desc: "简约高级 + 留白美学" },
+  { id: "japanese", name: "日系风", icon: "🎌", desc: "清新淡雅 + 手绘感" },
+  { id: "korean", name: "韩系风", icon: "💕", desc: "甜美可爱 + 柔和配色" },
+  { id: "pure", name: "极简风", icon: "◻️", desc: "纯粹简洁 + 大量留白" },
+  { id: "pop", name: "波普风", icon: "🎯", desc: "大胆撞色 + 几何图形" },
+  { id: "artistic", name: "文艺风", icon: "📖", desc: "诗意文字 + 手写字体" },
+  { id: "luxury", name: "轻奢风", icon: "💎", desc: "金色点缀 + 优雅线条" },
+  // 新增分页风格 - 微信公众号风格
+  { id: "business", name: "商务风", icon: "💼", desc: "专业严谨 + 蓝色调" },
+  { id: "tech", name: "科技风", icon: "💻", desc: "未来感 + 赛博朋克" },
+  { id: "edu", name: "教育风", icon: "📚", desc: "知识感 + 书本元素" },
+  { id: "medical", name: "医疗风", icon: "⚕️", desc: "健康感 + 红十字" },
+  { id: "finance", name: "财经风", icon: "📈", desc: "数据感 + 金色元素" },
+  { id: "law", name: "法律风", icon: "⚖️", desc: "庄重感 + 天平元素" },
+  { id: "food", name: "美食风", icon: "🍜", desc: "食欲感 + 餐具元素" },
+  { id: "travel", name: "旅游风", icon: "✈️", desc: "探索感 + 地图元素" },
+  { id: "fashion", name: "时尚风", icon: "👗", desc: "潮流感 + 几何分割" },
+  { id: "mom", name: "母婴风", icon: "🍼", desc: "温馨感 + 柔和曲线" },
 ];
 
 // 单页模板配置
@@ -23,6 +45,28 @@ export const TEMPLATES = [
   { id: "newspaper", name: "报纸风", icon: "📜", desc: "双线报头 + 序号" },
   { id: "film", name: "胶片风", icon: "🎞", desc: "胶片孔 + 色条" },
   { id: "label", name: "标签风", icon: "🏷", desc: "价签形 + 打孔" },
+  // 新增小红书热门风格
+  { id: "creamy", name: "奶油风", icon: "🧁", desc: "柔和圆润 + 温暖治愈" },
+  { id: "retro", name: "复古风", icon: "📻", desc: "怀旧色调 + 胶片质感" },
+  { id: "forest", name: "森系风", icon: "🌲", desc: "自然清新 + 植物元素" },
+  { id: "ins", name: "ins风", icon: "📷", desc: "简约高级 + 留白美学" },
+  { id: "japanese", name: "日系风", icon: "🎌", desc: "清新淡雅 + 手绘感" },
+  { id: "korean", name: "韩系风", icon: "💕", desc: "甜美可爱 + 柔和配色" },
+  { id: "pure", name: "极简风", icon: "◻️", desc: "纯粹简洁 + 大量留白" },
+  { id: "pop", name: "波普风", icon: "🎯", desc: "大胆撞色 + 几何图形" },
+  { id: "artistic", name: "文艺风", icon: "📖", desc: "诗意文字 + 手写字体" },
+  { id: "luxury", name: "轻奢风", icon: "💎", desc: "金色点缀 + 优雅线条" },
+  // 新增微信公众号风格
+  { id: "business", name: "商务风", icon: "💼", desc: "专业严谨 + 蓝色调" },
+  { id: "tech", name: "科技风", icon: "💻", desc: "未来感 + 赛博朋克" },
+  { id: "edu", name: "教育风", icon: "📚", desc: "知识感 + 书本元素" },
+  { id: "medical", name: "医疗风", icon: "⚕️", desc: "健康感 + 红十字" },
+  { id: "finance", name: "财经风", icon: "📈", desc: "数据感 + 金色元素" },
+  { id: "law", name: "法律风", icon: "⚖️", desc: "庄重感 + 天平元素" },
+  { id: "food", name: "美食风", icon: "🍜", desc: "食欲感 + 餐具元素" },
+  { id: "travel", name: "旅游风", icon: "✈️", desc: "探索感 + 地图元素" },
+  { id: "fashion", name: "时尚风", icon: "👗", desc: "潮流感 + 几何分割" },
+  { id: "mom", name: "母婴风", icon: "🍼", desc: "温馨感 + 柔和曲线" },
 ];
 
 // 配色方案

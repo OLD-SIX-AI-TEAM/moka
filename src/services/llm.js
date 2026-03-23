@@ -3,6 +3,8 @@
  * 支持 OpenAI 和 Anthropic 两种 API 格式
  */
 
+const STORAGE_KEY = "imarticle_llm_config";
+
 // 从环境变量读取配置
 const ENV_CONFIG = {
   provider: import.meta.env.VITE_LLM_PROVIDER || "anthropic",
@@ -11,10 +13,70 @@ const ENV_CONFIG = {
   model: import.meta.env.VITE_LLM_MODEL || "",
 };
 
+// 从 localStorage 读取配置
+function getStorageConfig() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.warn("[LLM Config] 读取 localStorage 配置失败:", e);
+  }
+  return null;
+}
+
+// 保存配置到 localStorage
+export function saveLLMConfig(config) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    console.log("[LLM Config] 配置已保存到 localStorage");
+    return true;
+  } catch (e) {
+    console.error("[LLM Config] 保存配置失败:", e);
+    return false;
+  }
+}
+
+// 清除 localStorage 中的配置
+export function clearLLMConfig() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    console.log("[LLM Config] 配置已从 localStorage 清除");
+    return true;
+  } catch (e) {
+    console.error("[LLM Config] 清除配置失败:", e);
+    return false;
+  }
+}
+
+// 获取合并后的配置（优先使用 localStorage）
+function getMergedConfig() {
+  const storageConfig = getStorageConfig();
+  
+  // 如果 localStorage 中有有效配置，优先使用
+  if (storageConfig && storageConfig.apiKey) {
+    console.log("[LLM Config] 使用 localStorage 配置");
+    return {
+      provider: storageConfig.provider || ENV_CONFIG.provider,
+      baseUrl: storageConfig.baseUrl || ENV_CONFIG.baseUrl,
+      apiKey: storageConfig.apiKey,
+      model: storageConfig.model || ENV_CONFIG.model,
+    };
+  }
+  
+  // 否则使用环境变量配置
+  console.log("[LLM Config] 使用环境变量配置");
+  return ENV_CONFIG;
+}
+
+const MERGED_CONFIG = getMergedConfig();
+
 // 调试日志：输出当前配置
-console.log("[LLM Config] Provider:", ENV_CONFIG.provider);
-console.log("[LLM Config] Base URL:", ENV_CONFIG.baseUrl || "(使用默认值)");
-console.log("[LLM Config] Model:", ENV_CONFIG.model || "(使用默认值)");
+console.log("[LLM Config] Provider:", MERGED_CONFIG.provider);
+console.log("[LLM Config] Base URL:", MERGED_CONFIG.baseUrl || "(使用默认值)");
+console.log("[LLM Config] Model:", MERGED_CONFIG.model || "(使用默认值)");
+console.log("[LLM Config] Source:", getStorageConfig()?.apiKey ? "localStorage" : "env");
 
 // LLM 提供商配置
 export const LLM_PROVIDERS = {
@@ -33,24 +95,26 @@ export const LLM_PROVIDERS = {
 };
 
 /**
- * 获取环境变量中的 LLM 配置
+ * 获取 LLM 配置（优先从 localStorage，其次环境变量）
  * @returns {Object} 配置对象
  */
 export function getEnvLLMConfig() {
+  const config = getMergedConfig();
   return {
-    provider: ENV_CONFIG.provider,
-    baseUrl: ENV_CONFIG.baseUrl || undefined,
-    apiKey: ENV_CONFIG.apiKey,
-    model: ENV_CONFIG.model || undefined,
+    provider: config.provider,
+    baseUrl: config.baseUrl || undefined,
+    apiKey: config.apiKey,
+    model: config.model || undefined,
   };
 }
 
 /**
- * 检查环境变量配置是否有效
+ * 检查 LLM 配置是否有效
  * @returns {boolean}
  */
 export function isEnvConfigValid() {
-  return !!ENV_CONFIG.apiKey;
+  const config = getMergedConfig();
+  return !!config.apiKey;
 }
 
 /**

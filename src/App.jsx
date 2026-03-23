@@ -3,9 +3,27 @@ import { useHtml2Canvas, snapElement } from "./hooks/useHtml2Canvas";
 import { snapElementToImage } from "./hooks/useHtmlToImage";
 import { useDragReorder } from "./hooks/useDragReorder";
 import { Dots } from "./components/common/Icons";
-import { Editorial, Notecard, Minimal, Stamp, BoldCard, Dark, Newspaper, Film, LabelCard } from "./components/templates/single";
-import { VividCover, VividContent, VividEnd, CleanCover, CleanContent, CleanEnd, DarkCover, DarkContent, DarkEnd, PaperCover, PaperContent, PaperEnd, EdCover, EdContent, EdEnd, GrCover, GrContent, GrEnd } from "./components/templates/split";
-import { createLLMClient, SYSTEM_PROMPTS, extractJSON, getEnvLLMConfig, isEnvConfigValid } from "./services/llm";
+import {
+  Editorial, Notecard, Minimal, Stamp, BoldCard, Dark, Newspaper, Film, LabelCard,
+  Creamy, Retro, Forest, Ins, Japanese, Korean, Pure, Pop, Artistic, Luxury,
+  Business, Tech, Edu, Medical, Finance, Law, Food, Travel, Fashion, Mom
+} from "./components/templates/single";
+import {
+  VividCover, VividContent, VividEnd, CleanCover, CleanContent, CleanEnd, DarkCover, DarkContent, DarkEnd,
+  PaperCover, PaperContent, PaperEnd, EdCover, EdContent, EdEnd, GrCover, GrContent, GrEnd,
+  CreamyCover, CreamyContent, CreamyEnd, RetroCover, RetroContent, RetroEnd,
+  ForestCover, ForestContent, ForestEnd, InsCover, InsContent, InsEnd,
+  JapaneseCover, JapaneseContent, JapaneseEnd, KoreanCover, KoreanContent, KoreanEnd,
+  PureCover, PureContent, PureEnd, PopCover, PopContent, PopEnd,
+  ArtisticCover, ArtisticContent, ArtisticEnd, LuxuryCover, LuxuryContent, LuxuryEnd,
+  BusinessCover, BusinessContent, BusinessEnd, TechCover, TechContent, TechEnd,
+  EduCover, EduContent, EduEnd, MedicalCover, MedicalContent, MedicalEnd,
+  FinanceCover, FinanceContent, FinanceEnd, LawCover, LawContent, LawEnd,
+  FoodCover, FoodContent, FoodEnd, TravelCover, TravelContent, TravelEnd,
+  FashionCover, FashionContent, FashionEnd, MomCover, MomContent, MomEnd
+} from "./components/templates/split";
+import { createLLMClient, SYSTEM_PROMPTS, extractJSON, getEnvLLMConfig, isEnvConfigValid, saveLLMConfig } from "./services/llm";
+import { LLMConfigModal } from "./components/common/LLMConfigModal";
 import { SPLIT_STYLES, TEMPLATES, PALETTES, FONT_FAMILY, MAX_TOKENS } from "./constants";
 import "./App.css";
 
@@ -20,6 +38,28 @@ const SINGLE_RENDERERS = {
   newspaper: Newspaper,
   film: Film,
   label: LabelCard,
+  // 新增小红书热门风格
+  creamy: Creamy,
+  retro: Retro,
+  forest: Forest,
+  ins: Ins,
+  japanese: Japanese,
+  korean: Korean,
+  pure: Pure,
+  pop: Pop,
+  artistic: Artistic,
+  luxury: Luxury,
+  // 新增微信公众号风格
+  business: Business,
+  tech: Tech,
+  edu: Edu,
+  medical: Medical,
+  finance: Finance,
+  law: Law,
+  food: Food,
+  travel: Travel,
+  fashion: Fashion,
+  mom: Mom,
 };
 
 // 分页模板渲染器映射
@@ -30,6 +70,28 @@ const SPLIT_RENDERERS = {
   paper: { Cover: PaperCover, Content: PaperContent, End: PaperEnd },
   editorial: { Cover: EdCover, Content: EdContent, End: EdEnd },
   gradient: { Cover: GrCover, Content: GrContent, End: GrEnd },
+  // 新增分页风格 - 小红书热门风格
+  creamy: { Cover: CreamyCover, Content: CreamyContent, End: CreamyEnd },
+  retro: { Cover: RetroCover, Content: RetroContent, End: RetroEnd },
+  forest: { Cover: ForestCover, Content: ForestContent, End: ForestEnd },
+  ins: { Cover: InsCover, Content: InsContent, End: InsEnd },
+  japanese: { Cover: JapaneseCover, Content: JapaneseContent, End: JapaneseEnd },
+  korean: { Cover: KoreanCover, Content: KoreanContent, End: KoreanEnd },
+  pure: { Cover: PureCover, Content: PureContent, End: PureEnd },
+  pop: { Cover: PopCover, Content: PopContent, End: PopEnd },
+  artistic: { Cover: ArtisticCover, Content: ArtisticContent, End: ArtisticEnd },
+  luxury: { Cover: LuxuryCover, Content: LuxuryContent, End: LuxuryEnd },
+  // 新增分页风格 - 微信公众号风格
+  business: { Cover: BusinessCover, Content: BusinessContent, End: BusinessEnd },
+  tech: { Cover: TechCover, Content: TechContent, End: TechEnd },
+  edu: { Cover: EduCover, Content: EduContent, End: EduEnd },
+  medical: { Cover: MedicalCover, Content: MedicalContent, End: MedicalEnd },
+  finance: { Cover: FinanceCover, Content: FinanceContent, End: FinanceEnd },
+  law: { Cover: LawCover, Content: LawContent, End: LawEnd },
+  food: { Cover: FoodCover, Content: FoodContent, End: FoodEnd },
+  travel: { Cover: TravelCover, Content: TravelContent, End: TravelEnd },
+  fashion: { Cover: FashionCover, Content: FashionContent, End: FashionEnd },
+  mom: { Cover: MomCover, Content: MomContent, End: MomEnd },
 };
 
 function App() {
@@ -48,7 +110,10 @@ function App() {
   const [exporting, setExporting] = useState(false);
   const [expMsg, setExpMsg] = useState("");
 
-  // LLM 配置从环境变量获取
+  // LLM 配置弹窗状态
+  const [showLLMConfig, setShowLLMConfig] = useState(false);
+
+  // LLM 配置从环境变量/localStorage获取
   const llmConfig = getEnvLLMConfig();
   const envConfigValid = isEnvConfigValid();
 
@@ -133,11 +198,18 @@ function App() {
     tag: (ti) => (v) => updateSlideTag(idx, ti, v),
   });
 
+  // 处理LLM配置保存
+  const handleLLMConfigSave = useCallback((config) => {
+    saveLLMConfig(config);
+    // 强制刷新页面以应用新配置
+    window.location.reload();
+  }, []);
+
   // 生成内容
   const generate = useCallback(async () => {
     if (!input.trim()) return;
     if (!envConfigValid) {
-      setError("请在 .env 文件中配置 VITE_LLM_API_KEY");
+      setShowLLMConfig(true);
       return;
     }
 
@@ -446,38 +518,40 @@ function App() {
                 <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 11 }}>
                   🖼 卡片风格
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
-                  {SPLIT_STYLES.map((st) => (
-                    <button
-                      key={st.id}
-                      onClick={() => setSplitStyle(st.id)}
-                      style={{
-                        padding: "8px 5px",
-                        borderRadius: 8,
-                        border: `1.5px solid ${splitStyle === st.id ? palette.a : "#eee"}`,
-                        background: splitStyle === st.id ? palette.a + "10" : "#fafafa",
-                        textAlign: "center",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 2,
-                        cursor: "pointer",
-                      }}
-                    >
-                      <span style={{ fontSize: 18 }}>{st.icon}</span>
-                      <span
+                <div style={{ maxHeight: 200, overflowY: "auto", paddingRight: 4 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
+                    {SPLIT_STYLES.map((st) => (
+                      <button
+                        key={st.id}
+                        onClick={() => setSplitStyle(st.id)}
                         style={{
-                          fontSize: 10,
-                          fontWeight: splitStyle === st.id ? 800 : 600,
-                          color: splitStyle === st.id ? palette.a : "#555",
-                          lineHeight: 1.2,
+                          padding: "8px 5px",
+                          borderRadius: 8,
+                          border: `1.5px solid ${splitStyle === st.id ? palette.a : "#eee"}`,
+                          background: splitStyle === st.id ? palette.a + "10" : "#fafafa",
+                          textAlign: "center",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 2,
+                          cursor: "pointer",
                         }}
                       >
-                        {st.name}
-                      </span>
-                      <span style={{ fontSize: 9, color: "#bbb", lineHeight: 1.2 }}>{st.desc}</span>
-                    </button>
-                  ))}
+                        <span style={{ fontSize: 18 }}>{st.icon}</span>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontWeight: splitStyle === st.id ? 800 : 600,
+                            color: splitStyle === st.id ? palette.a : "#555",
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          {st.name}
+                        </span>
+                        <span style={{ fontSize: 9, color: "#bbb", lineHeight: 1.2 }}>{st.desc}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -488,38 +562,40 @@ function App() {
                 <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 10 }}>
                   🗂 模板
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
-                  {TEMPLATES.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => setTpl(t.id)}
-                      style={{
-                        padding: "8px 5px",
-                        borderRadius: 8,
-                        border: `1.5px solid ${tpl === t.id ? palette.a : "#eee"}`,
-                        background: tpl === t.id ? palette.a + "10" : "#fafafa",
-                        textAlign: "center",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 2,
-                        cursor: "pointer",
-                      }}
-                    >
-                      <span style={{ fontSize: 18 }}>{t.icon}</span>
-                      <span
+                <div style={{ maxHeight: 200, overflowY: "auto", paddingRight: 4 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
+                    {TEMPLATES.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => setTpl(t.id)}
                         style={{
-                          fontSize: 10,
-                          fontWeight: tpl === t.id ? 800 : 600,
-                          color: tpl === t.id ? palette.a : "#555",
-                          lineHeight: 1.2,
+                          padding: "8px 5px",
+                          borderRadius: 8,
+                          border: `1.5px solid ${tpl === t.id ? palette.a : "#eee"}`,
+                          background: tpl === t.id ? palette.a + "10" : "#fafafa",
+                          textAlign: "center",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 2,
+                          cursor: "pointer",
                         }}
                       >
-                        {t.name}
-                      </span>
-                      <span style={{ fontSize: 9, color: "#bbb", lineHeight: 1.2 }}>{t.desc}</span>
-                    </button>
-                  ))}
+                        <span style={{ fontSize: 18 }}>{t.icon}</span>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontWeight: tpl === t.id ? 800 : 600,
+                            color: tpl === t.id ? palette.a : "#555",
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          {t.name}
+                        </span>
+                        <span style={{ fontSize: 9, color: "#bbb", lineHeight: 1.2 }}>{t.desc}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -930,6 +1006,14 @@ function App() {
           </div>
         </div>
       </div>
+
+      {/* LLM配置弹窗 */}
+      <LLMConfigModal
+        isOpen={showLLMConfig}
+        onClose={() => setShowLLMConfig(false)}
+        onSave={handleLLMConfigSave}
+        initialConfig={llmConfig}
+      />
     </div>
   );
 }

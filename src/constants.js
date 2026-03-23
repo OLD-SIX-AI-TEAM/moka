@@ -10,6 +10,28 @@ export const SPLIT_STYLES = [
   { id: "paper", name: "手账风", icon: "📮", desc: "格纹底 + 邮票框" },
   { id: "editorial", name: "杂志风", icon: "📰", desc: "分色块 + 双线" },
   { id: "gradient", name: "渐变风", icon: "🌅", desc: "渐变封面 + 白内容" },
+  // 小红书热门风格
+  { id: "creamy", name: "奶油风", icon: "🧁", desc: "柔和奶油色调" },
+  { id: "retro", name: "复古风", icon: "📻", desc: "怀旧复古质感" },
+  { id: "forest", name: "森系风", icon: "🌲", desc: "自然清新绿意" },
+  { id: "ins", name: "INS风", icon: "📷", desc: "简约高级质感" },
+  { id: "japanese", name: "日系风", icon: "🎌", desc: "日式清新简约" },
+  { id: "korean", name: "韩系风", icon: "💄", desc: "韩式温柔甜美" },
+  { id: "pure", name: "纯欲风", icon: "🤍", desc: "清纯诱惑结合" },
+  { id: "pop", name: "波普风", icon: "🎨", desc: "色彩鲜艳跳跃" },
+  { id: "artistic", name: "文艺风", icon: "🎭", desc: "艺术气息浓厚" },
+  { id: "luxury", name: "轻奢风", icon: "💎", desc: "精致高级感" },
+  // 微信公众号风格
+  { id: "business", name: "商务风", icon: "💼", desc: "专业商务风格" },
+  { id: "tech", name: "科技风", icon: "🔬", desc: "现代科技质感" },
+  { id: "edu", name: "教育风", icon: "📚", desc: "知识学术风格" },
+  { id: "medical", name: "医疗风", icon: "⚕️", desc: "健康医疗专业" },
+  { id: "finance", name: "财经风", icon: "📈", desc: "金融理财专业" },
+  { id: "law", name: "法律风", icon: "⚖️", desc: "法律专业严谨" },
+  { id: "food", name: "美食风", icon: "🍜", desc: "诱人美食风格" },
+  { id: "travel", name: "旅行风", icon: "✈️", desc: "旅行探索风格" },
+  { id: "fashion", name: "时尚风", icon: "👗", desc: "潮流时尚前沿" },
+  { id: "mom", name: "母婴风", icon: "👶", desc: "温馨母婴主题" },
 ];
 
 // 单页模板配置
@@ -23,6 +45,28 @@ export const TEMPLATES = [
   { id: "newspaper", name: "报纸风", icon: "📜", desc: "双线报头 + 序号" },
   { id: "film", name: "胶片风", icon: "🎞", desc: "胶片孔 + 色条" },
   { id: "label", name: "标签风", icon: "🏷", desc: "价签形 + 打孔" },
+  // 小红书热门风格
+  { id: "creamy", name: "奶油风", icon: "🧁", desc: "柔和奶油色调" },
+  { id: "retro", name: "复古风", icon: "📻", desc: "怀旧复古质感" },
+  { id: "forest", name: "森系风", icon: "🌲", desc: "自然清新绿意" },
+  { id: "ins", name: "INS风", icon: "📷", desc: "简约高级质感" },
+  { id: "japanese", name: "日系风", icon: "🎌", desc: "日式清新简约" },
+  { id: "korean", name: "韩系风", icon: "💄", desc: "韩式温柔甜美" },
+  { id: "pure", name: "纯欲风", icon: "🤍", desc: "清纯诱惑结合" },
+  { id: "pop", name: "波普风", icon: "🎨", desc: "色彩鲜艳跳跃" },
+  { id: "artistic", name: "文艺风", icon: "🎭", desc: "艺术气息浓厚" },
+  { id: "luxury", name: "轻奢风", icon: "💎", desc: "精致高级感" },
+  // 微信公众号风格
+  { id: "business", name: "商务风", icon: "💼", desc: "专业商务风格" },
+  { id: "tech", name: "科技风", icon: "🔬", desc: "现代科技质感" },
+  { id: "edu", name: "教育风", icon: "📚", desc: "知识学术风格" },
+  { id: "medical", name: "医疗风", icon: "⚕️", desc: "健康医疗专业" },
+  { id: "finance", name: "财经风", icon: "📈", desc: "金融理财专业" },
+  { id: "law", name: "法律风", icon: "⚖️", desc: "法律专业严谨" },
+  { id: "food", name: "美食风", icon: "🍜", desc: "诱人美食风格" },
+  { id: "travel", name: "旅行风", icon: "✈️", desc: "旅行探索风格" },
+  { id: "fashion", name: "时尚风", icon: "👗", desc: "潮流时尚前沿" },
+  { id: "mom", name: "母婴风", icon: "👶", desc: "温馨母婴主题" },
 ];
 
 // 配色方案

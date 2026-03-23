@@ -1,79 +1,77 @@
 import { EditableText, EditableTag } from "../../common/EditableText";
 import { FONT_FAMILY } from "../../../constants";
 
-// 渐变风 - 封面
-export function GrCover({ s, a, total, ed }) {
+export function GradientCover({ s, a, total, ed }) {
   return (
-    <div style={{ background: "#fff", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "40px 30px", boxSizing: "border-box", textAlign: "center" }}>
-      <div style={{ position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)", width: 250, height: 250, borderRadius: "50%", background: `${a}15` }} />
-      <div style={{ position: "absolute", inset: 16, border: `1px solid ${a}30`, borderRadius: 8, pointerEvents: "none" }} />
-      <div style={{ position: "relative", zIndex: 1 }}>
-        <div style={{ fontSize: 56, marginBottom: 18 }}>{s.emoji}</div>
-        <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 26, fontWeight: 900, color: "#111", lineHeight: 1.4, marginBottom: 12, letterSpacing: "-0.5px", whiteSpace: "normal", wordBreak: "break-word", display: "block" }} />
-        {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 13, color: "#666", lineHeight: 1.65, marginBottom: 20, whiteSpace: "normal", wordBreak: "break-word", display: "block" }} />}
-        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10 }}>
-          {Array.from({ length: total }).map((_, i) => (
-            <div key={i} style={{ width: i === 0 ? 18 : 5, height: 3, borderRadius: 2, background: i === 0 ? a : `${a}50` }} />
-          ))}
+    <div style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.2)" }} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "40px 36px", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+          <div style={{ width: 50, height: 50, background: "rgba(255,255,255,0.2)", borderRadius: "50%", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 24 }}>{s.emoji}</span>
+          </div>
+          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.9)", letterSpacing: "3px", fontWeight: 600 }}>{s.category.toUpperCase()}</span>
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 34, fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: 16, textShadow: "0 2px 10px rgba(0,0,0,0.3)" }} />
+          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", lineHeight: 1.7 }} />}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === 0 ? 28 : 6, height: 4, borderRadius: 2, background: i === 0 ? "#fff" : "rgba(255,255,255,0.4)" }} />)}
         </div>
       </div>
     </div>
   );
 }
 
-// 渐变风 - 内容
-export function GrContent({ s, a, idx, total, ed }) {
+export function GradientContent({ s, a, idx, total, ed }) {
   return (
-    <div style={{ background: "#fff", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <div style={{ height: 5, background: `linear-gradient(90deg,${a},${a}55,transparent)` }} />
-      <div style={{ flex: 1, padding: "26px 28px", display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
-          <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg,${a},${a}99)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 900 }}>{idx}</div>
-          <div style={{ width: 1, height: 20, background: "#eee" }} />
-          <span style={{ fontSize: 10, color: "#aaa", fontWeight: 600, letterSpacing: "1px" }}>0{idx} / 0{total - 2}</span>
+    <div style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.15)" }} />
+      <div style={{ display: "flex", height: "100%" }}>
+        <div style={{ width: "30%", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(10px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ fontSize: 56, fontWeight: 300, color: "#fff", opacity: 0.9 }}>{String.fromCharCode(8544 + idx - 1)}</div>
         </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "20px 0" }}>
-          <div>
-            <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 21, fontWeight: 900, color: "#111", lineHeight: 1.4, marginBottom: 14, display: "block" }} />
-            <div style={{ display: "flex", gap: 3, marginBottom: 14 }}>
-              <div style={{ width: 24, height: 3, borderRadius: 2, background: a }} />
-              <div style={{ width: 8, height: 3, borderRadius: 2, background: `${a}55` }} />
-              <div style={{ width: 4, height: 3, borderRadius: 2, background: `${a}25` }} />
-            </div>
-            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#555", lineHeight: 2, display: "block" }} />
+        <div style={{ flex: 1, padding: "28px 24px", display: "flex", flexDirection: "column", boxSizing: "border-box", position: "relative", zIndex: 1 }}>
+          <div style={{ height: 3, background: "rgba(255,255,255,0.5)", marginBottom: 20, borderRadius: 2 }} />
+          <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 20, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 16 }} />
+          <div style={{ flex: 1 }}>
+            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", lineHeight: 1.85 }} />
           </div>
           {s.extra && (
-            <div style={{ padding: "14px 16px", background: `linear-gradient(135deg,${a}10,${a}04)`, borderRadius: 10, border: `1px solid ${a}22`, marginTop: "auto" }}>
-              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 12, color: "#666", lineHeight: 1.7, display: "block" }} />
+            <div style={{ marginTop: 16, padding: "14px 18px", background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", borderRadius: 8, borderLeft: "4px solid rgba(255,255,255,0.5)" }}>
+              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#fff", lineHeight: 1.7 }} />
             </div>
           )}
-        </div>
-        <div style={{ display: "flex", gap: 5, marginTop: 18, justifyContent: "center" }}>
-          {Array.from({ length: total }).map((_, i) => (
-            <div key={i} style={{ width: i === idx ? "18px" : "5px", height: 3, borderRadius: 2, background: i === idx ? a : `${a}25` }} />
-          ))}
+          <div style={{ display: "flex", gap: 6, marginTop: 20, alignItems: "center" }}>
+            {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 28 : 6, height: 4, borderRadius: 2, background: i === idx ? "#fff" : "rgba(255,255,255,0.4)" }} />)}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// 渐变风 - 结尾
-export function GrEnd({ s, a, ed }) {
+export function GradientEnd({ s, a, ed }) {
   return (
-    <div style={{ background: "#fff", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "36px 28px", boxSizing: "border-box", textAlign: "center" }}>
-      <div style={{ position: "absolute", inset: 16, border: `1px solid ${a}30`, borderRadius: 8, pointerEvents: "none" }} />
-      <div style={{ position: "relative", zIndex: 1, width: "100%" }}>
-        <div style={{ width: 44, height: 44, borderRadius: "50%", background: `${a}20`, border: `1px solid ${a}40`, margin: "0 auto 18px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🌟</div>
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 21, fontWeight: 900, color: "#111", marginBottom: 8, lineHeight: 1.3, display: "block" }} />
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 13, color: "#666", marginBottom: 26, lineHeight: 1.6, display: "block" }} />
-        <div style={{ height: 1, background: `${a}30`, marginBottom: 20 }} />
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 7, justifyContent: "center" }}>
-          {s.tags.map((t, i) => (
-            <EditableTag key={i} text={t} c={a} on={ed?.tag?.(i)} />
-          ))}
+    <div style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #667eea 100%)", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px 36px", boxSizing: "border-box" }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.15)" }} />
+      <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+        <div style={{ width: 80, height: 80, background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
+          <span style={{ fontSize: 40 }}>{s.emoji}</span>
+        </div>
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 28, fontWeight: 800, color: "#fff", marginBottom: 12, lineHeight: 1.3, textShadow: "0 2px 10px rgba(0,0,0,0.3)" }} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "rgba(255,255,255,0.95)", marginBottom: 32, lineHeight: 1.6 }} />
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>
+          {s.tags.map((t, i) => <span key={i} style={{ padding: "8px 18px", background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)", borderRadius: 20, fontSize: 12, color: "#fff", fontWeight: 600 }}><EditableTag text={t} c="#fff" on={ed?.tag?.(i)} /></span>)}
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+          {[...Array(5)].map((_, i) => <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(255,255,255,0.6)" }} />)}
         </div>
       </div>
     </div>
   );
 }
+
+// 别名导出以兼容现有代码
+export { GradientCover as GrCover, GradientContent as GrContent, GradientEnd as GrEnd };
