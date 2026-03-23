@@ -24,7 +24,11 @@ import {
 } from "./components/templates/split";
 import { createLLMClient, SYSTEM_PROMPTS, extractJSON, getEnvLLMConfig, isEnvConfigValid, saveLLMConfig } from "./services/llm";
 import { LLMConfigModal } from "./components/common/LLMConfigModal";
-import { SPLIT_STYLES, TEMPLATES, PALETTES, FONT_FAMILY, MAX_TOKENS } from "./constants";
+import { ReferenceImageUploader } from "./components/ReferenceImageUploader";
+import { AIStyleRenderer } from "./components/AIStyleRenderer";
+import { AISplitStyleRenderer } from "./components/AISplitStyleRenderer";
+import { SPLIT_STYLES, TEMPLATES, PALETTES, FONT_FAMILY, MAX_TOKENS, AI_DESIGN_TEMPLATE, AI_DESIGN_SPLIT_STYLE } from "./constants";
+import { AI_DESIGN_PROMPT_SINGLE, AI_DESIGN_PROMPT_SPLIT } from "./prompts/aiDesignPrompt";
 import "./App.css";
 
 // 单页模板渲染器映射
@@ -109,6 +113,13 @@ function App() {
   const [error, setError] = useState("");
   const [exporting, setExporting] = useState(false);
   const [expMsg, setExpMsg] = useState("");
+
+  // AI设计状态
+  const [aiReferenceImage, setAiReferenceImage] = useState(null);
+  const [aiSingleDesign, setAiSingleDesign] = useState(null);
+  const [aiSplitDesign, setAiSplitDesign] = useState(null);
+  const [aiVersions, setAiVersions] = useState([]);
+  const [aiCurrentVersionIndex, setAiCurrentVersionIndex] = useState(-1);
 
   // LLM 配置弹窗状态
   const [showLLMConfig, setShowLLMConfig] = useState(false);
@@ -198,6 +209,101 @@ function App() {
     tag: (ti) => (v) => updateSlideTag(idx, ti, v),
   });
 
+  // AI设计编辑器函数
+  const updateAiSingleContent = useCallback((field, val) => {
+    setAiSingleDesign((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          [field]: val,
+        },
+      };
+    });
+  }, []);
+
+  const updateAiSingleSection = useCallback((index, field, val) => {
+    setAiSingleDesign((prev) => {
+      if (!prev) return prev;
+      const newSections = [...prev.content.sections];
+      newSections[index] = { ...newSections[index], [field]: val };
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          sections: newSections,
+        },
+      };
+    });
+  }, []);
+
+  const updateAiSingleTag = useCallback((index, val) => {
+    setAiSingleDesign((prev) => {
+      if (!prev) return prev;
+      const newTags = [...prev.content.tags];
+      newTags[index] = val;
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          tags: newTags,
+        },
+      };
+    });
+  }, []);
+
+  const aiSingleEd = aiSingleDesign
+    ? {
+        title: (v) => updateAiSingleContent("title", v),
+        lead: (v) => updateAiSingleContent("lead", v),
+        tip: (v) => updateAiSingleContent("tip", v),
+        secH: (i) => (v) => updateAiSingleSection(i, "heading", v),
+        secT: (i) => (v) => updateAiSingleSection(i, "text", v),
+        tag: (i) => (v) => updateAiSingleTag(i, v),
+      }
+    : null;
+
+  // AI分页版设计更新函数
+  const updateAiSplitSlide = useCallback((idx, field, val) => {
+    if (!aiSplitDesign) return;
+    setAiSplitDesign(prev => ({
+      ...prev,
+      slides: prev.slides.map((s, i) => (i === idx ? { ...s, [field]: val } : s)),
+    }));
+    setSlides(prev => prev.map((s, i) => (i === idx ? { ...s, [field]: val } : s)));
+  }, [aiSplitDesign]);
+
+  const updateAiSplitSlideTag = useCallback((sIdx, tIdx, val) => {
+    if (!aiSplitDesign) return;
+    setAiSplitDesign(prev => ({
+      ...prev,
+      slides: prev.slides.map((s, i) => {
+        if (i !== sIdx) return s;
+        const tags = [...(s.tags || [])];
+        tags[tIdx] = val;
+        return { ...s, tags };
+      }),
+    }));
+    setSlides(prev => prev.map((s, i) => {
+      if (i !== sIdx) return s;
+      const tags = [...(s.tags || [])];
+      tags[tIdx] = val;
+      return { ...s, tags };
+    }));
+  }, [aiSplitDesign]);
+
+  const makeAiSplitSlideEd = (idx) => ({
+    title: (v) => updateAiSplitSlide(idx, "title", v),
+    subtitle: (v) => updateAiSplitSlide(idx, "subtitle", v),
+    heading: (v) => updateAiSplitSlide(idx, "heading", v),
+    text: (v) => updateAiSplitSlide(idx, "text", v),
+    extra: (v) => updateAiSplitSlide(idx, "extra", v),
+    cta: (v) => updateAiSplitSlide(idx, "cta", v),
+    sub: (v) => updateAiSplitSlide(idx, "sub", v),
+    tag: (tIdx) => (v) => updateAiSplitSlideTag(idx, tIdx, v),
+  });
+
   // 处理LLM配置保存
   const handleLLMConfigSave = useCallback((config) => {
     saveLLMConfig(config);
@@ -205,11 +311,111 @@ function App() {
     window.location.reload();
   }, []);
 
+  // AI设计生成
+  const generateAIDesign = useCallback(async (isSplitMode = false) => {
+    if (!input.trim()) return;
+    if (!envConfigValid) {
+      setShowLLMConfig(true);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const client = createLLMClient({
+        provider: llmConfig.provider,
+        baseUrl: llmConfig.baseUrl || undefined,
+        apiKey: llmConfig.apiKey,
+        model: llmConfig.model || undefined,
+      });
+
+      let messages;
+      if (aiReferenceImage) {
+        messages = [{
+          role: 'user',
+          content: [
+            { type: 'text', text: `请根据以下文案内容生成设计方案：\n\n${input}` },
+            { type: 'image_url', image_url: { url: aiReferenceImage } }
+          ]
+        }];
+      } else {
+        messages = [{ role: 'user', content: `请根据以下文案内容生成设计方案：\n\n${input}` }];
+      }
+
+      const response = await client.chat({
+        system: isSplitMode ? AI_DESIGN_PROMPT_SPLIT : AI_DESIGN_PROMPT_SINGLE,
+        messages,
+        maxTokens: MAX_TOKENS.single * 2,
+      });
+
+      const data = extractJSON(response.content);
+      
+      if (isSplitMode) {
+        if (!data.slides || !data.styleConfig) {
+          throw new Error('AI返回的数据格式不正确');
+        }
+        // 验证 slides 不为空且包含内容页
+        if (data.slides.length === 0) {
+          throw new Error('AI生成的幻灯片为空，请重试');
+        }
+        // 验证 content 类型的 slide 有实际内容
+        const contentSlides = data.slides.filter(s => s.type === 'content');
+        if (contentSlides.length === 0) {
+          throw new Error('AI生成的内容为空，请重试');
+        }
+        // 验证每个 content slide 都有 heading 和 text
+        const validContentSlides = contentSlides.filter(s => s.heading && s.text);
+        if (validContentSlides.length === 0) {
+          throw new Error('AI生成的内容格式不正确，请重试');
+        }
+        setAiSplitDesign(data);
+        setSlides(data.slides);
+        slideRefs.current = new Array(data.slides.length).fill(null);
+      } else {
+        if (!data.styleConfig || !data.content) {
+          throw new Error('AI返回的数据格式不正确');
+        }
+        // 验证 sections 不为空
+        if (!data.content.sections || data.content.sections.length === 0) {
+          throw new Error('AI生成的内容为空，请重试');
+        }
+        // 验证每个 section 都有 heading 和 text
+        const validSections = data.content.sections.filter(s => s.heading && s.text);
+        if (validSections.length === 0) {
+          throw new Error('AI生成的内容格式不正确，请重试');
+        }
+        setAiSingleDesign(data);
+      }
+      
+      // 保存到版本历史
+      const newVersion = { ...data, timestamp: Date.now(), id: `v_${Date.now()}`, isSplitMode };
+      setAiVersions(prev => [...prev, newVersion].slice(-5));
+      setAiCurrentVersionIndex(prev => Math.min(prev + 1, 4));
+    } catch (err) {
+      setError(`AI设计生成失败: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [input, aiReferenceImage, llmConfig, envConfigValid]);
+
   // 生成内容
   const generate = useCallback(async () => {
     if (!input.trim()) return;
     if (!envConfigValid) {
       setShowLLMConfig(true);
+      return;
+    }
+
+    // 如果是AI设计模式（整页版）
+    if (mode === 'single' && tpl === 'ai') {
+      await generateAIDesign(false);
+      return;
+    }
+
+    // 如果是AI设计模式（分页版）
+    if (mode === 'split' && splitStyle === 'ai') {
+      await generateAIDesign(true);
       return;
     }
 
@@ -256,7 +462,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [input, mode, platform, llmConfig, envConfigValid]);
+  }, [input, mode, platform, tpl, splitStyle, llmConfig, envConfigValid, generateAIDesign]);
 
   // 导出功能 - 优先使用 html-to-image，失败时回退到 html2canvas
   const exportSingle = useCallback(
@@ -385,6 +591,20 @@ function App() {
   // 渲染分页幻灯片
   const renderSlide = (s, i, total, ed) => {
     const a = palette.a;
+    
+    // AI设计模式
+    if (splitStyle === 'ai' && aiSplitDesign) {
+      return (
+        <AISplitStyleRenderer
+          key={i}
+          slides={slides}
+          styleConfig={aiSplitDesign.styleConfig}
+          editors={slides.map((_, idx) => makeAiSplitSlideEd(idx))}
+          slideIdx={i}
+        />
+      );
+    }
+    
     const renderers = SPLIT_RENDERERS[splitStyle];
 
     if (!renderers) return null;
@@ -419,7 +639,7 @@ function App() {
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
           <div style={{ display: "flex", background: "#fff", borderRadius: 12, padding: 4, gap: 4, boxShadow: "0 2px 10px rgba(0,0,0,.07)" }}>
             {[
-              { v: "single", label: "📄 完整版" },
+              { v: "single", label: "📄 整页版" },
               { v: "split", label: "📑 分页版" },
             ].map((m) => (
               <button
@@ -428,6 +648,8 @@ function App() {
                   setMode(m.v);
                   setSingleData(null);
                   setSlides(null);
+                  setAiSingleDesign(null);
+                  setAiSplitDesign(null);
                 }}
                 style={{
                   padding: "8px 22px",
@@ -520,10 +742,15 @@ function App() {
                 </div>
                 <div style={{ maxHeight: 200, overflowY: "auto", paddingRight: 4 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
-                    {SPLIT_STYLES.map((st) => (
+                    {[...SPLIT_STYLES, AI_DESIGN_SPLIT_STYLE].map((st) => (
                       <button
                         key={st.id}
-                        onClick={() => setSplitStyle(st.id)}
+                        onClick={() => {
+                          setSplitStyle(st.id);
+                          if (st.id === 'ai') {
+                            setAiSplitDesign(null);
+                          }
+                        }}
                         style={{
                           padding: "8px 5px",
                           borderRadius: 8,
@@ -556,7 +783,24 @@ function App() {
               </div>
             )}
 
-            {/* 完整：模板 */}
+            {/* AI设计：参考图上传（分页版） */}
+            {mode === "split" && splitStyle === "ai" && (
+              <div style={{ background: "#fff", borderRadius: 13, padding: 17, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 10 }}>
+                  🎨 AI设计
+                </div>
+                <ReferenceImageUploader
+                  image={aiReferenceImage}
+                  onChange={setAiReferenceImage}
+                  onClear={() => setAiReferenceImage(null)}
+                />
+                <div style={{ fontSize: 12, color: "#888", marginTop: 10, textAlign: "center" }}>
+                  {aiReferenceImage ? 'AI将参考图片风格生成设计' : '不上传则AI自由发挥'}
+                </div>
+              </div>
+            )}
+
+            {/* 整页版：模板 */}
             {mode === "single" && (
               <div style={{ background: "#fff", borderRadius: 13, padding: 17, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 10 }}>
@@ -564,10 +808,15 @@ function App() {
                 </div>
                 <div style={{ maxHeight: 200, overflowY: "auto", paddingRight: 4 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
-                    {TEMPLATES.map((t) => (
+                    {[...TEMPLATES, AI_DESIGN_TEMPLATE].map((t) => (
                       <button
                         key={t.id}
-                        onClick={() => setTpl(t.id)}
+                        onClick={() => {
+                          setTpl(t.id);
+                          if (t.id === 'ai') {
+                            setAiSingleDesign(null);
+                          }
+                        }}
                         style={{
                           padding: "8px 5px",
                           borderRadius: 8,
@@ -596,6 +845,23 @@ function App() {
                       </button>
                     ))}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* AI设计：参考图上传（整页版） */}
+            {mode === "single" && tpl === "ai" && (
+              <div style={{ background: "#fff", borderRadius: 13, padding: 17, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 10 }}>
+                  🎨 AI设计
+                </div>
+                <ReferenceImageUploader
+                  image={aiReferenceImage}
+                  onChange={setAiReferenceImage}
+                  onClear={() => setAiReferenceImage(null)}
+                />
+                <div style={{ fontSize: 12, color: "#888", marginTop: 10, textAlign: "center" }}>
+                  {aiReferenceImage ? 'AI将参考图片风格生成设计' : '不上传则AI自由发挥'}
                 </div>
               </div>
             )}
@@ -659,12 +925,14 @@ function App() {
 
           {/* Right Panel - Preview */}
           <div>
-            {/* 完整版 */}
+
+
+            {/* 整页版 */}
             {mode === "single" && (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#888", letterSpacing: "1px" }}>预览</span>
-                  {cardData && (
+                  {(cardData || aiSingleDesign) && (
                     <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                       {expMsg && (
                         <span style={{ fontSize: 11, fontWeight: 700, color: expMsg.startsWith("✓") ? "#4a7c59" : "#aaa" }}>
@@ -709,7 +977,7 @@ function App() {
                   )}
                 </div>
 
-                {!cardData && !loading && (
+                {!cardData && !aiSingleDesign && !loading && (
                   <div
                     style={{
                       background: "#fff",
@@ -724,8 +992,8 @@ function App() {
                       gap: 8,
                     }}
                   >
-                    <span style={{ fontSize: 38 }}>🖼️</span>
-                    <span style={{ fontSize: 13 }}>排版预览将在这里显示</span>
+                    <span style={{ fontSize: 38 }}>{tpl === 'ai' ? '✨' : '🖼️'}</span>
+                    <span style={{ fontSize: 13 }}>{tpl === 'ai' ? '点击生成开始AI设计' : '排版预览将在这里显示'}</span>
                   </div>
                 )}
 
@@ -743,13 +1011,15 @@ function App() {
                       gap: 10,
                     }}
                   >
-                    <span style={{ fontSize: 30 }}>✦</span>
-                    <span style={{ fontSize: 13, color: "#aaa" }}>正在生成</span>
+                    <span style={{ fontSize: 30 }}>{tpl === 'ai' ? '✨' : '✦'}</span>
+                    <span style={{ fontSize: 13, color: "#aaa" }}>{tpl === 'ai' ? 'AI正在设计...' : '正在生成'}</span>
                     <Dots />
                   </div>
                 )}
 
-                {cardData && !loading && CardRenderer && (
+                {/* 普通模板渲染 */}
+                {/* 普通模板渲染 */}
+                {cardData && !loading && tpl !== 'ai' && CardRenderer && (
                   <div
                     ref={cardRef}
                     style={{
@@ -760,6 +1030,21 @@ function App() {
                     }}
                   >
                     <CardRenderer d={cardData} ed={singleEd} drag={sectionDrag} />
+                  </div>
+                )}
+
+                {/* AI设计渲染 */}
+                {aiSingleDesign && !loading && tpl === 'ai' && (
+                  <div
+                    ref={cardRef}
+                    style={{
+                      animation: "rise .35s ease",
+                      overflow: "hidden",
+                      boxShadow: "0 8px 36px rgba(0,0,0,.12)",
+                      borderRadius: 12,
+                    }}
+                  >
+                    <AIStyleRenderer design={aiSingleDesign} editor={aiSingleEd} />
                   </div>
                 )}
               </>
@@ -783,8 +1068,8 @@ function App() {
                       gap: 8,
                     }}
                   >
-                    <span style={{ fontSize: 38 }}>📑</span>
-                    <span style={{ fontSize: 13 }}>分页卡片将在这里显示</span>
+                    <span style={{ fontSize: 38 }}>{splitStyle === 'ai' ? '✨' : '📑'}</span>
+                    <span style={{ fontSize: 13 }}>{splitStyle === 'ai' ? '点击生成开始AI设计' : '分页卡片将在这里显示'}</span>
                   </div>
                 )}
                 {loading && (
@@ -801,8 +1086,8 @@ function App() {
                       gap: 10,
                     }}
                   >
-                    <span style={{ fontSize: 30 }}>✦</span>
-                    <span style={{ fontSize: 13, color: "#aaa" }}>正在生成分页卡片</span>
+                    <span style={{ fontSize: 30 }}>{splitStyle === 'ai' ? '✨' : '✦'}</span>
+                    <span style={{ fontSize: 13, color: "#aaa" }}>{splitStyle === 'ai' ? 'AI正在设计...' : '正在生成分页卡片'}</span>
                     <Dots />
                   </div>
                 )}

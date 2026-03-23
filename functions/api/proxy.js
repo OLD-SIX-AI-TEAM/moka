@@ -6,9 +6,25 @@ export async function onRequest(context) {
   const headers = new Headers(context.request.headers);
   headers.delete('host');
   
-  return fetch(workerUrl, {
+  // 确保必要的头部被正确转发
+  const requiredHeaders = ['x-target-url', 'authorization', 'x-api-key', 'anthropic-version'];
+  
+  const response = await fetch(workerUrl, {
     method: context.request.method,
     headers: headers,
     body: context.request.body,
   });
+
+  // 如果 Worker 返回错误，记录详细信息
+  if (!response.ok) {
+    const errorText = await response.clone().text();
+    console.error('Worker proxy error:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: errorText,
+      targetUrl: headers.get('x-target-url'),
+    });
+  }
+
+  return response;
 }

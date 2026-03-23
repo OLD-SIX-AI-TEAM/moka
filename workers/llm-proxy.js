@@ -12,6 +12,36 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
+// 允许的目标域名白名单（用于安全验证）
+// 注意：这里只检查 hostname，不包含端口
+const ALLOWED_DOMAINS = [
+  'api.openai.com',
+  'api.anthropic.com',
+  'api.deepseek.com',
+  'api.siliconflow.cn',
+  // 添加你的自定义域名到白名单（支持 IP 地址）
+  '45.120.102.120',
+  'localhost',
+  '127.0.0.1',
+];
+
+// 检查 URL 是否在白名单中
+function isAllowedUrl(urlString) {
+  try {
+    const url = new URL(urlString);
+    const hostname = url.hostname;
+    console.log('[Debug] Checking URL:', urlString, 'Hostname:', hostname);
+    return ALLOWED_DOMAINS.some(domain => {
+      const match = hostname === domain || hostname.endsWith('.' + domain);
+      if (match) console.log('[Debug] Matched domain:', domain);
+      return match;
+    });
+  } catch (e) {
+    console.error('[Debug] URL parsing error:', e.message);
+    return false;
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     // 处理预检请求
@@ -35,6 +65,23 @@ export default {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
+        }
+
+        // 验证目标 URL 是否在白名单中（开发环境可暂时注释掉此检查）
+        // if (!isAllowedUrl(targetUrl)) {
+        //   return new Response(JSON.stringify({ 
+        //     error: 'Target URL not allowed',
+        //     message: 'Please add your domain to ALLOWED_DOMAINS in the Worker code',
+        //     url: targetUrl 
+        //   }), {
+        //     status: 403,
+        //     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        //   });
+        // }
+
+        // 检查是否为 HTTP 地址（警告但不阻止）
+        if (targetUrl.startsWith('http:')) {
+          console.warn('[Warning] Requesting HTTP URL from HTTPS page:', targetUrl);
         }
 
         // 构建转发请求头

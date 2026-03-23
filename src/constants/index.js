@@ -2,6 +2,9 @@
  * 小红书排版生成器 - 常量配置
  */
 
+// AI设计选项
+export const AI_DESIGN_OPTION = { id: "ai", name: "AI设计", icon: "✨", desc: "智能生成独特风格" };
+
 // 分页风格配置
 export const SPLIT_STYLES = [
   { id: "vivid", name: "撞色块", icon: "🎨", desc: "满版色 + 白内容" },
@@ -33,6 +36,9 @@ export const SPLIT_STYLES = [
   { id: "fashion", name: "时尚风", icon: "👗", desc: "潮流感 + 几何分割" },
   { id: "mom", name: "母婴风", icon: "🍼", desc: "温馨感 + 柔和曲线" },
 ];
+
+// AI设计选项
+export const AI_DESIGN_TEMPLATE = { id: "ai", name: "AI设计", icon: "✨", desc: "智能生成独特风格" };
 
 // 单页模板配置
 export const TEMPLATES = [
@@ -88,4 +94,12 @@ export const FONT_FAMILY = "'PingFang SC','Hiragino Sans GB',sans-serif";
 export const MAX_TOKENS = {
   single: 1000,
   split: 1200,
+  aiDesign: 2000,
+};
+
+// AI设计模式配置
+export const AI_DESIGN_CONFIG = {
+  maxHistoryVersions: 5,
+  supportedImageTypes: ['image/jpeg', 'image/png', 'image/webp'],
+  maxImageSize: 5 * 1024 * 1024, // 5MB
 };

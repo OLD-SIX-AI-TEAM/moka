@@ -97,3 +97,8 @@ export const MAX_TOKENS = {
   single: 4000,
   split: 4000,
 };
+
+// AI设计模板选项
+export const AI_DESIGN_TEMPLATE = { id: "ai", name: "AI设计", icon: "✨", desc: "智能生成独特风格" };
+// AI设计分页风格选项
+export const AI_DESIGN_SPLIT_STYLE = { id: "ai", name: "AI设计", icon: "✨", desc: "智能生成独特风格" };

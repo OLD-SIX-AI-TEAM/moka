@@ -388,23 +388,46 @@ export function extractJSON(text) {
     .replace(/(['"])(\w+)\1\s*:/g, '"$2":')
     .replace(/:\s*'([^']*)'/g, ':"$1"');
 
-  // 第三步：修复尾部逗号
-  cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
+  // 第三步：修复尾部逗号（包括对象和数组中的尾部逗号）
+  cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
+  
+  // 第四步：修复属性值后面缺少逗号的情况（如 "key": "value" "key2":）
+  cleaned = cleaned.replace(/"\s*"/g, '","');
+  
+  // 第五步：修复未闭合的字符串（简单处理）
+  // 计算引号数量，如果是奇数，在末尾添加一个引号
+  const quoteMatches = cleaned.match(/"/g);
+  if (quoteMatches && quoteMatches.length % 2 !== 0) {
+    cleaned = cleaned + '"';
+  }
+  
+  // 第六步：修复缺少值的属性（如 "key": , 或 "key": }）
+  cleaned = cleaned.replace(/"\w+":\s*,/g, '"$1": null,');
+  cleaned = cleaned.replace(/"\w+":\s*([}\]])/g, '"$1": null $2');
 
   // 尝试解析
   try {
     return JSON.parse(cleaned);
   } catch (parseError) {
-    // 第四步：修复字符串中的特殊字符
+    // 第七步：修复字符串中的特殊字符
     try {
       cleaned = escapeSpecialCharsInJSON(cleaned);
       return JSON.parse(cleaned);
     } catch {
-      // 第五步：激进清理 - 移除所有控制字符
+      // 第八步：激进清理 - 移除所有控制字符
       try {
         cleaned = cleaned.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
         return JSON.parse(cleaned);
       } catch {
+        // 第九步：尝试使用 Function 构造器作为最后的手段
+        try {
+          // 注意：这有一定的安全风险，但在受控环境中可以使用
+          const result = new Function('return ' + cleaned)();
+          if (result && typeof result === 'object') {
+            return result;
+          }
+        } catch {}
+        
         console.error("[JSON Parse Error] Raw text:", text);
         console.error("[JSON Parse Error] Cleaned text:", cleaned);
         throw new Error(`JSON parse error: ${parseError.message}`);

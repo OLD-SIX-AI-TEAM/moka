@@ -1,0 +1,212 @@
+.reference-image-uploader {
+  width: 100%;
+}
+
+/* 上传区域样式 */
+.upload-area {
+  position: relative;
+  border: 2px dashed #e0e0e0;
+  border-radius: 12px;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+  overflow: hidden;
+}
+
+.upload-area:hover {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #f8f7ff 0%, #f0edff 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+}
+
+.upload-area.dragging {
+  border-color: #667eea;
+  border-style: solid;
+  background: linear-gradient(135deg, #f0edff 0%, #e8e4ff 100%);
+  transform: scale(1.02);
+}
+
+/* 装饰元素 */
+.upload-decoration {
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.upload-area:hover .upload-decoration {
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.08) 0%, transparent 70%);
+}
+
+/* 内容区域 */
+.upload-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* 图标包装 */
+.upload-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+}
+
+.upload-area:hover .upload-icon-wrapper {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.upload-icon {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+/* 文字样式 */
+.upload-text {
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+.upload-text .highlight {
+  color: #667eea;
+  font-weight: 600;
+  position: relative;
+}
+
+.upload-text .highlight::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 2px;
+  opacity: 0.3;
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* 图片预览容器 */
+.image-preview-container {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background: #f5f5f5;
+  transition: all 0.3s ease;
+}
+
+.image-preview-container:hover {
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
+}
+
+.image-preview {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  background: #fafafa;
+}
+
+/* 清除按钮 */
+.clear-image-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.clear-image-btn:hover {
+  background: rgba(220, 38, 38, 0.9);
+  transform: scale(1.1);
+}
+
+/* 图片覆盖层 */
+.image-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-preview-container:hover .image-overlay {
+  opacity: 1;
+}
+
+.image-label {
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .upload-area {
+    padding: 24px 16px;
+  }
+  
+  .upload-icon-wrapper {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .upload-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .upload-text {
+    font-size: 13px;
+  }
+}
