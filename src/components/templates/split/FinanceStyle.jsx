@@ -12,7 +12,7 @@ export function FinanceCover({ s, a, total, ed }) {
         <div style={{ position: "absolute", top: 0, right: 0, width: "40%", height: "100%", background: "linear-gradient(180deg, #ffd70015 0%, transparent 100%)" }} />
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           <div style={{ width: 50, height: 3, background: "#ffd700" }} />
-          <span style={{ fontSize: 9, color: "#ffd700", letterSpacing: "3px", fontWeight: 600 }}>{s.category.toUpperCase()}</span>
+          <span style={{ fontSize: 9, color: "#ffd700", letterSpacing: "3px", fontWeight: 600 }}>{s.category?.toUpperCase?.() || ""}</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <EditableText v={s.title} on={ed?.title} block dk style={{ fontSize: 32, fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: 16 }} />

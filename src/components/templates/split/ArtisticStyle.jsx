@@ -12,7 +12,7 @@ export function ArtisticCover({ s, a, total, ed }) {
           </div>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: 9, color: a, letterSpacing: "6px", marginBottom: 20, fontWeight: 600 }}>{s.category.toUpperCase()}</div>
+          <div style={{ fontSize: 9, color: a, letterSpacing: "6px", marginBottom: 20, fontWeight: 600 }}>{s.category?.toUpperCase?.() || ""}</div>
           <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 32, fontWeight: 300, color: "#1a1a1a", lineHeight: 1.3, letterSpacing: "2px", marginBottom: 16 }} />
           <div style={{ width: 40, height: 2, background: a, marginBottom: 20 }} />
           {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 13, color: "#666", lineHeight: 1.8, maxWidth: "80%" }} />}

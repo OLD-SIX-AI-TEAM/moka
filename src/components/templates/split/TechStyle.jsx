@@ -12,7 +12,7 @@ export function TechCover({ s, a, total, ed }) {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "40px 40px 40px 48px", position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
           <div style={{ width: 8, height: 8, background: "#00ff00", boxShadow: "0 0 8px #00ff00", animation: "pulse 1.5s infinite" }} />
-          <div style={{ fontSize: 10, color: "#666", fontFamily: "monospace" }}>SYSTEM://{s.category.toUpperCase()}_INIT</div>
+          <div style={{ fontSize: 10, color: "#666", fontFamily: "monospace" }}>SYSTEM://{s.category?.toUpperCase?.() || ""}_INIT</div>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ fontSize: 11, color: a, fontFamily: "monospace", marginBottom: 16, letterSpacing: "2px" }}>{`> LOADING_TITLE`}</div>

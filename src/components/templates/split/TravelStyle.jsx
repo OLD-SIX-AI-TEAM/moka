@@ -9,7 +9,7 @@ export function TravelCover({ s, a, total, ed }) {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "36px 32px", position: "relative" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           <div style={{ width: 24, height: 24, background: a, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12 }}>★</div>
-          <span style={{ fontSize: 10, color: a, letterSpacing: "3px", fontWeight: 600 }}>{s.category.toUpperCase()}</span>
+          <span style={{ fontSize: 10, color: a, letterSpacing: "3px", fontWeight: 600 }}>{s.category?.toUpperCase?.() || ""}</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ position: "relative" }}>

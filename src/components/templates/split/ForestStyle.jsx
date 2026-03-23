@@ -14,7 +14,7 @@ export function ForestCover({ s, a, total, ed }) {
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
           <span style={{ fontSize: 32, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))" }}>🌿</span>
           <div>
-            <div style={{ fontSize: 9, color: a, letterSpacing: "3px", fontWeight: 600 }}>{s.category.toUpperCase()}</div>
+            <div style={{ fontSize: 9, color: a, letterSpacing: "3px", fontWeight: 600 }}>{s.category?.toUpperCase?.() || ""}</div>
           </div>
           <span style={{ fontSize: 32, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))" }}>🌱</span>
         </div>

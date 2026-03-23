@@ -11,7 +11,7 @@ export function DarkCover({ s, a, total, ed }) {
           <div style={{ width: 40, height: 40, border: `1px solid ${a}60`, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: 20, filter: `drop-shadow(0 0 8px ${a})` }}>{s.emoji}</span>
           </div>
-          <span style={{ fontSize: 10, color: a, letterSpacing: "4px", fontWeight: 600 }}>{s.category.toUpperCase()}</span>
+          <span style={{ fontSize: 10, color: a, letterSpacing: "4px", fontWeight: 600 }}>{s.category?.toUpperCase?.() || ""}</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <EditableText v={s.title} on={ed?.title} block dk style={{ fontSize: 34, fontWeight: 700, color: "#fff", lineHeight: 1.15, marginBottom: 16, textShadow: `0 0 30px ${a}40` }} />

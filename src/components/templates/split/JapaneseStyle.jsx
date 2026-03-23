@@ -11,7 +11,7 @@ export function JapaneseCover({ s, a, total, ed }) {
           <div style={{ width: 50, height: 50, border: "2px solid #333", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "#fff" }}>
             <span style={{ fontSize: 24 }}>{s.emoji}</span>
           </div>
-          <div style={{ fontSize: 9, color: "#333", letterSpacing: "4px" }}>{s.category.toUpperCase()}</div>
+          <div style={{ fontSize: 9, color: "#333", letterSpacing: "4px" }}>{s.category?.toUpperCase?.() || ""}</div>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1 }}>
           <div style={{ position: "absolute", left: -20, top: 0, bottom: 0, width: 3, background: a }} />

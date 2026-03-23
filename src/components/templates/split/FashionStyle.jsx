@@ -5,7 +5,7 @@ export function FashionCover({ s, a, total, ed }) {
   return (
     <div style={{ background: "#0d0d0d", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "35%", background: a, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "32px 24px", boxSizing: "border-box" }}>
-        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.7)", letterSpacing: "4px", marginBottom: 16, writingMode: "vertical-rl", textOrientation: "mixed", transform: "rotate(180deg)", alignSelf: "center" }}>{s.category.toUpperCase()}</div>
+        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.7)", letterSpacing: "4px", marginBottom: 16, writingMode: "vertical-rl", textOrientation: "mixed", transform: "rotate(180deg)", alignSelf: "center" }}>{s.category?.toUpperCase?.() || ""}</div>
         <div style={{ width: 2, height: 60, background: "rgba(255,255,255,0.4)", margin: "0 auto" }} />
       </div>
       <div style={{ marginLeft: "35%", padding: "48px 40px 48px 48px", display: "flex", flexDirection: "column", height: "100%", boxSizing: "border-box" }}>

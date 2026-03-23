@@ -10,7 +10,7 @@ export function CleanCover({ s, a, total, ed }) {
           <div style={{ width: 44, height: 44, background: a, borderRadius: 22, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: 20, color: "#fff" }}>{s.emoji}</span>
           </div>
-          <span style={{ fontSize: 10, color: a, letterSpacing: "3px", fontWeight: 600 }}>{s.category.toUpperCase()}</span>
+          <span style={{ fontSize: 10, color: a, letterSpacing: "3px", fontWeight: 600 }}>{s.category?.toUpperCase?.() || ""}</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1 }}>
           <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 36, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.2, marginBottom: 16, letterSpacing: "-0.5px" }} />

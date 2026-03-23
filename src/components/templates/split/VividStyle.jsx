@@ -9,7 +9,7 @@ export function VividCover({ s, a, total, ed }) {
         <div style={{ position: "absolute", top: 24, right: 24, width: 80, height: 80, background: `${a}15`, borderRadius: "50%" }} />
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
           <div style={{ width: 50, height: 50, background: a, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 24 }}>{s.emoji}</div>
-          <span style={{ fontSize: 11, color: a, letterSpacing: "3px", fontWeight: 700 }}>{s.category.toUpperCase()}</span>
+          <span style={{ fontSize: 11, color: a, letterSpacing: "3px", fontWeight: 700 }}>{s.category?.toUpperCase?.() || ""}</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 36, fontWeight: 900, color: "#000", lineHeight: 1.1, marginBottom: 16, letterSpacing: "-1px" }} />

@@ -11,7 +11,7 @@ export function KoreanCover({ s, a, total, ed }) {
           <div style={{ width: 48, height: 48, background: a, borderRadius: 24, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
             <span style={{ fontSize: 24 }}>{s.emoji}</span>
           </div>
-          <span style={{ fontSize: 11, color: a, letterSpacing: "2px", fontWeight: 700 }}>{s.category.toUpperCase()}</span>
+          <span style={{ fontSize: 11, color: a, letterSpacing: "2px", fontWeight: 700 }}>{s.category?.toUpperCase?.() || ""}</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 34, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.2, marginBottom: 16 }} />

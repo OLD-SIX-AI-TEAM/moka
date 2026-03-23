@@ -10,7 +10,7 @@ export function PureCover({ s, a, total, ed }) {
           <div style={{ width: 48, height: 48, background: a, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: 22, color: "#fff" }}>{s.emoji}</span>
           </div>
-          <span style={{ fontSize: 10, color: a, letterSpacing: "3px", fontWeight: 600 }}>{s.category.toUpperCase()}</span>
+          <span style={{ fontSize: 10, color: a, letterSpacing: "3px", fontWeight: 600 }}>{s.category?.toUpperCase?.() || ""}</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 36, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.2, marginBottom: 16 }} />

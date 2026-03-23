@@ -10,7 +10,7 @@ export function GradientCover({ s, a, total, ed }) {
           <div style={{ width: 50, height: 50, background: "rgba(255,255,255,0.2)", borderRadius: "50%", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: 24 }}>{s.emoji}</span>
           </div>
-          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.9)", letterSpacing: "3px", fontWeight: 600 }}>{s.category.toUpperCase()}</span>
+          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.9)", letterSpacing: "3px", fontWeight: 600 }}>{s.category?.toUpperCase?.() || ""}</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 34, fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: 16, textShadow: "0 2px 10px rgba(0,0,0,0.3)" }} />

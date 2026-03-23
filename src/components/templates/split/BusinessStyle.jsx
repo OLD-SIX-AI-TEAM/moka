@@ -10,7 +10,7 @@ export function BusinessCover({ s, a, total, ed }) {
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px 28px" }}>
         <div style={{ borderBottom: `3px solid ${a}`, paddingBottom: 12, marginBottom: 20 }}>
-          <div style={{ fontSize: 9, color: "#999", letterSpacing: "2px", marginBottom: 8 }}>{s.category.toUpperCase()}</div>
+          <div style={{ fontSize: 9, color: "#999", letterSpacing: "2px", marginBottom: 8 }}>{s.category?.toUpperCase?.() || ""}</div>
           <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 28, fontWeight: 800, color: "#111", lineHeight: 1.2 }} />
         </div>
         <div style={{ flex: 1 }}>

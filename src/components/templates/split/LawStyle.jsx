@@ -20,7 +20,7 @@ export function LawCover({ s, a, total, ed }) {
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <div style={{ flex: 1, height: 1, background: "#d4a57450" }} />
-            <div style={{ fontSize: 9, color: "#8b4513", letterSpacing: "2px" }}>{s.category.toUpperCase()}</div>
+            <div style={{ fontSize: 9, color: "#8b4513", letterSpacing: "2px" }}>{s.category?.toUpperCase?.() || ""}</div>
             <div style={{ flex: 1, height: 1, background: "#d4a57450" }} />
           </div>
         </div>

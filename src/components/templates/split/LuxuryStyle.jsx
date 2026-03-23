@@ -12,7 +12,7 @@ export function LuxuryCover({ s, a, total, ed }) {
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: a }} />
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#d4af37" }} />
         </div>
-        <div style={{ fontSize: 9, color: "#999", letterSpacing: "6px", marginBottom: 24, fontWeight: 300 }}>{s.category.toUpperCase()}</div>
+        <div style={{ fontSize: 9, color: "#999", letterSpacing: "6px", marginBottom: 24, fontWeight: 300 }}>{s.category?.toUpperCase?.() || ""}</div>
         <div style={{ fontSize: 48, marginBottom: 24, opacity: 0.15 }}>{s.emoji}</div>
         <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 32, fontWeight: 300, color: "#1a1a1a", lineHeight: 1.3, letterSpacing: "4px", marginBottom: 20 }} />
         <div style={{ width: 1, height: 40, background: "linear-gradient(180deg, #d4af37, transparent)", margin: "24px auto" }} />
