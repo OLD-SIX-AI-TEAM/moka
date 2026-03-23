@@ -447,7 +447,7 @@ function App() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 18, alignItems: "start" }}>
+        <div className="main-grid" style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 18, alignItems: "start" }}>
           {/* Left Panel */}
           <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
             {/* Input */}
@@ -859,6 +859,7 @@ function App() {
                     {/* 主预览 */}
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                       <button
+                        className="slide-nav-btn"
                         onClick={() => setSlideIdx((i) => Math.max(0, i - 1))}
                         disabled={slideIdx === 0}
                         style={{
@@ -880,12 +881,13 @@ function App() {
                       >
                         ‹
                       </button>
-                      <div style={{ width: 375, overflow: "hidden", boxShadow: "0 6px 28px rgba(0,0,0,.14)", borderRadius: 12, margin: "0 auto" }}>
+                      <div className="slide-preview" style={{ width: 375, overflow: "hidden", boxShadow: "0 6px 28px rgba(0,0,0,.14)", borderRadius: 12, margin: "0 auto" }}>
                         <div>
                           {renderSlide(slides[slideIdx], slideIdx, slides.length, makeSlideEd(slideIdx))}
                         </div>
                       </div>
                       <button
+                        className="slide-nav-btn"
                         onClick={() => setSlideIdx((i) => Math.min(slides.length - 1, i + 1))}
                         disabled={slideIdx === slides.length - 1}
                         style={{
@@ -910,7 +912,7 @@ function App() {
                     </div>
 
                     {/* 缩略图 — 拖拽排序 */}
-                    <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, alignItems: "flex-start" }}>
+                    <div className="slide-thumbnails" style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, alignItems: "flex-start" }}>
                       {slides.map((s, i) => {
                         const isSlideTarget = slideDrag.target === i && slideDrag.active !== i;
                         return (
@@ -933,6 +935,7 @@ function App() {
                                 setSlideIdx(slideDrag.target > slideDrag.active ? slideDrag.target - 1 : slideDrag.target);
                             }}
                             onDragEnd={slideDrag.cancel}
+                            className="slide-thumb-item"
                             style={{
                               flexShrink: 0,
                               width: 60,
@@ -950,7 +953,7 @@ function App() {
                               cursor: "grab",
                             }}
                           >
-                            <div style={{ width: 60, height: 80, overflow: "hidden", position: "relative", flexShrink: 0, borderRadius: "6px 6px 0 0" }}>
+                            <div className="slide-thumb-img" style={{ width: 60, height: 80, overflow: "hidden", position: "relative", flexShrink: 0, borderRadius: "6px 6px 0 0" }}>
                               <div
                                 style={{
                                   width: 375,
@@ -967,6 +970,7 @@ function App() {
                               </div>
                             </div>
                             <div
+                              className="slide-thumb-label"
                               style={{
                                 textAlign: "center",
                                 padding: "3px 0",

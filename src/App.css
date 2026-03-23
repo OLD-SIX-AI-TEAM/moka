@@ -113,3 +113,139 @@ button:focus {
 ::selection {
   background: rgba(224, 90, 75, 0.2);
 }
+
+/* ========== 移动端响应式适配 ========== */
+
+/* 平板设备 (768px - 1024px) */
+@media screen and (max-width: 1024px) {
+  .app {
+    padding: 20px 12px !important;
+  }
+}
+
+/* 手机设备 (小于 768px) */
+@media screen and (max-width: 768px) {
+  .app {
+    padding: 16px 12px !important;
+  }
+  
+  /* 主布局改为单列 */
+  .app .main-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  /* 左侧面板调整 - 放在预览区域下方 */
+  .app .main-grid > div:first-child {
+    order: 2;
+  }
+  
+  /* 右侧预览区域调整 - 放在最上方 */
+  .app .main-grid > div:last-child {
+    order: 1;
+  }
+  
+  /* 模板和风格选择网格调整为2列 */
+  .app div[style*="gridTemplateColumns: repeat(3,1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* 输入框和按钮全宽 */
+  .app textarea {
+    font-size: 16px !important; /* 防止iOS缩放 */
+  }
+  
+  /* 配色按钮调整 */
+  .app div[style*="flexWrap: wrap"] > button {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  
+  /* 分页预览区域调整 */
+  .app div[style*="width: 375px"] {
+    width: 100% !important;
+    max-width: 375px !important;
+  }
+  
+  /* 缩略图区域横向滚动优化 */
+  .app div[style*="overflowX: auto"] {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  
+  .app div[style*="overflowX: auto"]::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* 模式切换按钮调整 */
+  .app button[style*="padding: 8px 22px"] {
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+  }
+  
+  /* 生成按钮调整 */
+  .app button[style*="letterSpacing: 0.5px"] {
+    padding: 15px !important;
+    font-size: 15px !important;
+  }
+  
+  /* 卡片预览阴影调整 */
+  .app div[style*="boxShadow: 0 8px 36px"] {
+    box-shadow: 0 4px 20px rgba(0,0,0,.1) !important;
+  }
+  
+  /* 分页导航按钮调整 */
+  .app button[style*="width: 32px"] {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 18px !important;
+  }
+}
+
+/* 小屏手机 (小于 480px) */
+@media screen and (max-width: 480px) {
+  .app {
+    padding: 12px 10px !important;
+  }
+  
+  .app h1 {
+    font-size: 20px !important;
+  }
+  
+  /* 面板内边距调整 */
+  .app div[style*="borderRadius: 13px"] {
+    padding: 14px !important;
+  }
+  
+  /* 模板网格调整为2列 */
+  .app div[style*="gridTemplateColumns: repeat(3,1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  /* 平台选择按钮调整 */
+  .app div[style*="gridTemplateColumns: 1fr 1fr"] {
+    gap: 10px !important;
+  }
+  
+  /* 分页预览宽度自适应 */
+  .app .slide-preview {
+    width: 100% !important;
+    max-width: 320px !important;
+  }
+  
+  /* 导出按钮调整 */
+  .app button[style*="padding: 5px 11px"] {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+  
+  /* 缩略图尺寸调整 */
+  .app .slide-thumb-item {
+    width: 55px !important;
+  }
+  
+  .app .slide-thumb-img {
+    height: 73px !important;
+  }
+}

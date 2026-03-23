@@ -5,6 +5,9 @@
 
 const STORAGE_KEY = "imarticle_llm_config";
 
+// Worker 代理地址
+const WORKER_PROXY_URL = "https://imarticle-llm-proxy.renmengkai.workers.dev/api/proxy";
+
 // 从环境变量读取配置
 const ENV_CONFIG = {
   provider: import.meta.env.VITE_LLM_PROVIDER || "anthropic",
@@ -165,9 +168,32 @@ export function createLLMClient(config) {
 
     /**
      * 调用 OpenAI API
+     * 使用 Cloudflare Worker 代理避免 CORS 问题
      */
     async _callOpenAI({ system, messages, maxTokens }) {
-      const url = `${this.baseUrl}/chat/completions`;
+      // 检测是否在 Cloudflare Pages 环境
+      const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
+        window.location.hostname.includes('workers.dev');
+
+      let url;
+      let headers;
+
+      if (isCloudflarePages) {
+        // 使用 Worker 代理 - 通过 x-target-url 传递目标地址
+        url = WORKER_PROXY_URL;
+        headers = {
+          'Content-Type': 'application/json',
+          'x-target-url': `${this.baseUrl}/chat/completions`,
+          'Authorization': `Bearer ${this.apiKey}`,
+        };
+      } else {
+        // 本地开发直接调用
+        url = `${this.baseUrl}/chat/completions`;
+        headers = {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+        };
+      }
 
       const body = {
         model: this.model,
@@ -178,10 +204,7 @@ export function createLLMClient(config) {
 
       const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
+        headers,
         body: JSON.stringify(body),
       });
 
@@ -202,9 +225,34 @@ export function createLLMClient(config) {
 
     /**
      * 调用 Anthropic API
+     * 使用 Cloudflare Worker 代理避免 CORS 问题
      */
     async _callAnthropic({ system, messages, maxTokens }) {
-      const url = `${this.baseUrl}/messages`;
+      // 检测是否在 Cloudflare Pages 环境
+      const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
+        window.location.hostname.includes('workers.dev');
+
+      let url;
+      let headers;
+
+      if (isCloudflarePages) {
+        // 使用 Worker 代理 - 通过 x-target-url 传递目标地址
+        url = WORKER_PROXY_URL;
+        headers = {
+          'Content-Type': 'application/json',
+          'x-target-url': `${this.baseUrl}/messages`,
+          'x-api-key': this.apiKey,
+          'anthropic-version': '2023-06-01',
+        };
+      } else {
+        // 本地开发直接调用
+        url = `${this.baseUrl}/messages`;
+        headers = {
+          'Content-Type': 'application/json',
+          'x-api-key': this.apiKey,
+          'anthropic-version': '2023-06-01',
+        };
+      }
 
       const body = {
         model: this.model,
@@ -218,11 +266,7 @@ export function createLLMClient(config) {
 
       const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": this.apiKey,
-          "anthropic-version": "2023-06-01",
-        },
+        headers,
         body: JSON.stringify(body),
       });
 
