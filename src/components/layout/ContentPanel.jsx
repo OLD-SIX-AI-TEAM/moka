@@ -100,7 +100,10 @@ export function ContentPanel({
         <div className="llm-config-info">
           <div className="llm-info-item">
             <span className="llm-info-label">提供商类型</span>
-            <span className="llm-info-value">{llmConfig?.provider === 'openai' ? 'OpenAI' : 'Anthropic'}</span>
+            <span className="llm-info-value">
+              {llmConfig?.provider === 'openai' ? 'OpenAI' : 
+               llmConfig?.provider === 'aliyun' ? '阿里云百炼' : 'Anthropic'}
+            </span>
           </div>
           <div className="llm-info-item">
             <span className="llm-info-label">基础URL</span>

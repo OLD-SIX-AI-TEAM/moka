@@ -95,6 +95,12 @@ export const LLM_PROVIDERS = {
     defaultModel: "claude-sonnet-4-20250514",
     requireAuth: true,
   },
+  aliyun: {
+    name: "阿里云百炼",
+    defaultBaseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    defaultModel: "qwen-plus",
+    requireAuth: true,
+  },
 };
 
 /**
@@ -152,25 +158,28 @@ export function createLLMClient(config) {
      * @param {string} params.system - 系统提示词
      * @param {Array} params.messages - 消息列表
      * @param {number} params.maxTokens - 最大 token 数
+     * @param {boolean} params.webSearch - 是否启用 web 搜索
      * @returns {Promise<Object>} 响应结果
      */
     async chat(params) {
-      const { system, messages, maxTokens = 1000 } = params;
+      const { system, messages, maxTokens = 1000, webSearch = true } = params;
 
       if (this.provider === "openai") {
-        return this._callOpenAI({ system, messages, maxTokens });
+        return this._callOpenAI({ system, messages, maxTokens, webSearch });
       } else if (this.provider === "anthropic") {
-        return this._callAnthropic({ system, messages, maxTokens });
+        return this._callAnthropic({ system, messages, maxTokens, webSearch });
+      } else if (this.provider === "aliyun") {
+        return this._callAliyun({ system, messages, maxTokens, webSearch });
       }
 
-      throw new Error(`未实现的提供商: ${this.provider}`);
+      throw new Error(`未实现的提供商：${this.provider}`);
     },
 
     /**
      * 调用 OpenAI API
      * 使用 Pages Function 代理避免 CORS 问题
      */
-    async _callOpenAI({ system, messages, maxTokens }) {
+    async _callOpenAI({ system, messages, maxTokens, webSearch }) {
       // 检测是否在 Cloudflare Pages 环境
       const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
         window.location.hostname.includes('workers.dev');
@@ -178,6 +187,11 @@ export function createLLMClient(config) {
       let url;
       let headers;
       let body;
+
+      // 构建 tools 参数（如果启用 web 搜索）
+      // 注意：OpenAI 的 web_search_preview 工具需要特定模型和配置
+      // 暂时禁用，等待进一步测试
+      const tools = undefined;
 
       if (isCloudflarePages) {
         // 使用 Pages Function 代理 - API Key 在服务端配置
@@ -191,6 +205,7 @@ export function createLLMClient(config) {
           messages: system ? [{ role: "system", content: system }, ...messages] : messages,
           max_tokens: maxTokens,
           temperature: 0.7,
+          ...(tools && { tools }),
         };
       } else {
         // 本地开发直接调用
@@ -204,6 +219,7 @@ export function createLLMClient(config) {
           messages: system ? [{ role: "system", content: system }, ...messages] : messages,
           max_tokens: maxTokens,
           temperature: 0.7,
+          ...(tools && { tools }),
         };
       }
 
@@ -220,9 +236,108 @@ export function createLLMClient(config) {
 
       const data = await response.json();
 
+      // 处理响应内容（支持普通响应和 web_search 响应）
+      const message = data.choices[0]?.message;
+      let content = message?.content || "";
+      
+      // 如果模型返回了 tool_calls，尝试提取信息
+      if (message?.tool_calls) {
+        // 记录工具调用信息用于调试
+        console.log('[OpenAI Response] Tool calls:', message.tool_calls);
+        
+        // 如果有 tool_calls 但没有 content，尝试从工具调用中提取信息
+        if (!content) {
+          content = message.tool_calls.map(tc => {
+            if (tc.type === "web_search_preview") {
+              return `[已执行网络搜索]`;
+            }
+            return `[工具调用：${tc.function?.name || tc.type}]`;
+          }).join("\n");
+        }
+      }
+      
+      // 如果仍然没有内容，抛出错误
+      if (!content || content.trim() === "") {
+        console.error('[OpenAI Response] Empty content:', data);
+        throw new Error('LLM 返回的内容为空，可能是 API 调用失败或模型未生成内容');
+      }
+
       // 统一响应格式
       return {
-        content: data.choices[0]?.message?.content || "",
+        content: content,
+        usage: data.usage,
+        model: data.model,
+      };
+    },
+
+    /**
+     * 调用阿里云百炼 API
+     * 使用 enable_search 参数启用网络搜索
+     */
+    async _callAliyun({ system, messages, maxTokens, webSearch }) {
+      // 检测是否在 Cloudflare Pages 环境
+      const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
+        window.location.hostname.includes('workers.dev');
+
+      let url;
+      let headers;
+      let body;
+
+      if (isCloudflarePages) {
+        // 使用 Pages Function 代理 - API Key 在服务端配置
+        url = PAGES_PROXY_URL;
+        headers = {
+          'Content-Type': 'application/json',
+        };
+        body = {
+          provider: 'aliyun',
+          model: this.model,
+          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+          max_tokens: maxTokens,
+          temperature: 0.7,
+          enable_search: webSearch,
+        };
+      } else {
+        // 本地开发直接调用
+        url = `${this.baseUrl}/chat/completions`;
+        headers = {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+        };
+        body = {
+          model: this.model,
+          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+          max_tokens: maxTokens,
+          temperature: 0.7,
+          enable_search: webSearch,
+        };
+      }
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`阿里云百炼 API 错误：${error}`);
+      }
+
+      const data = await response.json();
+
+      // 调试日志
+      console.log('[Aliyun Response]', data);
+
+      // 检查响应格式
+      if (!data.choices || !data.choices[0]?.message?.content) {
+        console.error('[Aliyun Response] Invalid response format:', data);
+        throw new Error('阿里云百炼返回的响应格式不正确');
+      }
+
+      // 统一响应格式
+      return {
+        content: data.choices[0].message.content,
         usage: data.usage,
         model: data.model,
       };
@@ -232,7 +347,7 @@ export function createLLMClient(config) {
      * 调用 Anthropic API
      * 使用 Pages Function 代理避免 CORS 问题
      */
-    async _callAnthropic({ system, messages, maxTokens }) {
+    async _callAnthropic({ system, messages, maxTokens, webSearch }) {
       // 检测是否在 Cloudflare Pages 环境
       const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
         window.location.hostname.includes('workers.dev');
@@ -240,6 +355,11 @@ export function createLLMClient(config) {
       let url;
       let headers;
       let body;
+
+      // 构建 tools 参数（如果启用 web 搜索）
+      // 注意：Anthropic 的 web_search 工具需要特定模型和配置
+      // 暂时禁用，等待进一步测试
+      const tools = undefined;
 
       if (isCloudflarePages) {
         // 使用 Pages Function 代理 - API Key 在服务端配置
@@ -256,6 +376,7 @@ export function createLLMClient(config) {
             content: m.content,
           })),
           max_tokens: maxTokens,
+          ...(tools && { tools }),
         };
       } else {
         // 本地开发直接调用
@@ -273,6 +394,7 @@ export function createLLMClient(config) {
             role: m.role,
             content: m.content,
           })),
+          ...(tools && { tools }),
         };
       }
 
@@ -289,9 +411,36 @@ export function createLLMClient(config) {
 
       const data = await response.json();
 
+      // 处理响应内容（支持普通响应和 web_search 响应）
+      let content = data.content?.map((c) => c.text || "").join("") || "";
+      
+      // 如果模型返回了 tool_use，尝试提取信息
+      if (data.content) {
+        const toolUses = data.content.filter(c => c.type === "tool_use");
+        if (toolUses.length > 0) {
+          console.log('[Anthropic Response] Tool uses:', toolUses);
+          
+          // 如果有工具调用但没有文本内容，生成提示信息
+          if (!content) {
+            content = toolUses.map(tu => {
+              if (tu.name?.includes('web_search')) {
+                return `[已执行网络搜索]`;
+              }
+              return `[工具调用：${tu.name}]`;
+            }).join("\n");
+          }
+        }
+      }
+      
+      // 如果仍然没有内容，抛出错误
+      if (!content || content.trim() === "") {
+        console.error('[Anthropic Response] Empty content:', data);
+        throw new Error('LLM 返回的内容为空，可能是 API 调用失败或模型未生成内容');
+      }
+
       // 统一响应格式
       return {
-        content: data.content?.map((c) => c.text || "").join("") || "",
+        content: content,
         usage: data.usage,
         model: data.model,
       };
@@ -391,8 +540,12 @@ export const SYSTEM_PROMPTS = {
  */
 export function extractJSON(text) {
   if (!text || typeof text !== 'string') {
+    console.error('[extractJSON] Invalid input:', text);
     throw new Error('Invalid input: text is required');
   }
+
+  // 调试日志
+  console.log('[extractJSON] Raw text:', text.substring(0, 500) + (text.length > 500 ? '...' : ''));
 
   // 移除 markdown 代码块标记
   let cleaned = text.replace(/```json\s*|```\s*/gi, "").trim();
@@ -402,6 +555,7 @@ export function extractJSON(text) {
   const endIdx = cleaned.lastIndexOf('}');
 
   if (startIdx === -1 || endIdx === -1 || startIdx >= endIdx) {
+    console.error('[extractJSON] No JSON object found in:', cleaned.substring(0, 500));
     throw new Error('No valid JSON object found in response');
   }
 
