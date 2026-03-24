@@ -820,7 +820,7 @@ export default function App() {
 
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: 22 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 900, color: "#1a1510", margin: "0 0 4px", letterSpacing: "-0.5px" }}>小红书排版生成器</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 900, color: "#1a1510", margin: "0 0 4px", letterSpacing: "-0.5px" }}>文字卡片生成器</h1>
             <p style={{ fontSize: 12, color: "#999", margin: 0 }}>9 种模板 · 8 套配色 · 分页拆分 · <span style={{ color: P.a, fontWeight: 700 }}>点击文字可直接编辑</span></p>
           </div>
 

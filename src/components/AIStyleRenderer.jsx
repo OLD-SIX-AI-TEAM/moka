@@ -1,6 +1,7 @@
 import { EditableText } from './common/EditableText';
+import { EditableEmoji } from './common/EditableEmoji';
 
-export function AIStyleRenderer({ design, editor }) {
+export function AIStyleRenderer({ design, editor, emojiEditor }) {
   const { styleConfig, content } = design || {};
   
   // 安全检查：如果 design 或 content 为空，显示加载状态
@@ -202,7 +203,12 @@ export function AIStyleRenderer({ design, editor }) {
         {/* Category & Emoji */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
           {content.emoji && (
-            <span style={{ fontSize: '24px' }}>{content.emoji}</span>
+            <EditableEmoji
+              emoji={content.emoji}
+              onEmojiChange={emojiEditor?.onEmojiChange}
+              style={emojiEditor?.style || { fontSize: '24px' }}
+              onStyleChange={emojiEditor?.onStyleChange}
+            />
           )}
           {content.category && (
             <span

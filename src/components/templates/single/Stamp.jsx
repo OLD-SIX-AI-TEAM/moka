@@ -51,7 +51,7 @@ export function Stamp({ d, ed, drag }) {
         <Wave c={d.a} />
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 12, zIndex: 1, position: "relative" }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             {s.heading && (
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
@@ -75,7 +75,7 @@ export function Stamp({ d, ed, drag }) {
         </div>
       )}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14, zIndex: 1, position: "relative" }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <EditableTag key={i} text={t} c={d.a} on={ed?.tag?.(i)} />
         ))}
       </div>

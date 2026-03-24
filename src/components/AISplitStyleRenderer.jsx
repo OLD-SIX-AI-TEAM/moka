@@ -1,6 +1,7 @@
 import { EditableText } from './common/EditableText';
+import { EditableEmoji } from './common/EditableEmoji';
 
-export function AISplitStyleRenderer({ slides, styleConfig, editors, slideIdx }) {
+export function AISplitStyleRenderer({ slides, styleConfig, editors, slideIdx, emojiEditor }) {
   if (!slides || slides.length === 0) return null;
 
   const currentSlide = slides[slideIdx];
@@ -107,8 +108,17 @@ export function AISplitStyleRenderer({ slides, styleConfig, editors, slideIdx })
         {renderDecorations()}
         <div style={{ textAlign: 'center', zIndex: 1 }}>
           {currentSlide.emoji && (
-            <div style={{ fontSize: coverStyle.emoji?.fontSize || '48px', marginBottom: coverStyle.emoji?.marginBottom || '16px' }}>
-              {currentSlide.emoji}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <EditableEmoji
+                emoji={currentSlide.emoji}
+                onEmojiChange={emojiEditor?.onEmojiChange}
+                style={emojiEditor?.style || { 
+                  fontSize: coverStyle.emoji?.fontSize || '48px', 
+                  marginBottom: coverStyle.emoji?.marginBottom || '16px' 
+                }}
+                onStyleChange={emojiEditor?.onStyleChange}
+                align="center"
+              />
             </div>
           )}
           <EditableText

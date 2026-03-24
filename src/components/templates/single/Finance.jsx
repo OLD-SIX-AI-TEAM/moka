@@ -34,7 +34,7 @@ export function Finance({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color="#ffd700">
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               <div style={{ minWidth: 32, height: 32, background: "#1a1a2e", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "#ffd700" }}>
@@ -59,7 +59,7 @@ export function Finance({ d, ed, drag }) {
 
       {/* 标签 */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 18, paddingTop: 16, borderTop: "1px solid #eee" }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ padding: "4px 12px", background: "#fff8e1", border: "1px solid #ffd700", borderRadius: 4, fontSize: 11, color: "#1a1a2e" }}>
             <EditableTag text={t} c="#1a1a2e" on={ed?.tag?.(i)} />
           </span>

@@ -32,7 +32,7 @@ export function LabelCard({ d, ed, drag }) {
           <Diamond c={d.a} />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {(d.sections || []).map((s, i) => (
+          {Array.isArray(d.sections) && d.sections.map((s, i) => (
             <DragRow key={i} i={i} drag={drag} color={d.a} style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
               <div style={{ width: 5, height: 5, borderRadius: "50%", background: d.a, marginTop: 7, flexShrink: 0 }} />
               <div>
@@ -51,7 +51,7 @@ export function LabelCard({ d, ed, drag }) {
           </div>
         )}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14, justifyContent: "center" }}>
-          {d.tags.map((t, i) => (
+          {Array.isArray(d.tags) && d.tags.map((t, i) => (
             <EditableTag key={i} text={t} c={d.a} on={ed?.tag?.(i)} />
           ))}
         </div>

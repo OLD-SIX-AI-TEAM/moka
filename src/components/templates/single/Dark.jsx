@@ -27,7 +27,7 @@ export function Dark({ d, ed, drag }) {
       )}
       <div style={{ height: 1, background: `linear-gradient(90deg,${d.a}cc,${d.a}22,transparent)`, marginBottom: 16 }} />
       <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a} style={{ display: "flex", gap: 11, alignItems: "flex-start" }}>
             <div style={{ width: 19, height: 19, border: `1.5px solid ${d.a}88`, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 900, color: d.a, flexShrink: 0, marginTop: 2 }}>
               {i + 1}
@@ -48,7 +48,7 @@ export function Dark({ d, ed, drag }) {
         </div>
       )}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14 }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <EditableTag key={i} text={t} c={`${d.a}cc`} on={ed?.tag?.(i)} />
         ))}
       </div>

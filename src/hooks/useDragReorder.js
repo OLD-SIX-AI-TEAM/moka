@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 /**
  * 拖拽排序 hook
@@ -10,6 +10,11 @@ export function useDragReorder(items, setItems) {
   const [active, setActive] = useState(null);
   const [target, setTarget] = useState(null);
   const canDrag = useRef(false);
+  const itemsRef = useRef(items);
+  
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
 
   const start = (index) => setActive(index);
 
@@ -21,12 +26,10 @@ export function useDragReorder(items, setItems) {
 
   const drop = () => {
     if (active !== null && target !== null && active !== target) {
-      setItems((prev) => {
-        const arr = [...prev];
-        const [item] = arr.splice(active, 1);
-        arr.splice(target > active ? target - 1 : target, 0, item);
-        return arr;
-      });
+      const arr = [...itemsRef.current];
+      const [item] = arr.splice(active, 1);
+      arr.splice(target > active ? target - 1 : target, 0, item);
+      setItems(arr);
     }
     setActive(null);
     setTarget(null);

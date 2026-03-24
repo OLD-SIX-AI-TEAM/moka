@@ -33,7 +33,7 @@ export function Business({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color="#2c5aa0">
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               <div style={{ minWidth: 26, height: 26, background: "#2c5aa0", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700 }}>
@@ -58,7 +58,7 @@ export function Business({ d, ed, drag }) {
 
       {/* 标签 */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 18, paddingTop: 16, borderTop: "1px solid #eee" }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ padding: "4px 12px", background: "#f5f7fa", fontSize: 11, color: "#2c5aa0" }}>
             <EditableTag text={t} c="#2c5aa0" on={ed?.tag?.(i)} />
           </span>

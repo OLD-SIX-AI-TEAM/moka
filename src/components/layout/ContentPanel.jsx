@@ -103,6 +103,10 @@ export function ContentPanel({
             <span className="llm-info-value">{llmConfig?.provider === 'openai' ? 'OpenAI' : 'Anthropic'}</span>
           </div>
           <div className="llm-info-item">
+            <span className="llm-info-label">基础URL</span>
+            <span className="llm-info-value llm-info-value-url" title={llmConfig?.baseUrl}>{llmConfig?.baseUrl || '未知'}</span>
+          </div>
+          <div className="llm-info-item">
             <span className="llm-info-label">模型</span>
             <span className="llm-info-value">{llmConfig?.model || '默认'}</span>
           </div>

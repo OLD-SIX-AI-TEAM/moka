@@ -26,7 +26,7 @@ export function Editorial({ d, ed, drag }) {
         />
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
             <div style={{ minWidth: 3, width: 3, borderRadius: 2, background: d.a, marginTop: 4, alignSelf: "stretch" }} />
             <div>
@@ -55,7 +55,7 @@ export function Editorial({ d, ed, drag }) {
         </div>
       )}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 15 }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <EditableTag key={i} text={t} c={d.a} on={ed?.tag?.(i)} />
         ))}
       </div>

@@ -26,7 +26,7 @@ export function Newspaper({ d, ed, drag }) {
         />
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             {s.heading && (
               <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
@@ -56,7 +56,7 @@ export function Newspaper({ d, ed, drag }) {
         </div>
       )}
       <div style={{ marginTop: 13, paddingTop: 11, borderTop: `2px double ${d.a}44`, display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <EditableTag key={i} text={t} c={d.a} on={ed?.tag?.(i)} />
         ))}
       </div>

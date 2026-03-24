@@ -5,7 +5,7 @@ export function TopBar({ mode, setMode, theme, toggleTheme, isLight }) {
       <div className="top-bar-left">
         <div className="brand">
           <span className="brand-icon">✨</span>
-          <h1 className="brand-text">排版图生成器</h1>
+          <h1 className="brand-text">文字卡片生成器</h1>
         </div>
       </div>
       

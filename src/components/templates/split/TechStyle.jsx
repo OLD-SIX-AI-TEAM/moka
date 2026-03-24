@@ -33,12 +33,12 @@ export function TechCover({ s, a, total, ed }) {
             <div style={{ fontSize: 10, color: "#666", marginBottom: 12 }}>[SYSTEM] Initializing module...</div>
             <div style={{ fontSize: 10, color: a, marginBottom: 8 }}>{`> LOADING_TITLE_MODULE`}</div>
             
-            <EditableText v={s.title} on={ed?.title} block dk style={{ fontSize: 32, fontWeight: 700, color: "#fff", lineHeight: 1.2, marginBottom: 20, textShadow: `0 0 20px ${a}50` }} />
+            <EditableText v={s.title} on={ed?.title} block dk style={{ fontSize: 32, fontWeight: 700, color: "#fff", lineHeight: 1.2, marginBottom: 20, textShadow: `0 0 20px ${a}50`, ...ed?.titleStyle }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
             
             {s.subtitle && (
               <>
                 <div style={{ fontSize: 10, color: "#666", marginBottom: 8 }}>{`> LOADING_SUBTITLE_MODULE`}</div>
-                <EditableText v={s.subtitle} on={ed?.subtitle} block dk style={{ fontSize: 14, color: "#00ff88", lineHeight: 1.6, borderLeft: `2px solid ${a}`, paddingLeft: 12 }} />
+                <EditableText v={s.subtitle} on={ed?.subtitle} block dk style={{ fontSize: 14, color: "#00ff88", lineHeight: 1.6, borderLeft: `2px solid ${a}`, paddingLeft: 12, ...ed?.subtitleStyle }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />
               </>
             )}
           </div>
@@ -101,14 +101,14 @@ export function TechContent({ s, a, idx, total, ed }) {
           {/* 标题区 */}
           <div style={{ marginBottom: 20, paddingBottom: 16, borderBottom: `1px dashed ${a}30` }}>
             <div style={{ fontSize: 9, color: "#666", marginBottom: 8 }}>{`> cat section_${idx}.md`}</div>
-            <EditableText v={s.heading} on={ed?.heading} block dk style={{ fontSize: 20, fontWeight: 600, color: "#fff", lineHeight: 1.3 }} />
+            <EditableText v={s.heading} on={ed?.heading} block dk style={{ fontSize: 20, fontWeight: 600, color: "#fff", lineHeight: 1.3, ...ed?.headingStyle }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
           </div>
           
           {/* 内容区 */}
           <div style={{ flex: 1, position: "relative" }}>
             <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg, ${a}, transparent)` }} />
             <div style={{ paddingLeft: 16 }}>
-              <EditableText v={s.text} on={ed?.text} block dk style={{ fontSize: 13, color: "#ccc", lineHeight: 1.9 }} />
+              <EditableText v={s.text} on={ed?.text} block dk style={{ fontSize: 13, color: "#ccc", lineHeight: 1.9, ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
             </div>
           </div>
           
@@ -119,7 +119,7 @@ export function TechContent({ s, a, idx, total, ed }) {
                 <span style={{ fontSize: 12 }}>⚠️</span>
                 <span style={{ fontSize: 9, color: "#ff0080", fontWeight: 600 }}>ALERT://DATA_INJECT</span>
               </div>
-              <EditableText v={s.extra} on={ed?.extra} dk style={{ fontSize: 12, color: "#ff6699", lineHeight: 1.6 }} />
+              <EditableText v={s.extra} on={ed?.extra} dk style={{ fontSize: 12, color: "#ff6699", lineHeight: 1.6, ...ed?.extraStyle }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
             </div>
           )}
         </div>
@@ -158,9 +158,9 @@ export function TechEnd({ s, a, ed }) {
         
         <div style={{ fontSize: 10, color: "#00ff88", marginBottom: 16, letterSpacing: 2 }}>{`> EXECUTE_COMPLETE`}</div>
         
-        <EditableText v={s.cta} on={ed?.cta} block dk style={{ fontSize: 28, fontWeight: 700, color: "#fff", marginBottom: 16, textShadow: `0 0 20px ${a}50` }} />
+        <EditableText v={s.cta} on={ed?.cta} block dk style={{ fontSize: 28, fontWeight: 700, color: "#fff", marginBottom: 16, textShadow: `0 0 20px ${a}50`, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
         
-        <EditableText v={s.sub} on={ed?.sub} block dk style={{ fontSize: 14, color: "#888", marginBottom: 32 }} />
+        <EditableText v={s.sub} on={ed?.sub} block dk style={{ fontSize: 14, color: "#888", marginBottom: 32, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         
         {/* 标签 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 32 }}>
