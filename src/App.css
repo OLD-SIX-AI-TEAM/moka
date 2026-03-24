@@ -289,15 +289,15 @@ body {
 }
 
 .theme-panel .panel-section.style-section {
-  flex: 2;
+  flex: 1;
   min-height: 0;
-  max-height: 60%;
+  max-height: 50%;
 }
 
 .theme-panel .panel-section.palette-section {
   flex: 1;
   min-height: 0;
-  max-height: 40%;
+  max-height: 50%;
   border-bottom: none;
   padding-top: var(--space-xl);
 }
