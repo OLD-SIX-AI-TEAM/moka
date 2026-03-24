@@ -1,7 +1,7 @@
 {
   "name": "xhs-layout-generator",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "小红书排版生成器 - AI驱动的爆款文案排版工具",
   "scripts": {
