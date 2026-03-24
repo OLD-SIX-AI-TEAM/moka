@@ -26,7 +26,7 @@ export function Editorial({ d, ed, drag }) {
         />
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
             <div style={{ minWidth: 3, width: 3, borderRadius: 2, background: d.a, marginTop: 4, alignSelf: "stretch" }} />
             <div>

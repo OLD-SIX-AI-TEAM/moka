@@ -47,7 +47,7 @@ export function Japanese({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ background: "#fff", padding: "14px 16px", borderRadius: 2, display: "flex", gap: 12, alignItems: "flex-start" }}>
               <div style={{ fontSize: 18, color: d.a, fontWeight: 300, minWidth: 24 }}>

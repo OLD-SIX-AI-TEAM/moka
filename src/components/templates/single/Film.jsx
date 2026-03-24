@@ -35,7 +35,7 @@ export function Film({ d, ed, drag }) {
           )}
           <div style={{ height: 1, background: `linear-gradient(90deg,${d.a},transparent)`, marginBottom: 14 }} />
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {d.sections.map((s, i) => (
+            {(d.sections || []).map((s, i) => (
               <DragRow key={i} i={i} drag={drag} color={d.a} style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
                 <span style={{ fontSize: 15, flexShrink: 0, lineHeight: 1 }}>{icons[i % 4]}</span>
                 <div>

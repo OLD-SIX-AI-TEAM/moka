@@ -33,7 +33,7 @@ export function Business({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color="#2c5aa0">
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               <div style={{ minWidth: 26, height: 26, background: "#2c5aa0", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700 }}>

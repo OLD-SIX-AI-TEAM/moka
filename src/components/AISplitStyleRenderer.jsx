@@ -91,10 +91,12 @@ export function AISplitStyleRenderer({ slides, styleConfig, editors, slideIdx })
     borderRadius: '16px',
     position: 'relative',
     overflow: 'hidden',
-    minHeight: '500px',
+    width: '420px',
+    height: '560px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
+    boxSizing: 'border-box',
   };
 
   // 封面页

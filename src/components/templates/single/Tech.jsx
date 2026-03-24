@@ -47,7 +47,7 @@ export function Tech({ d, ed, drag }) {
 
         {/* 内容 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {d.sections.map((s, i) => (
+          {(d.sections || []).map((s, i) => (
             <DragRow key={i} i={i} drag={drag} color="#00ffff">
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <div style={{ minWidth: 28, height: 28, border: "1px solid rgba(0,255,255,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#00ffff", fontFamily: "monospace" }}>

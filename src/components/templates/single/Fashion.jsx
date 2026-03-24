@@ -38,7 +38,7 @@ export function Fashion({ d, ed, drag }) {
 
         {/* 内容 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {d.sections.map((s, i) => (
+          {(d.sections || []).map((s, i) => (
             <DragRow key={i} i={i} drag={drag} color={d.a}>
               <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
                 <div style={{ fontSize: 24, color: d.a, fontWeight: 300, fontFamily: "Georgia, serif" }}>

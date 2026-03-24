@@ -12,54 +12,36 @@ export async function snapElementToImage(el, scale = 2, format = "png") {
     throw new Error("Element is required");
   }
 
-  // 获取元素实际尺寸
-  const rect = el.getBoundingClientRect();
-  const width = rect.width;
-  const height = rect.height;
-
-  // 计算像素比例
-  const pixelRatio = scale;
-
-  // 配置选项
-  const options = {
-    pixelRatio,
-    quality: 1,
-    backgroundColor: "#ffffff",
-    width,
-    height,
-    style: {
-      transform: "none",
-      transformOrigin: "none",
-    },
-    // 过滤函数，排除不需要的元素
-    filter: (node) => {
-      // 排除拖拽时的占位元素
-      if (node.classList && node.classList.contains("dragging")) {
-        return false;
-      }
-      return true;
-    },
-    // 字体加载超时
-    fontEmbedCSS: undefined,
-    // 缓存 bust
-    cacheBust: true,
-    // 跳过自动调整
-    skipAutoScale: false,
+  // 保存原始样式
+  const prevStyles = {
+    transform: el.style.transform,
+    transformOrigin: el.style.transformOrigin,
+    backgroundColor: el.style.backgroundColor,
+    height: el.style.height,
+    maxHeight: el.style.maxHeight,
+    overflow: el.style.overflow,
+    width: el.style.width,
+    aspectRatio: el.style.aspectRatio,
+    borderRadius: el.style.borderRadius,
   };
 
-  // 在导出前临时设置样式确保正确渲染
-  const prevTransform = el.style.transform;
-  const prevTransformOrigin = el.style.transformOrigin;
-  const prevBackgroundColor = el.style.backgroundColor;
+  // 临时移除高度限制，让内容完全展开
+  el.style.height = "auto";
+  el.style.maxHeight = "none";
+  el.style.overflow = "visible";
+  el.style.transform = "none";
+  el.style.transformOrigin = "none";
+
+  // 获取计算样式
+  const computedStyle = window.getComputedStyle(el);
 
   // 确保背景色
-  const computedStyle = window.getComputedStyle(el);
   if (!computedStyle.backgroundColor || computedStyle.backgroundColor === "rgba(0, 0, 0, 0)") {
     el.style.backgroundColor = "#ffffff";
   }
 
-  el.style.transform = "none";
-  el.style.transformOrigin = "none";
+  // 获取计算后的圆角样式
+  const borderRadius = computedStyle.borderRadius || prevStyles.borderRadius || "0px";
 
   try {
     // 强制重绘
@@ -70,6 +52,35 @@ export async function snapElementToImage(el, scale = 2, format = "png") {
       await document.fonts.ready;
     }
 
+    // 获取展开后的实际尺寸
+    const width = el.offsetWidth;
+    const height = el.scrollHeight;
+
+    // 配置选项
+    const options = {
+      pixelRatio: scale,
+      quality: 1,
+      backgroundColor: "#ffffff",
+      width,
+      height,
+      style: {
+        transform: "none",
+        transformOrigin: "none",
+        borderRadius: borderRadius,
+        overflow: "hidden",
+      },
+      filter: (node) => {
+        // 排除拖拽时的占位元素
+        if (node.classList && node.classList.contains("dragging")) {
+          return false;
+        }
+        return true;
+      },
+      fontEmbedCSS: undefined,
+      cacheBust: true,
+      skipAutoScale: false,
+    };
+
     // 导出图片
     const dataUrl = format === "jpeg" 
       ? await toJpeg(el, options)
@@ -77,10 +88,16 @@ export async function snapElementToImage(el, scale = 2, format = "png") {
 
     return dataUrl;
   } finally {
-    // 恢复样式
-    el.style.transform = prevTransform;
-    el.style.transformOrigin = prevTransformOrigin;
-    el.style.backgroundColor = prevBackgroundColor;
+    // 恢复原始样式
+    el.style.transform = prevStyles.transform;
+    el.style.transformOrigin = prevStyles.transformOrigin;
+    el.style.backgroundColor = prevStyles.backgroundColor;
+    el.style.height = prevStyles.height;
+    el.style.maxHeight = prevStyles.maxHeight;
+    el.style.overflow = prevStyles.overflow;
+    el.style.width = prevStyles.width;
+    el.style.aspectRatio = prevStyles.aspectRatio;
+    el.style.borderRadius = prevStyles.borderRadius;
   }
 }
 

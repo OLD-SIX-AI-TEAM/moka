@@ -184,7 +184,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
                 marginBottom: "6px",
               }}
             >
-              API Key <span style={{ color: "#e05a4b" }}>*</span>
+              API Key <span style={{ color: "var(--theme-primary)" }}>*</span>
             </label>
             <input
               type="password"

@@ -31,7 +31,7 @@ export function Ins({ d, ed, drag }) {
 
       {/* 内容 - 大量留白 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ paddingBottom: 28, borderBottom: i < d.sections.length - 1 ? "1px solid #f0f0f0" : "none" }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 16, marginBottom: 12 }}>

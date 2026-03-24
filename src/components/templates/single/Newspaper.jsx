@@ -26,7 +26,7 @@ export function Newspaper({ d, ed, drag }) {
         />
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             {s.heading && (
               <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>

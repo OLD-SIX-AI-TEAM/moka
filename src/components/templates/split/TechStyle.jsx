@@ -44,7 +44,7 @@ export function TechContent({ s, a, idx, total, ed }) {
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <EditableText v={s.heading} on={ed?.heading} block dk style={{ fontSize: 20, fontWeight: 600, color: "#fff", lineHeight: 1.3, marginBottom: 16, fontFamily: "monospace" }} />
           <div style={{ flex: 1, borderLeft: `2px solid ${a}40`, paddingLeft: 16 }}>
-            <EditableText v={s.text} on={ed?.text} block dk style={{ fontSize: 13, color: "#888", lineHeight: 1.9, fontFamily: "monospace" }} />
+            <EditableText v={s.text} on={ed?.text} block dk style={{ fontSize: 13, color: "#ccc", lineHeight: 1.9, fontFamily: "monospace" }} />
           </div>
           {s.extra && (
             <div style={{ marginTop: 20, padding: "14px 16px", border: `1px solid #ff008030`, background: "#ff008008" }}>

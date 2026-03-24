@@ -28,7 +28,7 @@ export function Minimal({ d, ed, drag }) {
         />
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
             <div style={{ width: 22, height: 22, borderRadius: "50%", background: d.a, color: "#fff", fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
               {i + 1}

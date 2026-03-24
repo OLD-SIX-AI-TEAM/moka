@@ -37,7 +37,7 @@ export function Mom({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ background: "#fff", padding: "14px 16px", borderRadius: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}>
               <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>

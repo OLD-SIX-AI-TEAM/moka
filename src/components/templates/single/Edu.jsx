@@ -34,7 +34,7 @@ export function Edu({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ background: "#fff", padding: "16px 18px", borderRadius: 8, boxShadow: "0 1px 4px rgba(0,0,0,0.03)" }}>
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>

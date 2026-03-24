@@ -28,7 +28,7 @@ export function Notecard({ d, ed, drag }) {
         <Diamond c={d.a} />
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
             <Star c={d.a} />
             <div>
