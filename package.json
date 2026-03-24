@@ -1,7 +1,7 @@
 {
   "name": "xhs-layout-generator",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "description": "文字卡片生成器 - AI驱动的爆款文案排版工具",
   "scripts": {
