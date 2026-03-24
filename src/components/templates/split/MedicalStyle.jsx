@@ -32,32 +32,31 @@ export function MedicalCover({ s, a, total, ed }) {
 export function MedicalContent({ s, a, idx, total, ed }) {
   return (
     <div style={{ background: "#f0f4f8", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", height: "100%" }}>
-        <div style={{ width: "30%", background: "#e74c3c", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
-          <div style={{ width: 50, height: 50, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 20, fontWeight: 700 }}>{idx}</div>
-          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.7)", letterSpacing: "2px", marginTop: 12 }}>CHAPTER</div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "32px 28px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+          <div style={{ width: 56, height: 56, background: "#e74c3c", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(231,76,60,0.3)" }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#fff" }}>{idx}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 9, color: "#e74c3c", letterSpacing: "2px", fontWeight: 600 }}>CHAPTER</div>
+            <div style={{ fontSize: 10, color: "#888" }}>STEP {idx}</div>
+          </div>
         </div>
-        <div style={{ flex: 1, padding: "28px 24px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-            <div style={{ flex: 1, height: 2, background: "linear-gradient(90deg, #e74c3c, transparent)" }} />
-            <div style={{ fontSize: 10, color: "#e74c3c", letterSpacing: "1px" }}>STEP {idx}</div>
-          </div>
-          <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 18, fontWeight: 700, color: "#2c3e50", lineHeight: 1.35, marginBottom: 16 }} />
-          <div style={{ flex: 1 }}>
-            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.85 }} />
-          </div>
-          {s.extra && (
-            <div style={{ marginTop: 16, padding: "14px 18px", background: "#fff", borderRadius: 8, borderLeft: "4px solid #e74c3c", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <span style={{ fontSize: 14 }}>💊</span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#e74c3c", letterSpacing: "1px" }}>MEDICAL NOTE</span>
-              </div>
-              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 12, color: "#555", lineHeight: 1.7 }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 20, fontWeight: 700, color: "#2c3e50", lineHeight: 1.35, marginBottom: 16 }} />
+        <div style={{ flex: 1 }}>
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#4a5568", lineHeight: 1.85 }} />
+        </div>
+        {s.extra && (
+          <div style={{ marginTop: 20, padding: "16px 20px", background: "#fff", borderRadius: 8, borderLeft: "4px solid #e74c3c", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 16 }}>💊</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#e74c3c", letterSpacing: "1px" }}>MEDICAL NOTE</span>
             </div>
-          )}
-          <div style={{ display: "flex", gap: 6, marginTop: 20, alignItems: "center" }}>
-            {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 24 : 6, height: 4, borderRadius: 2, background: i === idx ? "#e74c3c" : "#ccc" }} />)}
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#555", lineHeight: 1.7 }} />
           </div>
+        )}
+        <div style={{ display: "flex", gap: 6, marginTop: 24, alignItems: "center" }}>
+          {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 24 : 6, height: 4, borderRadius: 2, background: i === idx ? "#e74c3c" : "#ccc" }} />)}
         </div>
       </div>
     </div>

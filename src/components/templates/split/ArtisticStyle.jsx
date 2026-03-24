@@ -28,28 +28,26 @@ export function ArtisticCover({ s, a, total, ed }) {
 export function ArtisticContent({ s, a, idx, total, ed }) {
   return (
     <div style={{ background: "#f7f5f2", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", height: "100%" }}>
-        <div style={{ width: "30%", background: a, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
-          <div style={{ fontSize: 64, fontWeight: 200, color: "rgba(255,255,255,0.8)", fontFamily: "Georgia, serif" }}>{String.fromCharCode(8544 + idx - 1)}</div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "36px 32px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 28 }}>
+          <div style={{ width: 56, height: 56, border: `2px solid ${a}`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 300, color: a, fontFamily: "Georgia, serif" }}>{String.fromCharCode(8544 + idx - 1)}</div>
+          </div>
+          <div style={{ flex: 1, height: 1, background: `${a}30` }} />
+          <div style={{ width: 36, height: 36, borderRadius: "50%", background: `${a}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, color: a }}>{idx}</div>
         </div>
-        <div style={{ flex: 1, padding: "32px 28px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-            <div style={{ width: 40, height: 40, border: `2px solid ${a}`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600, color: a }}>{idx}</div>
-            <div style={{ flex: 1, height: 1, background: `${a}30` }} />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 22, fontWeight: 400, color: "#1a1a1a", lineHeight: 1.4, letterSpacing: "1px", marginBottom: 16, textAlign: "center" }} />
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#555", lineHeight: 2, textAlign: "center" }} />
+        </div>
+        {s.extra && (
+          <div style={{ marginTop: 28, padding: "20px 24px", background: "#fff", textAlign: "center", borderRadius: 8 }}>
+            <div style={{ width: 30, height: 1, background: `${a}40`, margin: "0 auto 12px" }} />
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#666", lineHeight: 1.8, fontStyle: "italic" }} />
           </div>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 20, fontWeight: 400, color: "#1a1a1a", lineHeight: 1.4, letterSpacing: "1px", marginBottom: 16, textAlign: "center" }} />
-            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#555", lineHeight: 2, textAlign: "center" }} />
-          </div>
-          {s.extra && (
-            <div style={{ marginTop: 24, padding: "20px 24px", background: "#fff", textAlign: "center" }}>
-              <div style={{ width: 30, height: 1, background: `${a}40`, margin: "0 auto 12px" }} />
-              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#666", lineHeight: 1.8, fontStyle: "italic" }} />
-            </div>
-          )}
-          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 24 }}>
-            {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 24 : 6, height: 2, background: i === idx ? a : "#ddd" }} />)}
-          </div>
+        )}
+        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 28 }}>
+          {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 24 : 6, height: 2, background: i === idx ? a : "#ddd" }} />)}
         </div>
       </div>
     </div>

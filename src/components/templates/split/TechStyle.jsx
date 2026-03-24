@@ -3,63 +3,142 @@ import { FONT_FAMILY } from "../../../constants";
 
 export function TechCover({ s, a, total, ed }) {
   return (
-    <div style={{ background: "#000", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 70% 30%, ${a}15 0%, transparent 50%), linear-gradient(180deg, #0a0a0a 0%, #000 100%)` }} />
-      <div style={{ position: "absolute", right: 0, top: 0, width: "2px", height: "100%", background: `linear-gradient(180deg, transparent, ${a}, transparent)` }} />
-      <div style={{ position: "absolute", right: 30, top: "15%", width: "1px", height: "40%", background: `${a}30` }} />
-      <div style={{ position: "absolute", right: 60, top: "25%", width: "1px", height: "20%", background: `${a}20` }} />
-      <div style={{ position: "absolute", right: 90, top: "35%", width: "1px", height: "10%", background: `${a}10` }} />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "40px 40px 40px 48px", position: "relative", zIndex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
-          <div style={{ width: 8, height: 8, background: "#00ff00", boxShadow: "0 0 8px #00ff00", animation: "pulse 1.5s infinite" }} />
-          <div style={{ fontSize: 10, color: "#666", fontFamily: "monospace" }}>SYSTEM://{s.category?.toUpperCase?.() || ""}_INIT</div>
+    <div style={{ background: "#0a0a0f", width: "100%", aspectRatio: "3/4", fontFamily: "'JetBrains Mono', 'Fira Code', monospace", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      {/* 背景网格 */}
+      <div style={{ position: "absolute", inset: 0, background: `
+        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px)
+      `, backgroundSize: "20px 20px" }} />
+      
+      {/* 扫描线效果 */}
+      <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.3) 2px, rgba(0,0,0,0.3) 4px)", pointerEvents: "none" }} />
+      
+      {/* 终端窗口 */}
+      <div style={{ position: "absolute", top: "8%", left: "5%", right: "5%", bottom: "8%", border: `1px solid ${a}40`, background: "rgba(10,10,15,0.8)", borderRadius: 8, overflow: "hidden" }}>
+        {/* 窗口标题栏 */}
+        <div style={{ height: 32, background: "#1a1a2e", borderBottom: `1px solid ${a}30`, display: "flex", alignItems: "center", padding: "0 12px", gap: 8 }}>
+          <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#ff5f56" }} />
+          <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#ffbd2e" }} />
+          <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#27ca40" }} />
+          <div style={{ flex: 1, textAlign: "center", fontSize: 11, color: "#666" }}>root@system:~/{s.category}</div>
         </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div style={{ fontSize: 11, color: a, fontFamily: "monospace", marginBottom: 16, letterSpacing: "2px" }}>{`> LOADING_TITLE`}</div>
-          <EditableText v={s.title} on={ed?.title} block dk style={{ fontSize: 38, fontWeight: 700, color: "#fff", lineHeight: 1.1, marginBottom: 20, fontFamily: "monospace" }} />
-          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block dk style={{ fontSize: 14, color: "#00ff00", lineHeight: 1.6, fontFamily: "monospace" }} />}
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <div style={{ fontSize: 10, color: "#444", fontFamily: "monospace" }}>[</div>
-          {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === 0 ? 24 : 6, height: 8, background: i === 0 ? a : "#222" }} />)}
-          <div style={{ fontSize: 10, color: "#444", fontFamily: "monospace" }}>]</div>
+        
+        {/* 终端内容 */}
+        <div style={{ padding: "24px", height: "calc(100% - 32px)", display: "flex", flexDirection: "column" }}>
+          <div style={{ fontSize: 10, color: "#00ff88", marginBottom: 16 }}>
+            <span style={{ color: "#666" }}>$</span> ./init_system.sh --category={s.category} --mode=production
+          </div>
+          
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div style={{ fontSize: 10, color: "#666", marginBottom: 12 }}>[SYSTEM] Initializing module...</div>
+            <div style={{ fontSize: 10, color: a, marginBottom: 8 }}>{`> LOADING_TITLE_MODULE`}</div>
+            
+            <EditableText v={s.title} on={ed?.title} block dk style={{ fontSize: 32, fontWeight: 700, color: "#fff", lineHeight: 1.2, marginBottom: 20, textShadow: `0 0 20px ${a}50` }} />
+            
+            {s.subtitle && (
+              <>
+                <div style={{ fontSize: 10, color: "#666", marginBottom: 8 }}>{`> LOADING_SUBTITLE_MODULE`}</div>
+                <EditableText v={s.subtitle} on={ed?.subtitle} block dk style={{ fontSize: 14, color: "#00ff88", lineHeight: 1.6, borderLeft: `2px solid ${a}`, paddingLeft: 12 }} />
+              </>
+            )}
+          </div>
+          
+          {/* 进度条 */}
+          <div style={{ marginTop: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 10, color: "#666" }}>PROGRESS:</span>
+              <div style={{ flex: 1, height: 4, background: "#1a1a2e", borderRadius: 2, overflow: "hidden" }}>
+                <div style={{ width: "100%", height: "100%", background: `linear-gradient(90deg, ${a}, #00ff88)`, animation: "pulse 2s infinite" }} />
+              </div>
+              <span style={{ fontSize: 10, color: a }}>100%</span>
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {Array.from({ length: total }).map((_, i) => (
+                <div key={i} style={{ 
+                  width: i === 0 ? 32 : 8, 
+                  height: 6, 
+                  background: i === 0 ? a : "#333",
+                  borderRadius: 1,
+                  boxShadow: i === 0 ? `0 0 8px ${a}` : "none"
+                }} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+      
+      {/* 角落装饰 */}
+      <div style={{ position: "absolute", top: 16, right: 16, fontSize: 10, color: "#333" }}>◈ SYS.001</div>
+      <div style={{ position: "absolute", bottom: 16, left: 16, fontSize: 10, color: "#333" }}>v2.0.4</div>
     </div>
   );
 }
 
 export function TechContent({ s, a, idx, total, ed }) {
   return (
-    <div style={{ background: "#0a0a0a", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${a}08 0%, transparent 50%)` }} />
-      <div style={{ display: "flex", flexDirection: "column", padding: "32px 28px", height: "100%", boxSizing: "border-box", position: "relative", zIndex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, padding: "12px 16px", border: `1px solid ${a}40`, background: `${a}08` }}>
-          <div style={{ width: 10, height: 10, border: `1px solid ${a}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ width: 4, height: 4, background: a }} />
+    <div style={{ background: "#0d0d12", width: "100%", aspectRatio: "3/4", fontFamily: "'JetBrains Mono', 'Fira Code', monospace", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      {/* 背景代码雨效果 */}
+      <div style={{ position: "absolute", inset: 0, opacity: 0.03, fontSize: 10, color: "#00ff88", overflow: "hidden", whiteSpace: "pre", lineHeight: 1.2 }}>
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div key={i}>{Array.from({ length: 30 }).map(() => String.fromCharCode(0x30A0 + Math.random() * 96)).join('')}</div>
+        ))}
+      </div>
+      
+      {/* 主内容区 */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "28px 24px", position: "relative", zIndex: 1 }}>
+        {/* 顶部状态栏 */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, padding: "10px 14px", background: "rgba(26,26,46,0.8)", border: `1px solid ${a}30`, borderRadius: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#00ff88", boxShadow: "0 0 8px #00ff88", animation: "pulse 1.5s infinite" }} />
+            <span style={{ fontSize: 10, color: "#666" }}>NODE_{String(idx).padStart(2, "0")}</span>
           </div>
-          <div style={{ flex: 1, height: 1, borderBottom: `1px dashed ${a}30` }} />
-          <div style={{ fontSize: 10, color: a, fontFamily: "monospace" }}>{String(idx).padStart(3, "0")}</div>
+          <div style={{ fontSize: 10, color: a }}>STATUS: ACTIVE</div>
+          <div style={{ fontSize: 10, color: "#666" }}>MEM: {(Math.random() * 30 + 40).toFixed(1)}%</div>
         </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <EditableText v={s.heading} on={ed?.heading} block dk style={{ fontSize: 20, fontWeight: 600, color: "#fff", lineHeight: 1.3, marginBottom: 16, fontFamily: "monospace" }} />
-          <div style={{ flex: 1, borderLeft: `2px solid ${a}40`, paddingLeft: 16 }}>
-            <EditableText v={s.text} on={ed?.text} block dk style={{ fontSize: 13, color: "#ccc", lineHeight: 1.9, fontFamily: "monospace" }} />
+        
+        {/* 内容卡片 */}
+        <div style={{ flex: 1, background: "rgba(26,26,46,0.6)", border: `1px solid ${a}25`, borderRadius: 8, padding: "20px", display: "flex", flexDirection: "column" }}>
+          {/* 标题区 */}
+          <div style={{ marginBottom: 20, paddingBottom: 16, borderBottom: `1px dashed ${a}30` }}>
+            <div style={{ fontSize: 9, color: "#666", marginBottom: 8 }}>{`> cat section_${idx}.md`}</div>
+            <EditableText v={s.heading} on={ed?.heading} block dk style={{ fontSize: 20, fontWeight: 600, color: "#fff", lineHeight: 1.3 }} />
           </div>
+          
+          {/* 内容区 */}
+          <div style={{ flex: 1, position: "relative" }}>
+            <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg, ${a}, transparent)` }} />
+            <div style={{ paddingLeft: 16 }}>
+              <EditableText v={s.text} on={ed?.text} block dk style={{ fontSize: 13, color: "#ccc", lineHeight: 1.9 }} />
+            </div>
+          </div>
+          
+          {/* 额外信息 */}
           {s.extra && (
-            <div style={{ marginTop: 20, padding: "14px 16px", border: `1px solid #ff008030`, background: "#ff008008" }}>
+            <div style={{ marginTop: 20, padding: "14px 16px", background: "rgba(255,0,128,0.08)", border: "1px solid rgba(255,0,128,0.3)", borderRadius: 6 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 6, height: 6, background: "#ff0080", boxShadow: "0 0 6px #ff0080" }} />
-                <div style={{ fontSize: 10, color: "#ff0080", fontFamily: "monospace" }}>ALERT://DATA_INJECT</div>
+                <span style={{ fontSize: 12 }}>⚠️</span>
+                <span style={{ fontSize: 9, color: "#ff0080", fontWeight: 600 }}>ALERT://DATA_INJECT</span>
               </div>
-              <EditableText v={s.extra} on={ed?.extra} dk style={{ fontSize: 12, color: "#ff6699", fontFamily: "monospace" }} />
+              <EditableText v={s.extra} on={ed?.extra} dk style={{ fontSize: 12, color: "#ff6699", lineHeight: 1.6 }} />
             </div>
           )}
         </div>
-        <div style={{ display: "flex", gap: 8, marginTop: 24, alignItems: "center" }}>
-          <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace" }}>PROG:</div>
-          {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 24 : 6, height: 8, background: i === idx ? a : "#222" }} />)}
-          <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace" }}>{String(Math.round((idx / total) * 100)).padStart(3, "0")}%</div>
+        
+        {/* 底部导航 */}
+        <div style={{ marginTop: 20, padding: "12px 16px", background: "rgba(26,26,46,0.8)", borderRadius: 6, display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 10, color: "#666" }}>NAV:</span>
+          <div style={{ flex: 1, display: "flex", gap: 6 }}>
+            {Array.from({ length: total }).map((_, i) => (
+              <div key={i} style={{ 
+                flex: i === idx ? 2 : 1, 
+                height: 6, 
+                background: i === idx ? `linear-gradient(90deg, ${a}, #00ff88)` : "#333",
+                borderRadius: 1,
+                boxShadow: i === idx ? `0 0 10px ${a}` : "none"
+              }} />
+            ))}
+          </div>
+          <span style={{ fontSize: 10, color: a }}>{String(Math.round((idx / total) * 100)).padStart(3, "0")}%</span>
         </div>
       </div>
     </div>
@@ -68,19 +147,39 @@ export function TechContent({ s, a, idx, total, ed }) {
 
 export function TechEnd({ s, a, ed }) {
   return (
-    <div style={{ background: "#000", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 32px", boxSizing: "border-box" }}>
-      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 50%, ${a}10 0%, transparent 60%)` }} />
-      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "200px", height: "200px", border: `1px solid ${a}20`, borderRadius: "50%" }} />
-      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "280px", height: "280px", border: `1px solid ${a}10`, borderRadius: "50%" }} />
+    <div style={{ background: "#0a0a0f", width: "100%", aspectRatio: "3/4", fontFamily: "'JetBrains Mono', 'Fira Code', monospace", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 32px", boxSizing: "border-box" }}>
+      {/* 背景光环 */}
+      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 300, height: 300, border: `1px solid ${a}20`, borderRadius: "50%" }} />
+      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 400, height: 400, border: `1px solid ${a}10`, borderRadius: "50%" }} />
+      
       <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-        <div style={{ fontSize: 11, color: "#00ff00", fontFamily: "monospace", marginBottom: 20 }}>{`> EXECUTE_TERMINATE_PROTOCOL`}</div>
-        <div style={{ fontSize: 48, marginBottom: 20, filter: `drop-shadow(0 0 10px ${a})` }}>⬡</div>
-        <EditableText v={s.cta} on={ed?.cta} block dk style={{ fontSize: 26, fontWeight: 700, color: "#fff", marginBottom: 12, fontFamily: "monospace" }} />
-        <EditableText v={s.sub} on={ed?.sub} block dk style={{ fontSize: 13, color: "#00ff00", marginBottom: 28, fontFamily: "monospace" }} />
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>
-          {s.tags.map((t, i) => <span key={i} style={{ padding: "6px 12px", border: `1px solid ${a}60`, fontSize: 11, color: a, fontFamily: "monospace" }}><EditableTag text={`#${t}`} c={a} on={ed?.tag?.(i)} /></span>)}
+        {/* 成功图标 */}
+        <div style={{ fontSize: 64, marginBottom: 24, filter: `drop-shadow(0 0 30px ${a})` }}>⬡</div>
+        
+        <div style={{ fontSize: 10, color: "#00ff88", marginBottom: 16, letterSpacing: 2 }}>{`> EXECUTE_COMPLETE`}</div>
+        
+        <EditableText v={s.cta} on={ed?.cta} block dk style={{ fontSize: 28, fontWeight: 700, color: "#fff", marginBottom: 16, textShadow: `0 0 20px ${a}50` }} />
+        
+        <EditableText v={s.sub} on={ed?.sub} block dk style={{ fontSize: 14, color: "#888", marginBottom: 32 }} />
+        
+        {/* 标签 */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 32 }}>
+          {s.tags.map((t, i) => (
+            <span key={i} style={{ 
+              padding: "6px 14px", 
+              border: `1px solid ${a}50`, 
+              background: "rgba(10,10,15,0.8)",
+              fontSize: 11, 
+              color: a,
+              borderRadius: 4,
+              fontFamily: "monospace"
+            }}>
+              <EditableTag text={`#${t}`} c={a} on={ed?.tag?.(i)} />
+            </span>
+          ))}
         </div>
-        <div style={{ fontSize: 10, color: "#333", fontFamily: "monospace" }}>// SYSTEM_HALTED</div>
+        
+        <div style={{ fontSize: 10, color: "#333" }}>// SYSTEM_SHUTDOWN_COMPLETE</div>
       </div>
     </div>
   );
