@@ -624,20 +624,20 @@ function App() {
 
   return (
     <div className="app" style={{ minHeight: "100vh", background: "#edeae6", padding: "28px 16px", fontFamily: FONT_FAMILY }}>
-      <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 22 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: "#1a1510", margin: "0 0 4px", letterSpacing: "-0.5px" }}>
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: "#1a1510", margin: "0 0 6px", letterSpacing: "-0.5px" }}>
             小红书排版生成器
           </h1>
-          <p style={{ fontSize: 12, color: "#999", margin: 0 }}>
-            9 种模板 · 8 套配色 · 分页拆分 · <span style={{ color: palette.a, fontWeight: 700 }}>点击文字可直接编辑</span>
+          <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
+            智能排版 · 一键生成 · <span style={{ color: palette.a, fontWeight: 600 }}>点击文字可直接编辑</span>
           </p>
         </div>
 
         {/* Mode toggle */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
-          <div style={{ display: "flex", background: "#fff", borderRadius: 12, padding: 4, gap: 4, boxShadow: "0 2px 10px rgba(0,0,0,.07)" }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+          <div style={{ display: "flex", background: "#fff", borderRadius: 12, padding: 5, gap: 5, boxShadow: "0 2px 12px rgba(0,0,0,.08)" }}>
             {[
               { v: "single", label: "📄 整页版" },
               { v: "split", label: "📑 分页版" },
@@ -652,15 +652,15 @@ function App() {
                   setAiSplitDesign(null);
                 }}
                 style={{
-                  padding: "8px 22px",
-                  borderRadius: 9,
+                  padding: "10px 28px",
+                  borderRadius: 10,
                   border: "none",
                   background: mode === m.v ? palette.a : "transparent",
                   color: mode === m.v ? "#fff" : "#666",
-                  fontSize: 13,
-                  fontWeight: 800,
+                  fontSize: 14,
+                  fontWeight: 600,
                   cursor: "pointer",
-                  transition: "all .2s",
+                  transition: "all .2s ease",
                 }}
               >
                 {m.label}
@@ -669,30 +669,30 @@ function App() {
           </div>
         </div>
 
-        <div className="main-grid" style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 18, alignItems: "start" }}>
+        <div className="main-grid" style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 28, alignItems: "start" }}>
           {/* Left Panel */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Input */}
-            <div style={{ background: "#fff", borderRadius: 13, padding: 17, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 8 }}>
-                ✍️ 文案 / 话题
+            <div style={{ background: "#fff", borderRadius: 14, padding: 20, boxShadow: "0 2px 12px rgba(0,0,0,.06)" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#444", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                <span>✍️</span><span>文案 / 话题</span>
               </div>
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={"例如：推荐一款奶油肌底妆，\n遮瑕力强、持妆久、不闷痘…"}
-                rows={4}
+                rows={5}
                 style={{
                   width: "100%",
-                  border: "1.5px solid #eee",
-                  borderRadius: 8,
-                  padding: "10px 11px",
-                  fontSize: 13,
+                  border: "1.5px solid #e8e8e8",
+                  borderRadius: 10,
+                  padding: "12px 14px",
+                  fontSize: 14,
                   lineHeight: 1.7,
                   resize: "vertical",
                   color: "#333",
                   background: "#fafafa",
-                  transition: "all .2s",
+                  transition: "border-color .2s ease",
                   fontFamily: "inherit",
                 }}
               />
@@ -700,11 +700,11 @@ function App() {
 
             {/* 分页：平台 */}
             {mode === "split" && (
-              <div style={{ background: "#fff", borderRadius: 13, padding: 17, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 11 }}>
-                  📱 发布平台
+              <div style={{ background: "#fff", borderRadius: 14, padding: 20, boxShadow: "0 2px 12px rgba(0,0,0,.06)" }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#444", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span>📱</span><span>发布平台</span>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   {[
                     { v: "xhs", icon: "📕", name: "小红书", desc: "情绪化 · 口语风" },
                     { v: "wechat", icon: "💬", name: "微信推文", desc: "专业 · 权威感" },
@@ -713,21 +713,22 @@ function App() {
                       key={p.v}
                       onClick={() => setPlatform(p.v)}
                       style={{
-                        padding: "11px 8px",
-                        borderRadius: 10,
-                        border: `1.5px solid ${platform === p.v ? palette.a : "#eee"}`,
-                        background: platform === p.v ? palette.a + "10" : "#fafafa",
+                        padding: "14px 10px",
+                        borderRadius: 12,
+                        border: `2px solid ${platform === p.v ? palette.a : "#f0f0f0"}`,
+                        background: platform === p.v ? palette.a + "08" : "#fafafa",
                         cursor: "pointer",
                         textAlign: "center",
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
-                        gap: 3,
+                        gap: 4,
+                        transition: "all .2s ease",
                       }}
                     >
-                      <span style={{ fontSize: 22 }}>{p.icon}</span>
-                      <span style={{ fontSize: 12, fontWeight: 800, color: platform === p.v ? palette.a : "#444" }}>{p.name}</span>
-                      <span style={{ fontSize: 10, color: "#aaa" }}>{p.desc}</span>
+                      <span style={{ fontSize: 24 }}>{p.icon}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: platform === p.v ? palette.a : "#333" }}>{p.name}</span>
+                      <span style={{ fontSize: 10, color: "#999" }}>{p.desc}</span>
                     </button>
                   ))}
                 </div>
@@ -736,12 +737,12 @@ function App() {
 
             {/* 分页：卡片风格 */}
             {mode === "split" && (
-              <div style={{ background: "#fff", borderRadius: 13, padding: 17, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 11 }}>
-                  🖼 卡片风格
+              <div style={{ background: "#fff", borderRadius: 14, padding: 20, boxShadow: "0 2px 12px rgba(0,0,0,.06)" }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#444", marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span>🖼</span><span>卡片风格</span>
                 </div>
-                <div style={{ maxHeight: 200, overflowY: "auto", paddingRight: 4 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
+                <div style={{ maxHeight: 220, overflowY: "auto", paddingRight: 4 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
                     {[...SPLIT_STYLES, AI_DESIGN_SPLIT_STYLE].map((st) => (
                       <button
                         key={st.id}
@@ -752,30 +753,31 @@ function App() {
                           }
                         }}
                         style={{
-                          padding: "8px 5px",
-                          borderRadius: 8,
-                          border: `1.5px solid ${splitStyle === st.id ? palette.a : "#eee"}`,
-                          background: splitStyle === st.id ? palette.a + "10" : "#fafafa",
+                          padding: "10px 6px",
+                          borderRadius: 10,
+                          border: `2px solid ${splitStyle === st.id ? palette.a : "#f0f0f0"}`,
+                          background: splitStyle === st.id ? palette.a + "08" : "#fafafa",
                           textAlign: "center",
                           display: "flex",
                           flexDirection: "column",
                           alignItems: "center",
-                          gap: 2,
+                          gap: 3,
                           cursor: "pointer",
+                          transition: "all .2s ease",
                         }}
                       >
-                        <span style={{ fontSize: 18 }}>{st.icon}</span>
+                        <span style={{ fontSize: 20 }}>{st.icon}</span>
                         <span
                           style={{
-                            fontSize: 10,
-                            fontWeight: splitStyle === st.id ? 800 : 600,
-                            color: splitStyle === st.id ? palette.a : "#555",
-                            lineHeight: 1.2,
+                            fontSize: 11,
+                            fontWeight: splitStyle === st.id ? 700 : 600,
+                            color: splitStyle === st.id ? palette.a : "#444",
+                            lineHeight: 1.3,
                           }}
                         >
                           {st.name}
                         </span>
-                        <span style={{ fontSize: 9, color: "#bbb", lineHeight: 1.2 }}>{st.desc}</span>
+                        <span style={{ fontSize: 10, color: "#aaa", lineHeight: 1.2 }}>{st.desc}</span>
                       </button>
                     ))}
                   </div>
@@ -785,16 +787,16 @@ function App() {
 
             {/* AI设计：参考图上传（分页版） */}
             {mode === "split" && splitStyle === "ai" && (
-              <div style={{ background: "#fff", borderRadius: 13, padding: 17, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 10 }}>
-                  🎨 AI设计
+              <div style={{ background: "#fff", borderRadius: 14, padding: 20, boxShadow: "0 2px 12px rgba(0,0,0,.06)" }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#444", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span>🎨</span><span>AI设计</span>
                 </div>
                 <ReferenceImageUploader
                   image={aiReferenceImage}
                   onChange={setAiReferenceImage}
                   onClear={() => setAiReferenceImage(null)}
                 />
-                <div style={{ fontSize: 12, color: "#888", marginTop: 10, textAlign: "center" }}>
+                <div style={{ fontSize: 12, color: "#777", marginTop: 12, textAlign: "center" }}>
                   {aiReferenceImage ? 'AI将参考图片风格生成设计' : '不上传则AI自由发挥'}
                 </div>
               </div>
@@ -802,47 +804,48 @@ function App() {
 
             {/* 整页版：模板 */}
             {mode === "single" && (
-              <div style={{ background: "#fff", borderRadius: 13, padding: 17, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 10 }}>
-                  🗂 模板
+              <div style={{ background: "#fff", borderRadius: 14, padding: 20, boxShadow: "0 2px 12px rgba(0,0,0,.06)" }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#444", marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span>🗂</span><span>模板</span>
                 </div>
-                <div style={{ maxHeight: 200, overflowY: "auto", paddingRight: 4 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
+                <div style={{ maxHeight: 220, overflowY: "auto", paddingRight: 4 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
                     {[...TEMPLATES, AI_DESIGN_TEMPLATE].map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => {
-                          setTpl(t.id);
-                          if (t.id === 'ai') {
-                            setAiSingleDesign(null);
-                          }
-                        }}
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        setTpl(t.id);
+                        if (t.id === 'ai') {
+                          setAiSingleDesign(null);
+                        }
+                      }}
+                      style={{
+                        padding: "10px 6px",
+                        borderRadius: 10,
+                        border: `2px solid ${tpl === t.id ? palette.a : "#f0f0f0"}`,
+                        background: tpl === t.id ? palette.a + "08" : "#fafafa",
+                        textAlign: "center",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 3,
+                        cursor: "pointer",
+                        transition: "all .2s ease",
+                      }}
+                    >
+                      <span style={{ fontSize: 20 }}>{t.icon}</span>
+                      <span
                         style={{
-                          padding: "8px 5px",
-                          borderRadius: 8,
-                          border: `1.5px solid ${tpl === t.id ? palette.a : "#eee"}`,
-                          background: tpl === t.id ? palette.a + "10" : "#fafafa",
-                          textAlign: "center",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          gap: 2,
-                          cursor: "pointer",
+                          fontSize: 11,
+                          fontWeight: tpl === t.id ? 700 : 600,
+                          color: tpl === t.id ? palette.a : "#444",
+                          lineHeight: 1.3,
                         }}
                       >
-                        <span style={{ fontSize: 18 }}>{t.icon}</span>
-                        <span
-                          style={{
-                            fontSize: 10,
-                            fontWeight: tpl === t.id ? 800 : 600,
-                            color: tpl === t.id ? palette.a : "#555",
-                            lineHeight: 1.2,
-                          }}
-                        >
-                          {t.name}
-                        </span>
-                        <span style={{ fontSize: 9, color: "#bbb", lineHeight: 1.2 }}>{t.desc}</span>
-                      </button>
+                        {t.name}
+                      </span>
+                      <span style={{ fontSize: 10, color: "#aaa", lineHeight: 1.2 }}>{t.desc}</span>
+                    </button>
                     ))}
                   </div>
                 </div>
@@ -851,47 +854,49 @@ function App() {
 
             {/* AI设计：参考图上传（整页版） */}
             {mode === "single" && tpl === "ai" && (
-              <div style={{ background: "#fff", borderRadius: 13, padding: 17, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 10 }}>
-                  🎨 AI设计
+              <div style={{ background: "#fff", borderRadius: 14, padding: 20, boxShadow: "0 2px 12px rgba(0,0,0,.06)" }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#444", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span>🎨</span><span>AI设计</span>
                 </div>
                 <ReferenceImageUploader
                   image={aiReferenceImage}
                   onChange={setAiReferenceImage}
                   onClear={() => setAiReferenceImage(null)}
                 />
-                <div style={{ fontSize: 12, color: "#888", marginTop: 10, textAlign: "center" }}>
+                <div style={{ fontSize: 12, color: "#777", marginTop: 12, textAlign: "center" }}>
                   {aiReferenceImage ? 'AI将参考图片风格生成设计' : '不上传则AI自由发挥'}
                 </div>
               </div>
             )}
 
             {/* 配色 */}
-            <div style={{ background: "#fff", borderRadius: 13, padding: 17, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#555", letterSpacing: "1px", marginBottom: 10 }}>
-                🎨 配色
+            <div style={{ background: "#fff", borderRadius: 14, padding: 20, boxShadow: "0 2px 12px rgba(0,0,0,.06)" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#444", marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
+                <span>🎨</span><span>配色</span>
               </div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {PALETTES.map((p) => (
                   <button
                     key={p.id}
                     onClick={() => setPalId(p.id)}
                     title={p.label}
                     style={{
-                      width: 30,
-                      height: 30,
+                      width: 34,
+                      height: 34,
                       borderRadius: "50%",
                       background: p.a,
-                      border: `3px solid ${palId === p.id ? p.a : "transparent"}`,
-                      outline: palId === p.id ? `2px solid ${p.a}55` : "none",
-                      outlineOffset: 2,
+                      border: `3px solid ${palId === p.id ? p.a : "#fff"}`,
+                      outline: palId === p.id ? `3px solid ${p.a}44` : `2px solid #e0e0e0`,
+                      outlineOffset: palId === p.id ? 2 : 0,
                       padding: 0,
                       cursor: "pointer",
+                      transition: "all .2s ease",
+                      boxShadow: palId === p.id ? `0 2px 8px ${p.a}40` : "0 1px 3px rgba(0,0,0,.1)",
                     }}
                   />
                 ))}
               </div>
-              <div style={{ fontSize: 10, color: palette.a, fontWeight: 700, marginTop: 7 }}>{palette.label}</div>
+              <div style={{ fontSize: 12, color: palette.a, fontWeight: 600, marginTop: 10 }}>{palette.label}</div>
             </div>
 
             {/* 生成 */}
@@ -899,15 +904,16 @@ function App() {
               onClick={generate}
               disabled={loading || !input.trim()}
               style={{
-                padding: "13px",
-                borderRadius: 11,
+                padding: "16px",
+                borderRadius: 12,
                 border: "none",
                 background: loading || !input.trim() ? "#ccc" : palette.a,
                 color: "#fff",
-                fontSize: 14,
-                fontWeight: 800,
+                fontSize: 15,
+                fontWeight: 600,
                 cursor: loading || !input.trim() ? "not-allowed" : "pointer",
-                letterSpacing: "0.5px",
+                boxShadow: loading || !input.trim() ? "none" : `0 4px 12px ${palette.a}40`,
+                transition: "all .2s ease",
               }}
             >
               {loading ? (
@@ -915,27 +921,26 @@ function App() {
                   AI 生成中 <Dots />
                 </span>
               ) : mode === "single" ? (
-                "✦ 生成排版图"
+                "✨ 生成排版图"
               ) : (
-                "✦ 生成分页卡片"
+                "✨ 生成分页卡片"
               )}
             </button>
-            {error && <p style={{ fontSize: 12, color: "#e05a4b", textAlign: "center", margin: 0 }}>{error}</p>}
+            {error && <p style={{ fontSize: 13, color: "#e05a4b", textAlign: "center", margin: "-8px 0 0", padding: "10px", background: "#fef2f2", borderRadius: 8, fontWeight: 500 }}>{error}</p>}
           </div>
 
           {/* Right Panel - Preview */}
-          <div>
-
+          <div style={{ position: "sticky", top: 24 }}>
 
             {/* 整页版 */}
             {mode === "single" && (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#888", letterSpacing: "1px" }}>预览</span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#666" }}>预览</span>
                   {(cardData || aiSingleDesign) && (
-                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                       {expMsg && (
-                        <span style={{ fontSize: 11, fontWeight: 700, color: expMsg.startsWith("✓") ? "#4a7c59" : "#aaa" }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: expMsg.startsWith("✓") ? "#4a7c59" : "#999" }}>
                           {expMsg}
                         </span>
                       )}
@@ -943,15 +948,16 @@ function App() {
                         onClick={() => exportSingle("hd")}
                         disabled={exporting || !h2cOk}
                         style={{
-                          padding: "5px 11px",
-                          borderRadius: 6,
-                          border: `1px solid ${palette.a}`,
+                          padding: "6px 14px",
+                          borderRadius: 8,
+                          border: `1.5px solid ${palette.a}`,
                           background: "#fff",
                           color: palette.a,
-                          fontSize: 11,
-                          fontWeight: 800,
+                          fontSize: 12,
+                          fontWeight: 600,
                           cursor: "pointer",
                           opacity: exporting ? 0.6 : 1,
+                          transition: "all .2s ease",
                         }}
                       >
                         {exporting ? <Dots /> : "⬇ 高清"}
@@ -960,15 +966,17 @@ function App() {
                         onClick={() => exportSingle("ultra")}
                         disabled={exporting || !h2cOk}
                         style={{
-                          padding: "5px 11px",
-                          borderRadius: 6,
+                          padding: "6px 14px",
+                          borderRadius: 8,
                           border: "none",
                           background: palette.a,
                           color: "#fff",
-                          fontSize: 11,
-                          fontWeight: 800,
+                          fontSize: 12,
+                          fontWeight: 600,
                           cursor: "pointer",
                           opacity: exporting ? 0.6 : 1,
+                          boxShadow: `0 2px 8px ${palette.a}40`,
+                          transition: "all .2s ease",
                         }}
                       >
                         {exporting ? <Dots /> : "⬇ 超清 4K"}
@@ -981,19 +989,19 @@ function App() {
                   <div
                     style={{
                       background: "#fff",
-                      borderRadius: 13,
-                      minHeight: 460,
+                      borderRadius: 16,
+                      minHeight: 480,
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
                       justifyContent: "center",
-                      border: "2px dashed #ddd",
-                      color: "#ccc",
-                      gap: 8,
+                      border: "2px dashed #e0e0e0",
+                      color: "#bbb",
+                      gap: 12,
                     }}
                   >
-                    <span style={{ fontSize: 38 }}>{tpl === 'ai' ? '✨' : '🖼️'}</span>
-                    <span style={{ fontSize: 13 }}>{tpl === 'ai' ? '点击生成开始AI设计' : '排版预览将在这里显示'}</span>
+                    <span style={{ fontSize: 44 }}>{tpl === 'ai' ? '✨' : '🖼️'}</span>
+                    <span style={{ fontSize: 14 }}>{tpl === 'ai' ? '点击生成开始AI设计' : '排版预览将在这里显示'}</span>
                   </div>
                 )}
 
@@ -1001,31 +1009,30 @@ function App() {
                   <div
                     style={{
                       background: "#fff",
-                      borderRadius: 13,
-                      minHeight: 460,
+                      borderRadius: 16,
+                      minHeight: 480,
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
                       justifyContent: "center",
-                      border: "2px dashed #ddd",
-                      gap: 10,
+                      border: "2px dashed #e0e0e0",
+                      gap: 12,
                     }}
                   >
-                    <span style={{ fontSize: 30 }}>{tpl === 'ai' ? '✨' : '✦'}</span>
-                    <span style={{ fontSize: 13, color: "#aaa" }}>{tpl === 'ai' ? 'AI正在设计...' : '正在生成'}</span>
+                    <span style={{ fontSize: 36 }}>{tpl === 'ai' ? '✨' : '✦'}</span>
+                    <span style={{ fontSize: 14, color: "#999" }}>{tpl === 'ai' ? 'AI正在设计...' : '正在生成'}</span>
                     <Dots />
                   </div>
                 )}
 
                 {/* 普通模板渲染 */}
-                {/* 普通模板渲染 */}
                 {cardData && !loading && tpl !== 'ai' && CardRenderer && (
                   <div
                     ref={cardRef}
                     style={{
-                      animation: "rise .35s ease",
+                      animation: "rise .4s ease",
                       overflow: "hidden",
-                      boxShadow: "0 8px 36px rgba(0,0,0,.12)",
+                      boxShadow: "0 12px 40px rgba(0,0,0,.12)",
                       borderRadius,
                     }}
                   >

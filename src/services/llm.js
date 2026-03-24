@@ -5,8 +5,8 @@
 
 const STORAGE_KEY = "imarticle_llm_config";
 
-// Worker 代理地址
-const WORKER_PROXY_URL = "https://imarticle-llm-proxy.renmengkai.workers.dev/api/proxy";
+// Pages Function 代理地址（直接代理，不经过独立 Worker）
+const PAGES_PROXY_URL = "/api/llm";
 
 // 从环境变量读取配置
 const ENV_CONFIG = {
@@ -168,7 +168,7 @@ export function createLLMClient(config) {
 
     /**
      * 调用 OpenAI API
-     * 使用 Cloudflare Worker 代理避免 CORS 问题
+     * 使用 Pages Function 代理避免 CORS 问题
      */
     async _callOpenAI({ system, messages, maxTokens }) {
       // 检测是否在 Cloudflare Pages 环境
@@ -177,14 +177,20 @@ export function createLLMClient(config) {
 
       let url;
       let headers;
+      let body;
 
       if (isCloudflarePages) {
-        // 使用 Worker 代理 - 通过 x-target-url 传递目标地址
-        url = WORKER_PROXY_URL;
+        // 使用 Pages Function 代理 - API Key 在服务端配置
+        url = PAGES_PROXY_URL;
         headers = {
           'Content-Type': 'application/json',
-          'x-target-url': `${this.baseUrl}/chat/completions`,
-          'Authorization': `Bearer ${this.apiKey}`,
+        };
+        body = {
+          provider: 'openai',
+          model: this.model,
+          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+          max_tokens: maxTokens,
+          temperature: 0.7,
         };
       } else {
         // 本地开发直接调用
@@ -193,14 +199,13 @@ export function createLLMClient(config) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.apiKey}`,
         };
+        body = {
+          model: this.model,
+          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+          max_tokens: maxTokens,
+          temperature: 0.7,
+        };
       }
-
-      const body = {
-        model: this.model,
-        messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-        max_tokens: maxTokens,
-        temperature: 0.7,
-      };
 
       const response = await fetch(url, {
         method: "POST",
@@ -225,7 +230,7 @@ export function createLLMClient(config) {
 
     /**
      * 调用 Anthropic API
-     * 使用 Cloudflare Worker 代理避免 CORS 问题
+     * 使用 Pages Function 代理避免 CORS 问题
      */
     async _callAnthropic({ system, messages, maxTokens }) {
       // 检测是否在 Cloudflare Pages 环境
@@ -234,15 +239,23 @@ export function createLLMClient(config) {
 
       let url;
       let headers;
+      let body;
 
       if (isCloudflarePages) {
-        // 使用 Worker 代理 - 通过 x-target-url 传递目标地址
-        url = WORKER_PROXY_URL;
+        // 使用 Pages Function 代理 - API Key 在服务端配置
+        url = PAGES_PROXY_URL;
         headers = {
           'Content-Type': 'application/json',
-          'x-target-url': `${this.baseUrl}/messages`,
-          'x-api-key': this.apiKey,
-          'anthropic-version': '2023-06-01',
+        };
+        body = {
+          provider: 'anthropic',
+          model: this.model,
+          system,
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+          max_tokens: maxTokens,
         };
       } else {
         // 本地开发直接调用
@@ -252,17 +265,16 @@ export function createLLMClient(config) {
           'x-api-key': this.apiKey,
           'anthropic-version': '2023-06-01',
         };
+        body = {
+          model: this.model,
+          max_tokens: maxTokens,
+          system,
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        };
       }
-
-      const body = {
-        model: this.model,
-        max_tokens: maxTokens,
-        system,
-        messages: messages.map((m) => ({
-          role: m.role,
-          content: m.content,
-        })),
-      };
 
       const response = await fetch(url, {
         method: "POST",
