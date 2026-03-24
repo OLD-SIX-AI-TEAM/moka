@@ -43,7 +43,7 @@ export function Creamy({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ background: "#fff", padding: "16px 18px", borderRadius: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>

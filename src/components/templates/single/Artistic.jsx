@@ -41,7 +41,7 @@ export function Artistic({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ padding: "16px 0", borderBottom: i < d.sections.length - 1 ? `1px solid ${d.a}20` : "none" }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 8 }}>

@@ -35,7 +35,7 @@ export function Medical({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color="#e74c3c">
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "12px 14px", background: "#fafafa", borderRadius: 8 }}>
               <div style={{ minWidth: 28, height: 28, borderRadius: "50%", background: "#e74c3c", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff", fontWeight: 700 }}>

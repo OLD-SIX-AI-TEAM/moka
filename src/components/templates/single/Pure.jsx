@@ -28,7 +28,7 @@ export function Pure({ d, ed, drag }) {
 
       {/* 内容 - 极简留白 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div>
               <EditableText v={s.heading} on={ed?.secH?.(i)} block style={{ fontSize: 15, fontWeight: 600, color: "#111", marginBottom: 10, letterSpacing: "-0.3px" }} />

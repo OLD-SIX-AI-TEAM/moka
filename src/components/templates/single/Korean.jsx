@@ -44,7 +44,7 @@ export function Korean({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ background: "#fff", padding: "14px 16px", borderRadius: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.03)", display: "flex", gap: 12, alignItems: "flex-start" }}>
               <div style={{ minWidth: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg,${d.a},${d.a}60)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#fff", fontWeight: 800 }}>

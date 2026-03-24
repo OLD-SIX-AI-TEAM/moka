@@ -36,7 +36,7 @@ export function Food({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ background: "#fff", padding: "14px 16px", borderRadius: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
               <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>

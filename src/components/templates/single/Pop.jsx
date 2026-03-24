@@ -43,7 +43,7 @@ export function Pop({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "12px", background: i % 2 === 0 ? `${d.a}10` : "#f8f8f8" }}>
               <div style={{ fontSize: 20, color: d.a, fontWeight: 900, lineHeight: 1 }}>{shapes[i % 5]}</div>

@@ -47,7 +47,7 @@ export function Luxury({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "14px 0", borderBottom: `1px solid ${d.a}15` }}>
               <div style={{ minWidth: 32, height: 32, border: `1px solid #d4af37`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#d4af37", fontFamily: "Georgia, serif" }}>

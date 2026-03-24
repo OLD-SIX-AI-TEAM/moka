@@ -53,7 +53,7 @@ export function Forest({ d, ed, drag }) {
 
       {/* 内容区域 - 叶子卡片 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {d.sections.map((s, i) => (
+        {(d.sections || []).map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ background: "#fff", padding: "16px 18px", borderRadius: i % 2 === 0 ? "18px 4px 18px 18px" : "4px 18px 18px 18px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>

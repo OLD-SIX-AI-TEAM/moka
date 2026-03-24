@@ -55,7 +55,7 @@ export function Retro({ d, ed, drag }) {
 
         {/* 内容 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {d.sections.map((s, i) => (
+          {(d.sections || []).map((s, i) => (
             <DragRow key={i} i={i} drag={drag} color={d.a}>
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <div style={{ minWidth: 28, height: 28, border: `2px solid ${d.a}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: d.a, fontFamily: "Georgia, serif" }}>
