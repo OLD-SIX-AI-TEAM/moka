@@ -55,7 +55,7 @@ export function Retro({ d, ed, drag }) {
 
         {/* 内容 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {(d.sections || []).map((s, i) => (
+          {Array.isArray(d.sections) && d.sections.map((s, i) => (
             <DragRow key={i} i={i} drag={drag} color={d.a}>
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <div style={{ minWidth: 28, height: 28, border: `2px solid ${d.a}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: d.a, fontFamily: "Georgia, serif" }}>
@@ -80,7 +80,7 @@ export function Retro({ d, ed, drag }) {
 
         {/* 标签 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14, paddingTop: 12, borderTop: `1px solid ${d.a}40` }}>
-          {d.tags.map((t, i) => (
+          {Array.isArray(d.tags) && d.tags.map((t, i) => (
             <span key={i} style={{ padding: "4px 10px", border: `1px solid ${d.a}`, fontSize: 11, color: d.a, fontWeight: 600 }}>
               <EditableTag text={t} c={d.a} on={ed?.tag?.(i)} />
             </span>

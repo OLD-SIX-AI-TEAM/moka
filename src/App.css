@@ -1,4 +1,4 @@
-/* 小红书排版生成器 - 三列布局，支持亮色/暗色双主题 */
+/* 文字卡片生成器 - 三列布局，支持亮色/暗色双主题 */
 
 /* ========== 基础变量定义（默认亮色主题）========== */
 :root {
@@ -458,6 +458,17 @@ body {
 .preview-actions {
   display: flex;
   gap: var(--space-sm);
+}
+
+.aspect-ratio-badge {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  margin-left: auto;
+  margin-right: var(--space-md);
 }
 
 .export-btn {
@@ -1331,4 +1342,11 @@ body {
   font-size: 12px;
   color: var(--text-primary);
   font-weight: 500;
+}
+
+.llm-info-value-url {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
 }

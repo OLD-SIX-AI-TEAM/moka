@@ -1,7 +1,8 @@
 import { EditableText, EditableTag } from "../../common/EditableText";
+import { EditableEmoji } from "../../common/EditableEmoji";
 import { FONT_FAMILY } from "../../../constants";
 
-export function PureCover({ s, a, total, ed }) {
+export function PureCover({ s, a, total, ed, emojiEditor }) {
   return (
     <div style={{ background: "#fff", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       {/* 纯净渐变背景 */}
@@ -15,7 +16,12 @@ export function PureCover({ s, a, total, ed }) {
         {/* 分类标签 - 极简风格 */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
           <div style={{ width: 48, height: 48, background: a, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 4px 16px ${a}30` }}>
-            <span style={{ fontSize: 22, color: "#fff" }}>{s.emoji}</span>
+            <EditableEmoji
+              emoji={s.emoji || "✨"}
+              onEmojiChange={emojiEditor?.onEmojiChange}
+              style={emojiEditor?.style || { fontSize: '22px' }}
+              onStyleChange={emojiEditor?.onStyleChange}
+            />
           </div>
           <div>
             <div style={{ fontSize: 10, color: a, letterSpacing: "3px", fontWeight: 600, marginBottom: 4 }}>{s.category?.toUpperCase?.() || "PURE"}</div>
@@ -25,11 +31,11 @@ export function PureCover({ s, a, total, ed }) {
         
         {/* 标题区域 - 居中布局 */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center" }}>
-          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 36, fontWeight: 300, color: "#1a1a1a", lineHeight: 1.3, letterSpacing: "2px", marginBottom: 20 }} />
+          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 36, fontWeight: 300, color: "#1a1a1a", lineHeight: 1.3, letterSpacing: "2px", marginBottom: 20, ...ed?.titleStyle }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
           {s.subtitle && (
             <>
               <div style={{ width: 40, height: 1, background: `${a}50`, margin: "0 auto 20px" }} />
-              <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#777", lineHeight: 1.8, maxWidth: "80%" }} />
+              <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#777", lineHeight: 1.8, maxWidth: "80%", ...ed?.subtitleStyle }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />
             </>
           )}
         </div>
@@ -84,11 +90,11 @@ export function PureContent({ s, a, idx, total, ed }) {
         </div>
         
         {/* 标题 */}
-        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 24, fontWeight: 300, color: "#1a1a1a", lineHeight: 1.4, letterSpacing: "1px", marginBottom: 20 }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 24, fontWeight: 300, color: "#1a1a1a", lineHeight: 1.4, letterSpacing: "1px", marginBottom: 20, ...ed?.headingStyle }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
         
         {/* 正文区域 - 居中排版 */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#555", lineHeight: 2, textAlign: "center" }} />
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#555", lineHeight: 2, textAlign: "center", ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
         </div>
         
         {s.extra && (
@@ -101,7 +107,7 @@ export function PureContent({ s, a, idx, total, ed }) {
             textAlign: "center"
           }}>
             <div style={{ width: 30, height: 1, background: `${a}30`, margin: "0 auto 16px" }} />
-            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#666", lineHeight: 1.8, fontStyle: "italic" }} />
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#666", lineHeight: 1.8, fontStyle: "italic", ...ed?.extraStyle }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
           </div>
         )}
         
@@ -151,11 +157,11 @@ export function PureEnd({ s, a, ed }) {
           <div style={{ width: 40, height: 1, background: `${a}40`, alignSelf: "center" }} />
         </div>
         
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 28, fontWeight: 300, color: "#1a1a1a", marginBottom: 16, lineHeight: 1.4, letterSpacing: "2px" }} />
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 28, fontWeight: 300, color: "#1a1a1a", marginBottom: 16, lineHeight: 1.4, letterSpacing: "2px", ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
         
         <div style={{ width: 30, height: 1, background: `${a}40`, margin: "0 auto 20px" }} />
         
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#777", marginBottom: 32, lineHeight: 1.8 }} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#777", marginBottom: 32, lineHeight: 1.8, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         
         {/* 标签 - 纯净风格 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 28 }}>

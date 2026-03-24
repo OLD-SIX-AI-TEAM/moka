@@ -1,7 +1,8 @@
 import { EditableText, EditableTag } from "../../common/EditableText";
+import { EditableEmoji } from "../../common/EditableEmoji";
 import { FONT_FAMILY } from "../../../constants";
 
-export function CreamyCover({ s, a, total, ed }) {
+export function CreamyCover({ s, a, total, ed, emojiEditor }) {
   return (
     <div style={{ background: "#fffbf5", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       {/* 柔和的圆形装饰 - 奶油质感 */}
@@ -24,11 +25,18 @@ export function CreamyCover({ s, a, total, ed }) {
         </div>
         
         {/* 大号装饰 emoji */}
-        <div style={{ fontSize: 72, marginBottom: 24, filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.08))", transform: "rotate(-5deg)" }}>{s.emoji}</div>
+        <div style={{ marginBottom: 24 }}>
+          <EditableEmoji
+            emoji={s.emoji || "✨"}
+            onEmojiChange={emojiEditor?.onEmojiChange}
+            style={emojiEditor?.style || { fontSize: '72px', filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.08))", transform: "rotate(-5deg)" }}
+            onStyleChange={emojiEditor?.onStyleChange}
+          />
+        </div>
         
         {/* 标题 */}
-        <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 36, fontWeight: 800, color: "#2d2520", lineHeight: 1.2, marginBottom: 16, letterSpacing: "-0.5px" }} />
-        {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 15, color: "#6b5b4f", lineHeight: 1.8 }} />}
+        <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 36, fontWeight: 800, color: "#2d2520", lineHeight: 1.2, marginBottom: 16, letterSpacing: "-0.5px", ...ed?.titleStyle }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
+        {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 15, color: "#6b5b4f", lineHeight: 1.8, ...ed?.subtitleStyle }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />}
         
         {/* 底部装饰 - 奶油滴落效果 */}
         <div style={{ marginTop: "auto", display: "flex", alignItems: "flex-end", gap: 16 }}>
@@ -76,12 +84,12 @@ export function CreamyContent({ s, a, idx, total, ed }) {
           </div>
         </div>
         
-        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 24, fontWeight: 800, color: "#2d2520", lineHeight: 1.3, marginBottom: 16 }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 24, fontWeight: 800, color: "#2d2520", lineHeight: 1.3, marginBottom: 16, ...ed?.headingStyle }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
         
         {/* 正文区域 - 带左侧装饰 */}
         <div style={{ flex: 1, position: "relative", paddingLeft: 16 }}>
           <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg, ${a}, ${a}30, transparent)`, borderRadius: 2 }} />
-          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#5a4f45", lineHeight: 1.9 }} />
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#5a4f45", lineHeight: 1.9, ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
         </div>
         
         {s.extra && (
@@ -90,7 +98,7 @@ export function CreamyContent({ s, a, idx, total, ed }) {
               <span style={{ fontSize: 16 }}>💭</span>
               <span style={{ fontSize: 10, color: a, letterSpacing: "1px", fontWeight: 600 }}>TIPS</span>
             </div>
-            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#6b5b4f", lineHeight: 1.7 }} />
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#6b5b4f", lineHeight: 1.7, ...ed?.extraStyle }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
           </div>
         )}
         
@@ -132,8 +140,8 @@ export function CreamyEnd({ s, a, ed }) {
           <span style={{ fontSize: 28, opacity: 0.5, transform: "rotate(15deg)" }}>✧</span>
         </div>
         
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 28, fontWeight: 800, color: "#2d2520", marginBottom: 12, lineHeight: 1.3 }} />
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#6b5b4f", marginBottom: 32, lineHeight: 1.6 }} />
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 28, fontWeight: 800, color: "#2d2520", marginBottom: 12, lineHeight: 1.3, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#6b5b4f", marginBottom: 32, lineHeight: 1.6, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         
         {/* 标签 - 奶油色胶囊形 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 28 }}>

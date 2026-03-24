@@ -32,7 +32,7 @@ export function BoldCard({ d, ed, drag }) {
       </div>
       <div style={{ background: "#fff", padding: "20px 24px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-          {(d.sections || []).map((s, i) => (
+          {Array.isArray(d.sections) && d.sections.map((s, i) => (
             <DragRow key={i} i={i} drag={drag} color={d.a} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
               <div style={{ minWidth: 23, height: 23, borderRadius: 5, background: d.a + "20", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color: d.a, flexShrink: 0 }}>
                 {i + 1}
@@ -51,7 +51,7 @@ export function BoldCard({ d, ed, drag }) {
           </div>
         )}
         <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #f0f0f0", display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {d.tags.map((t, i) => (
+          {Array.isArray(d.tags) && d.tags.map((t, i) => (
             <EditableTag key={i} text={t} c={d.a} on={ed?.tag?.(i)} />
           ))}
         </div>

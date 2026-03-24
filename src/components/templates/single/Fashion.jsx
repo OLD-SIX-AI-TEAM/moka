@@ -38,7 +38,7 @@ export function Fashion({ d, ed, drag }) {
 
         {/* 内容 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {(d.sections || []).map((s, i) => (
+          {Array.isArray(d.sections) && d.sections.map((s, i) => (
             <DragRow key={i} i={i} drag={drag} color={d.a}>
               <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
                 <div style={{ fontSize: 24, color: d.a, fontWeight: 300, fontFamily: "Georgia, serif" }}>
@@ -63,7 +63,7 @@ export function Fashion({ d, ed, drag }) {
 
         {/* 标签 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 20 }}>
-          {d.tags.map((t, i) => (
+          {Array.isArray(d.tags) && d.tags.map((t, i) => (
             <span key={i} style={{ padding: "6px 16px", border: `1px solid ${d.a}`, fontSize: 11, color: d.a, letterSpacing: "1px" }}>
               <EditableTag text={t} c={d.a} on={ed?.tag?.(i)} />
             </span>

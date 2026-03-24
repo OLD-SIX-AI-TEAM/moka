@@ -34,7 +34,7 @@ export function Edu({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ background: "#fff", padding: "16px 18px", borderRadius: 8, boxShadow: "0 1px 4px rgba(0,0,0,0.03)" }}>
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
@@ -66,7 +66,7 @@ export function Edu({ d, ed, drag }) {
 
       {/* 标签 */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 20, justifyContent: "center" }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ padding: "6px 14px", background: "#fff", borderRadius: 16, fontSize: 12, color: d.a, boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
             <EditableTag text={t} c={d.a} on={ed?.tag?.(i)} />
           </span>

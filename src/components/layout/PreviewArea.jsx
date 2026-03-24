@@ -15,6 +15,7 @@ export function PreviewArea({
   singleEd,
   sectionDrag,
   aiSingleEd,
+  aiSingleEmojiEditor,
   borderRadius,
   renderSlide,
   makeSlideEd,
@@ -27,7 +28,7 @@ export function PreviewArea({
   onExportSlide,
   onExportAll,
 }) {
-  const hasContent = mode === "single" 
+  const hasContent = mode === "single"
     ? (cardData || aiSingleDesign)
     : slides;
 
@@ -36,6 +37,36 @@ export function PreviewArea({
   const isDraggingRef = useRef(false);
   const dragStartX = useRef(0);
   const dragStartWidth = useRef(0);
+
+  // 计算并显示当前图片的横纵比（1:X 格式）
+  const [aspectRatio, setAspectRatio] = useState(null);
+
+  useEffect(() => {
+    if (mode === "single" && hasContent && cardRef?.current) {
+      const updateAspectRatio = () => {
+        const el = cardRef.current;
+        if (el) {
+          const ratio = el.offsetHeight / el.offsetWidth;
+          setAspectRatio(Math.round(ratio * 10) / 10);
+        }
+      };
+
+      updateAspectRatio();
+
+      // 使用 ResizeObserver 监听尺寸变化
+      const resizeObserver = new ResizeObserver(() => {
+        updateAspectRatio();
+      });
+
+      resizeObserver.observe(cardRef.current);
+
+      return () => {
+        resizeObserver.disconnect();
+      };
+    } else {
+      setAspectRatio(null);
+    }
+  }, [mode, hasContent, cardWidth, cardRef]);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -74,6 +105,12 @@ export function PreviewArea({
     <div className="preview-column">
       <div className="preview-header">
         <span className="preview-title">预览</span>
+        
+        {mode === "single" && aspectRatio !== null && (
+          <span className="aspect-ratio-badge">
+            1:{aspectRatio}
+          </span>
+        )}
         
         <div className="preview-actions">
           {expMsg && (
@@ -180,7 +217,7 @@ export function PreviewArea({
                   className="card-wrapper ai"
                   style={{ borderRadius: 14 }}
                 >
-                  <AIStyleRenderer design={aiSingleDesign} editor={aiSingleEd} />
+                  <AIStyleRenderer design={aiSingleDesign} editor={aiSingleEd} emojiEditor={aiSingleEmojiEditor} />
                 </div>
                 <div
                   className="resize-handle"

@@ -47,7 +47,7 @@ export function Luxury({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "14px 0", borderBottom: `1px solid ${d.a}15` }}>
               <div style={{ minWidth: 32, height: 32, border: `1px solid #d4af37`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#d4af37", fontFamily: "Georgia, serif" }}>
@@ -72,7 +72,7 @@ export function Luxury({ d, ed, drag }) {
 
       {/* 标签 */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 18, justifyContent: "center" }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ padding: "6px 16px", border: `1px solid ${d.a}40`, fontSize: 11, color: d.a, letterSpacing: "1px" }}>
             <EditableTag text={t} c={d.a} on={ed?.tag?.(i)} />
           </span>

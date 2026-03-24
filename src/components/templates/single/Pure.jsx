@@ -28,7 +28,7 @@ export function Pure({ d, ed, drag }) {
 
       {/* 内容 - 极简留白 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div>
               <EditableText v={s.heading} on={ed?.secH?.(i)} block style={{ fontSize: 15, fontWeight: 600, color: "#111", marginBottom: 10, letterSpacing: "-0.3px" }} />
@@ -47,7 +47,7 @@ export function Pure({ d, ed, drag }) {
 
       {/* 标签 */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginTop: 40 }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ fontSize: 12, color: "#999" }}>
             <EditableTag text={t} c="#999" on={ed?.tag?.(i)} />
           </span>

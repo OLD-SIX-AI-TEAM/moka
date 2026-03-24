@@ -47,7 +47,7 @@ export function Japanese({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ background: "#fff", padding: "14px 16px", borderRadius: 2, display: "flex", gap: 12, alignItems: "flex-start" }}>
               <div style={{ fontSize: 18, color: d.a, fontWeight: 300, minWidth: 24 }}>
@@ -72,7 +72,7 @@ export function Japanese({ d, ed, drag }) {
 
       {/* 标签 */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 18 }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ padding: "5px 12px", background: "#fff", border: `1px solid ${d.a}40`, borderRadius: 2, fontSize: 11, color: d.a }}>
             <EditableTag text={t} c={d.a} on={ed?.tag?.(i)} />
           </span>

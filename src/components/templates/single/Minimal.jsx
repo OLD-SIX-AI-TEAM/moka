@@ -28,7 +28,7 @@ export function Minimal({ d, ed, drag }) {
         />
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
             <div style={{ width: 22, height: 22, borderRadius: "50%", background: d.a, color: "#fff", fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
               {i + 1}
@@ -47,7 +47,7 @@ export function Minimal({ d, ed, drag }) {
         </div>
       )}
       <div style={{ marginTop: 16, paddingTop: 11, borderTop: "1px solid #f0f0f0", display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <EditableTag key={i} text={t} c="#888" on={ed?.tag?.(i)} />
         ))}
       </div>

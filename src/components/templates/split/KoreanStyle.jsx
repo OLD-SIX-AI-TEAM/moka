@@ -1,7 +1,8 @@
 import { EditableText, EditableTag } from "../../common/EditableText";
+import { EditableEmoji } from "../../common/EditableEmoji";
 import { FONT_FAMILY } from "../../../constants";
 
-export function KoreanCover({ s, a, total, ed }) {
+export function KoreanCover({ s, a, total, ed, emojiEditor }) {
   return (
     <div style={{ background: "#fff", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       {/* 柔和渐变背景 */}
@@ -26,7 +27,12 @@ export function KoreanCover({ s, a, total, ed }) {
             justifyContent: "center", 
             boxShadow: `0 6px 20px ${a}40`
           }}>
-            <span style={{ fontSize: 28 }}>{s.emoji}</span>
+            <EditableEmoji
+              emoji={s.emoji || "✨"}
+              onEmojiChange={emojiEditor?.onEmojiChange}
+              style={emojiEditor?.style || { fontSize: '28px' }}
+              onStyleChange={emojiEditor?.onStyleChange}
+            />
           </div>
           <div>
             <div style={{ fontSize: 10, color: a, letterSpacing: "2px", fontWeight: 700, marginBottom: 2 }}>{s.category?.toUpperCase?.() || ""}</div>
@@ -38,8 +44,8 @@ export function KoreanCover({ s, a, total, ed }) {
         
         {/* 标题区域 */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 34, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.2, marginBottom: 16 }} />
-          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 15, color: "#777", lineHeight: 1.7 }} />}
+          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 34, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.2, marginBottom: 16, ...ed?.titleStyle }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
+          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 15, color: "#777", lineHeight: 1.7, ...ed?.subtitleStyle }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />}
         </div>
         
         {/* 底部页码 - 心形装饰 */}
@@ -95,11 +101,11 @@ export function KoreanContent({ s, a, idx, total, ed }) {
           </div>
         </div>
         
-        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 22, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.3, marginBottom: 16 }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 22, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.3, marginBottom: 16, ...ed?.headingStyle }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
         
         {/* 正文区域 */}
         <div style={{ flex: 1 }}>
-          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#555", lineHeight: 1.85 }} />
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#555", lineHeight: 1.85, ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
         </div>
         
         {s.extra && (
@@ -114,7 +120,7 @@ export function KoreanContent({ s, a, idx, total, ed }) {
               <span style={{ fontSize: 14 }}>💝</span>
               <span style={{ fontSize: 10, color: a, fontWeight: 600, letterSpacing: "1px" }}>SPECIAL NOTE</span>
             </div>
-            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }} />
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#666", lineHeight: 1.7, ...ed?.extraStyle }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
           </div>
         )}
         
@@ -157,8 +163,8 @@ export function KoreanEnd({ s, a, ed }) {
           <span style={{ fontSize: 28, transform: "rotate(10deg)" }}>💖</span>
         </div>
         
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 26, fontWeight: 800, color: "#1a1a1a", marginBottom: 12, lineHeight: 1.3 }} />
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#777", marginBottom: 28, lineHeight: 1.6 }} />
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 26, fontWeight: 800, color: "#1a1a1a", marginBottom: 12, lineHeight: 1.3, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#777", marginBottom: 28, lineHeight: 1.6, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         
         {/* 标签 - 可爱样式 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>

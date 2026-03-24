@@ -1,7 +1,8 @@
 import { EditableText, EditableTag } from "../../common/EditableText";
+import { EditableEmoji } from "../../common/EditableEmoji";
 import { FONT_FAMILY } from "../../../constants";
 
-export function ForestCover({ s, a, total, ed }) {
+export function ForestCover({ s, a, total, ed, emojiEditor }) {
   return (
     <div style={{ background: "#f0f9f4", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       {/* 自然纹理背景 */}
@@ -39,11 +40,18 @@ export function ForestCover({ s, a, total, ed }) {
         </div>
         
         {/* 大号装饰 emoji */}
-        <div style={{ fontSize: 72, marginBottom: 20, filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.1))" }}>{s.emoji}</div>
+        <div style={{ marginBottom: 20 }}>
+          <EditableEmoji
+            emoji={s.emoji || "✨"}
+            onEmojiChange={emojiEditor?.onEmojiChange}
+            style={emojiEditor?.style || { fontSize: '72px', filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.1))" }}
+            onStyleChange={emojiEditor?.onStyleChange}
+          />
+        </div>
         
         {/* 标题 */}
-        <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 32, fontWeight: 800, color: "#1a3d2e", lineHeight: 1.2, marginBottom: 16 }} />
-        {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#4a6b5a", lineHeight: 1.7 }} />}
+        <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 32, fontWeight: 800, color: "#1a3d2e", lineHeight: 1.2, marginBottom: 16, ...ed?.titleStyle }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
+        {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#4a6b5a", lineHeight: 1.7, ...ed?.subtitleStyle }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />}
         
         {/* 底部装饰 - 树叶排列 */}
         <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 8, paddingTop: 20 }}>
@@ -99,11 +107,11 @@ export function ForestContent({ s, a, idx, total, ed }) {
           </div>
         </div>
         
-        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 22, fontWeight: 800, color: "#1a3d2e", lineHeight: 1.3, marginBottom: 16 }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 22, fontWeight: 800, color: "#1a3d2e", lineHeight: 1.3, marginBottom: 16, ...ed?.headingStyle }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
         
         {/* 正文区域 - 带自然边框 */}
         <div style={{ flex: 1, padding: "16px", background: "#fff", borderRadius: 16, border: `1px solid ${a}15` }}>
-          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#4a6b5a", lineHeight: 1.85 }} />
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#4a6b5a", lineHeight: 1.85, ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
         </div>
         
         {s.extra && (
@@ -119,7 +127,7 @@ export function ForestContent({ s, a, idx, total, ed }) {
               <span style={{ fontSize: 14 }}>🌸</span>
               <span style={{ fontSize: 10, color: a, fontWeight: 600, letterSpacing: "1px" }}>NATURE NOTE</span>
             </div>
-            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#5a7b6a", lineHeight: 1.7 }} />
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#5a7b6a", lineHeight: 1.7, ...ed?.extraStyle }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
           </div>
         )}
         
@@ -169,8 +177,8 @@ export function ForestEnd({ s, a, ed }) {
           <span style={{ fontSize: 24, transform: "rotate(15deg)" }}>🌸</span>
         </div>
         
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 26, fontWeight: 800, color: "#1a3d2e", marginBottom: 12, lineHeight: 1.3 }} />
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#4a6b5a", marginBottom: 28, lineHeight: 1.6 }} />
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 26, fontWeight: 800, color: "#1a3d2e", marginBottom: 12, lineHeight: 1.3, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#4a6b5a", marginBottom: 28, lineHeight: 1.6, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         
         {/* 标签 - 自然风格 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>

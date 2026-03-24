@@ -43,7 +43,7 @@ export function Pop({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color={d.a}>
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "12px", background: i % 2 === 0 ? `${d.a}10` : "#f8f8f8" }}>
               <div style={{ fontSize: 20, color: d.a, fontWeight: 900, lineHeight: 1 }}>{shapes[i % 5]}</div>
@@ -66,7 +66,7 @@ export function Pop({ d, ed, drag }) {
 
       {/* 标签 */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ padding: "6px 14px", background: i % 2 === 0 ? d.a : "#000", color: "#fff", fontSize: 12, fontWeight: 700, transform: i % 2 === 0 ? "rotate(-1deg)" : "rotate(1deg)" }}>
             <EditableTag text={t} c="#fff" on={ed?.tag?.(i)} />
           </span>

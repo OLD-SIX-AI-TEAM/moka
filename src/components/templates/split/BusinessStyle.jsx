@@ -31,7 +31,7 @@ export function BusinessCover({ s, a, total, ed }) {
             <div style={{ padding: "4px 10px", background: a, color: "#fff", fontSize: 9, fontWeight: 700, letterSpacing: "1px" }}>BREAKING</div>
             <div style={{ fontSize: 10, color: "#999" }}>5 MIN READ</div>
           </div>
-          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 36, fontWeight: 800, color: "#111", lineHeight: 1.1, letterSpacing: "-0.5px" }} />
+          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 36, fontWeight: 800, color: "#111", lineHeight: 1.1, letterSpacing: "-0.5px", ...ed?.titleStyle }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
         </div>
         
         {/* 副标题 */}
@@ -39,7 +39,7 @@ export function BusinessCover({ s, a, total, ed }) {
           {s.subtitle && (
             <div style={{ display: "flex", gap: 20 }}>
               <div style={{ width: 1, background: "#ddd" }} />
-              <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 16, color: "#444", lineHeight: 1.7, fontStyle: "italic" }} />
+              <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 16, color: "#444", lineHeight: 1.7, fontStyle: "italic", ...ed?.subtitleStyle }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />
             </div>
           )}
         </div>
@@ -83,19 +83,19 @@ export function BusinessContent({ s, a, idx, total, ed }) {
             <div style={{ flex: 1, height: 1, background: "#eee" }} />
             <div style={{ fontSize: 10, color: "#999", letterSpacing: "1px" }}>{String(idx).padStart(2, "0")} / {String(total - 2).padStart(2, "0")}</div>
           </div>
-          <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 22, fontWeight: 700, color: "#111", lineHeight: 1.3 }} />
+          <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 22, fontWeight: 700, color: "#111", lineHeight: 1.3, ...ed?.headingStyle }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
         </div>
         
         {/* 正文内容 */}
         <div style={{ flex: 1, background: "#fff", border: "1px solid #e0e0e0", padding: "24px", display: "flex", flexDirection: "column" }}>
-          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#333", lineHeight: 1.9 }} />
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#333", lineHeight: 1.9, ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
           
           {/* 引用块 */}
           {s.extra && (
             <div style={{ marginTop: 24, padding: "20px 24px", background: "#f8f9ff", borderLeft: `4px solid ${a}`, position: "relative" }}>
               <div style={{ position: "absolute", top: 8, left: 12, fontSize: 48, color: `${a}20`, fontFamily: "Georgia, serif", lineHeight: 1 }}>"</div>
               <div style={{ fontSize: 10, fontWeight: 700, color: a, letterSpacing: "1px", marginBottom: 8 }}>ANALYST INSIGHT</div>
-              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#444", lineHeight: 1.7, fontStyle: "italic" }} />
+              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#444", lineHeight: 1.7, fontStyle: "italic", ...ed?.extraStyle }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
             </div>
           )}
         </div>
@@ -132,9 +132,9 @@ export function BusinessEnd({ s, a, ed }) {
         
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", letterSpacing: "4px", marginBottom: 24 }}>END OF REPORT</div>
         
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 28, fontWeight: 700, color: "#fff", marginBottom: 16, lineHeight: 1.3 }} />
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 28, fontWeight: 700, color: "#fff", marginBottom: 16, lineHeight: 1.3, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
         
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", marginBottom: 32, lineHeight: 1.6 }} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", marginBottom: 32, lineHeight: 1.6, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         
         {/* 标签 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 32 }}>

@@ -32,7 +32,7 @@ export function Law({ d, ed, drag }) {
 
       {/* 内容区域 */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {(d.sections || []).map((s, i) => (
+        {Array.isArray(d.sections) && d.sections.map((s, i) => (
           <DragRow key={i} i={i} drag={drag} color="#8b4513">
             <div style={{ background: "#fff", padding: "14px 16px", border: "1px solid #e8e8e8" }}>
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
@@ -59,7 +59,7 @@ export function Law({ d, ed, drag }) {
 
       {/* 标签 */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 18, justifyContent: "center" }}>
-        {d.tags.map((t, i) => (
+        {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ padding: "5px 12px", background: "#fff", border: "1px solid #8b4513", fontSize: 11, color: "#8b4513" }}>
             <EditableTag text={t} c="#8b4513" on={ed?.tag?.(i)} />
           </span>

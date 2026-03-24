@@ -1,7 +1,8 @@
 import { EditableText, EditableTag } from "../../common/EditableText";
+import { EditableEmoji } from "../../common/EditableEmoji";
 import { FONT_FAMILY } from "../../../constants";
 
-export function InsCover({ s, a, total, ed }) {
+export function InsCover({ s, a, total, ed, emojiEditor }) {
   return (
     <div style={{ background: "#fafafa", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       {/* 背景渐变装饰 */}
@@ -35,7 +36,12 @@ export function InsCover({ s, a, total, ed }) {
               alignItems: "center",
               justifyContent: "center"
             }}>
-              <span style={{ fontSize: 24 }}>{s.emoji}</span>
+              <EditableEmoji
+                emoji={s.emoji || "✨"}
+                onEmojiChange={emojiEditor?.onEmojiChange}
+                style={emojiEditor?.style || { fontSize: '24px' }}
+                onStyleChange={emojiEditor?.onStyleChange}
+              />
             </div>
           </div>
           <div>
@@ -49,8 +55,8 @@ export function InsCover({ s, a, total, ed }) {
         
         {/* 标题区域 */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 32, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.2, marginBottom: 16 }} />
-          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#555", lineHeight: 1.7 }} />}
+          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 32, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.2, marginBottom: 16, ...ed?.titleStyle }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
+          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#555", lineHeight: 1.7, ...ed?.subtitleStyle }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />}
         </div>
         
         {/* 底部互动区 */}
@@ -126,7 +132,7 @@ export function InsContent({ s, a, idx, total, ed }) {
               <span style={{ fontSize: 8, color: "#999", marginTop: 2 }}>No.{idx}</span>
             </div>
             <div style={{ flex: 1, paddingTop: 4 }}>
-              <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 18, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3, marginBottom: 8 }} />
+              <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 18, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3, marginBottom: 8, ...ed?.headingStyle }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                 <div style={{ width: 24, height: 2, background: a, borderRadius: 1 }} />
                 <span style={{ fontSize: 10, color: "#aaa" }}>Page {idx}</span>
@@ -135,7 +141,7 @@ export function InsContent({ s, a, idx, total, ed }) {
           </div>
           
           <div style={{ flex: 1 }}>
-            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#555", lineHeight: 1.85 }} />
+            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#555", lineHeight: 1.85, ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
           </div>
           
           {s.extra && (
@@ -150,7 +156,7 @@ export function InsContent({ s, a, idx, total, ed }) {
                 <span style={{ fontSize: 12 }}>💡</span>
                 <span style={{ fontSize: 9, color: a, fontWeight: 600, letterSpacing: "1px" }}>PRO TIP</span>
               </div>
-              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 12, color: "#666", lineHeight: 1.6 }} />
+              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 12, color: "#666", lineHeight: 1.6, ...ed?.extraStyle }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
             </div>
           )}
         </div>
@@ -189,8 +195,8 @@ export function InsEnd({ s, a, ed }) {
           <span style={{ fontSize: 24, opacity: 0.7 }}>💬</span>
         </div>
         
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 24, fontWeight: 800, color: "#1a1a1a", marginBottom: 12, lineHeight: 1.3 }} />
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#666", marginBottom: 28, lineHeight: 1.6 }} />
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 24, fontWeight: 800, color: "#1a1a1a", marginBottom: 12, lineHeight: 1.3, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#666", marginBottom: 28, lineHeight: 1.6, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         
         {/* 标签 - Instagram 风格 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 24 }}>

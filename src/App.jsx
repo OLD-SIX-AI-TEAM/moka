@@ -184,16 +184,51 @@ function App() {
       }
     : null;
 
-  const makeSlideEd = (idx) => ({
-    title: (v) => updateSlide(idx, "title", v),
-    subtitle: (v) => updateSlide(idx, "subtitle", v),
-    heading: (v) => updateSlide(idx, "heading", v),
-    text: (v) => updateSlide(idx, "text", v),
-    extra: (v) => updateSlide(idx, "extra", v),
-    cta: (v) => updateSlide(idx, "cta", v),
-    sub: (v) => updateSlide(idx, "sub", v),
-    tag: (tIdx) => (v) => updateSlideTag(idx, tIdx, v),
-  });
+  // 更新文字样式
+  const updateSlideStyle = useCallback((idx, field, styleField, val) => {
+    setSlides((prev) =>
+      prev.map((s, i) => {
+        if (i !== idx) return s;
+        const styleKey = `${field}Style`;
+        return {
+          ...s,
+          [styleKey]: {
+            ...(s[styleKey] || {}),
+            [styleField]: val,
+          },
+        };
+      })
+    );
+  }, []);
+
+  const makeSlideEd = (idx) => {
+    const baseEditors = {
+      title: (v) => updateSlide(idx, "title", v),
+      subtitle: (v) => updateSlide(idx, "subtitle", v),
+      heading: (v) => updateSlide(idx, "heading", v),
+      text: (v) => updateSlide(idx, "text", v),
+      extra: (v) => updateSlide(idx, "extra", v),
+      cta: (v) => updateSlide(idx, "cta", v),
+      sub: (v) => updateSlide(idx, "sub", v),
+      tag: (tIdx) => (v) => updateSlideTag(idx, tIdx, v),
+    };
+
+    // 添加样式编辑器
+    const fields = ['title', 'subtitle', 'heading', 'text', 'extra', 'cta', 'sub'];
+    fields.forEach(field => {
+      baseEditors[`${field}Style`] = slides[idx]?.[`${field}Style`] || {};
+      baseEditors[`update${field.charAt(0).toUpperCase() + field.slice(1)}Style`] = (style) => {
+        setSlides((prev) =>
+          prev.map((s, i) => {
+            if (i !== idx) return s;
+            return { ...s, [`${field}Style`]: style };
+          })
+        );
+      };
+    });
+
+    return baseEditors;
+  };
 
   // AI设计编辑器函数
   const updateAiSingleContent = useCallback((field, val) => {
@@ -241,6 +276,20 @@ function App() {
       }
     : null;
 
+  // AI单页版emoji编辑器
+  const aiSingleEmojiEditor = aiSingleDesign
+    ? {
+        onEmojiChange: (val) => updateAiSingleContent("emoji", val),
+        style: aiSingleDesign.content?.emojiStyle || { fontSize: '24px' },
+        onStyleChange: (style) => {
+          setAiSingleDesign((prev) => ({
+            ...prev,
+            content: { ...prev.content, emojiStyle: style },
+          }));
+        },
+      }
+    : null;
+
   // AI分页版设计更新函数
   const updateAiSplitSlide = useCallback((idx, field, val) => {
     if (!aiSplitDesign) return;
@@ -282,6 +331,45 @@ function App() {
     sub: (v) => updateAiSplitSlide(idx, "sub", v),
     tag: (tIdx) => (v) => updateAiSplitSlideTag(idx, tIdx, v),
   });
+
+  // AI分页版emoji编辑器（只在封面页显示）
+  const makeAiSplitEmojiEditor = (idx) => {
+    if (!aiSplitDesign || !slides[idx]) return null;
+    const slide = slides[idx];
+    if (slide.type !== 'cover') return null;
+    
+    return {
+      onEmojiChange: (val) => updateAiSplitSlide(idx, "emoji", val),
+      style: slide.emojiStyle || { 
+        fontSize: aiSplitDesign.styleConfig?.cover?.emoji?.fontSize || '48px',
+        marginBottom: aiSplitDesign.styleConfig?.cover?.emoji?.marginBottom || '16px'
+      },
+      onStyleChange: (style) => {
+        setAiSplitDesign((prev) => ({
+          ...prev,
+          slides: prev.slides.map((s, i) => 
+            i === idx ? { ...s, emojiStyle: style } : s
+          ),
+        }));
+        setSlides((prev) =>
+          prev.map((s, i) => (i === idx ? { ...s, emojiStyle: style } : s))
+        );
+      },
+    };
+  };
+
+  // 分页版emoji编辑器（非AI设计模式，只在封面页显示）
+  const makeSplitEmojiEditor = (idx) => {
+    if (!slides || !slides[idx]) return null;
+    const slide = slides[idx];
+    if (slide.type !== 'cover') return null;
+    
+    return {
+      onEmojiChange: (val) => updateSlide(idx, "emoji", val),
+      style: slide.emojiStyle || { fontSize: '24px' },
+      onStyleChange: (style) => updateSlide(idx, "emojiStyle", style),
+    };
+  };
 
   // 处理LLM配置保存
   const handleLLMConfigSave = useCallback((config) => {
@@ -521,6 +609,7 @@ function App() {
           styleConfig={aiSplitDesign.styleConfig}
           editors={slides.map((_, idx) => makeAiSplitSlideEd(idx))}
           slideIdx={i}
+          emojiEditor={makeAiSplitEmojiEditor(i)}
         />
       );
     }
@@ -529,11 +618,12 @@ function App() {
     if (!renderers) return null;
 
     const { Cover, Content, End } = renderers;
+    const emojiEditor = makeSplitEmojiEditor(i);
     const props = { s, a, total, idx: i, ed };
 
-    if (s.type === "cover") return <Cover {...props} key={i} />;
+    if (s.type === "cover") return <Cover {...props} emojiEditor={emojiEditor} key={i} />;
     if (s.type === "content") return <Content {...props} key={i} />;
-    return <End {...props} key={i} />;
+    return <End {...props} emojiEditor={emojiEditor} key={i} />;
   };
 
   // 渲染
@@ -574,6 +664,7 @@ function App() {
           singleEd={singleEd}
           sectionDrag={sectionDrag}
           aiSingleEd={aiSingleEd}
+          aiSingleEmojiEditor={aiSingleEmojiEditor}
           borderRadius={borderRadius}
           renderSlide={renderSlide}
           makeSlideEd={makeSlideEd}
