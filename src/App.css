@@ -126,13 +126,13 @@ button:focus {
 /* 手机设备 (小于 768px) */
 @media screen and (max-width: 768px) {
   .app {
-    padding: 16px 12px !important;
+    padding: 20px 16px !important;
   }
   
   /* 主布局改为单列 */
   .app .main-grid {
     grid-template-columns: 1fr !important;
-    gap: 16px !important;
+    gap: 20px !important;
   }
   
   /* 左侧面板调整 - 放在预览区域下方 */
@@ -143,6 +143,7 @@ button:focus {
   /* 右侧预览区域调整 - 放在最上方 */
   .app .main-grid > div:last-child {
     order: 1;
+    position: static !important;
   }
   
   /* 模板和风格选择网格调整为2列 */
@@ -205,16 +206,16 @@ button:focus {
 /* 小屏手机 (小于 480px) */
 @media screen and (max-width: 480px) {
   .app {
-    padding: 12px 10px !important;
+    padding: 16px 12px !important;
   }
   
   .app h1 {
-    font-size: 20px !important;
+    font-size: 22px !important;
   }
   
   /* 面板内边距调整 */
-  .app div[style*="borderRadius: 13px"] {
-    padding: 14px !important;
+  .app div[style*="borderRadius: 14px"] {
+    padding: 16px !important;
   }
   
   /* 模板网格调整为2列 */
@@ -235,17 +236,17 @@ button:focus {
   }
   
   /* 导出按钮调整 */
-  .app button[style*="padding: 5px 11px"] {
+  .app button[style*="padding: 6px 14px"] {
     padding: 8px 12px !important;
     font-size: 12px !important;
   }
   
   /* 缩略图尺寸调整 */
   .app .slide-thumb-item {
-    width: 55px !important;
+    width: 58px !important;
   }
   
   .app .slide-thumb-img {
-    height: 73px !important;
+    height: 77px !important;
   }
 }

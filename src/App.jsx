@@ -1045,10 +1045,10 @@ function App() {
                   <div
                     ref={cardRef}
                     style={{
-                      animation: "rise .35s ease",
+                      animation: "rise .4s ease",
                       overflow: "hidden",
-                      boxShadow: "0 8px 36px rgba(0,0,0,.12)",
-                      borderRadius: 12,
+                      boxShadow: "0 12px 40px rgba(0,0,0,.12)",
+                      borderRadius: 14,
                     }}
                   >
                     <AIStyleRenderer design={aiSingleDesign} editor={aiSingleEd} />
@@ -1064,50 +1064,50 @@ function App() {
                   <div
                     style={{
                       background: "#fff",
-                      borderRadius: 13,
-                      minHeight: 460,
+                      borderRadius: 16,
+                      minHeight: 480,
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
                       justifyContent: "center",
-                      border: "2px dashed #ddd",
-                      color: "#ccc",
-                      gap: 8,
+                      border: "2px dashed #e0e0e0",
+                      color: "#bbb",
+                      gap: 12,
                     }}
                   >
-                    <span style={{ fontSize: 38 }}>{splitStyle === 'ai' ? '✨' : '📑'}</span>
-                    <span style={{ fontSize: 13 }}>{splitStyle === 'ai' ? '点击生成开始AI设计' : '分页卡片将在这里显示'}</span>
+                    <span style={{ fontSize: 44 }}>{splitStyle === 'ai' ? '✨' : '📑'}</span>
+                    <span style={{ fontSize: 14 }}>{splitStyle === 'ai' ? '点击生成开始AI设计' : '分页卡片将在这里显示'}</span>
                   </div>
                 )}
                 {loading && (
                   <div
                     style={{
                       background: "#fff",
-                      borderRadius: 13,
-                      minHeight: 460,
+                      borderRadius: 16,
+                      minHeight: 480,
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
                       justifyContent: "center",
-                      border: "2px dashed #ddd",
-                      gap: 10,
+                      border: "2px dashed #e0e0e0",
+                      gap: 12,
                     }}
                   >
-                    <span style={{ fontSize: 30 }}>{splitStyle === 'ai' ? '✨' : '✦'}</span>
-                    <span style={{ fontSize: 13, color: "#aaa" }}>{splitStyle === 'ai' ? 'AI正在设计...' : '正在生成分页卡片'}</span>
+                    <span style={{ fontSize: 36 }}>{splitStyle === 'ai' ? '✨' : '✦'}</span>
+                    <span style={{ fontSize: 14, color: "#999" }}>{splitStyle === 'ai' ? 'AI正在设计...' : '正在生成分页卡片'}</span>
                     <Dots />
                   </div>
                 )}
                 {slides && !loading && (
-                  <div style={{ animation: "rise .35s ease" }}>
+                  <div style={{ animation: "rise .4s ease" }}>
                     {/* 工具栏 */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#888", letterSpacing: "1px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#666" }}>
                         {slideIdx + 1} / {slides.length} 张
                       </span>
-                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                         {expMsg && (
-                          <span style={{ fontSize: 11, fontWeight: 700, color: expMsg.startsWith("✓") ? "#4a7c59" : "#888" }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: expMsg.startsWith("✓") ? "#4a7c59" : "#999" }}>
                             {expMsg}
                           </span>
                         )}
@@ -1115,15 +1115,16 @@ function App() {
                           onClick={() => exportSlide(slideIdx, "hd")}
                           disabled={exporting || !h2cOk}
                           style={{
-                            padding: "5px 10px",
-                            borderRadius: 6,
-                            border: `1px solid ${palette.a}`,
+                            padding: "6px 14px",
+                            borderRadius: 8,
+                            border: `1.5px solid ${palette.a}`,
                             background: "#fff",
                             color: palette.a,
-                            fontSize: 11,
-                            fontWeight: 800,
+                            fontSize: 12,
+                            fontWeight: 600,
                             cursor: "pointer",
                             opacity: exporting ? 0.6 : 1,
+                            transition: "all .2s ease",
                           }}
                         >
                           {exporting ? <Dots /> : "⬇ 当前页"}
@@ -1132,15 +1133,17 @@ function App() {
                           onClick={() => exportAll()}
                           disabled={exporting || !h2cOk}
                           style={{
-                            padding: "5px 10px",
-                            borderRadius: 6,
+                            padding: "6px 14px",
+                            borderRadius: 8,
                             border: "none",
                             background: palette.a,
                             color: "#fff",
-                            fontSize: 11,
-                            fontWeight: 800,
+                            fontSize: 12,
+                            fontWeight: 600,
                             cursor: "pointer",
                             opacity: exporting ? 0.6 : 1,
+                            boxShadow: `0 2px 8px ${palette.a}40`,
+                            transition: "all .2s ease",
                           }}
                         >
                           {exporting ? <Dots /> : "⬇ 导出全部"}
@@ -1149,31 +1152,33 @@ function App() {
                     </div>
 
                     {/* 主预览 */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
                       <button
                         className="slide-nav-btn"
                         onClick={() => setSlideIdx((i) => Math.max(0, i - 1))}
                         disabled={slideIdx === 0}
                         style={{
-                          width: 32,
-                          height: 32,
+                          width: 36,
+                          height: 36,
                           borderRadius: "50%",
-                          border: `1.5px solid ${palette.a}`,
+                          border: `2px solid ${palette.a}`,
                           background: "#fff",
                           color: palette.a,
-                          fontSize: 15,
+                          fontSize: 18,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                           flexShrink: 0,
                           padding: 0,
                           cursor: slideIdx === 0 ? "not-allowed" : "pointer",
-                          opacity: slideIdx === 0 ? 0.3 : 1,
+                          opacity: slideIdx === 0 ? 0.4 : 1,
+                          transition: "all .2s ease",
+                          boxShadow: slideIdx === 0 ? "none" : "0 2px 8px rgba(0,0,0,.1)",
                         }}
                       >
                         ‹
                       </button>
-                      <div className="slide-preview" style={{ width: 375, overflow: "hidden", boxShadow: "0 6px 28px rgba(0,0,0,.14)", borderRadius: 12, margin: "0 auto" }}>
+                      <div className="slide-preview" style={{ width: 375, overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,.12)", borderRadius: 14, margin: "0 auto" }}>
                         <div>
                           {renderSlide(slides[slideIdx], slideIdx, slides.length, makeSlideEd(slideIdx))}
                         </div>
@@ -1183,20 +1188,22 @@ function App() {
                         onClick={() => setSlideIdx((i) => Math.min(slides.length - 1, i + 1))}
                         disabled={slideIdx === slides.length - 1}
                         style={{
-                          width: 32,
-                          height: 32,
+                          width: 36,
+                          height: 36,
                           borderRadius: "50%",
-                          border: `1.5px solid ${palette.a}`,
+                          border: `2px solid ${palette.a}`,
                           background: "#fff",
                           color: palette.a,
-                          fontSize: 15,
+                          fontSize: 18,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                           flexShrink: 0,
                           padding: 0,
                           cursor: slideIdx === slides.length - 1 ? "not-allowed" : "pointer",
-                          opacity: slideIdx === slides.length - 1 ? 0.3 : 1,
+                          opacity: slideIdx === slides.length - 1 ? 0.4 : 1,
+                          transition: "all .2s ease",
+                          boxShadow: slideIdx === slides.length - 1 ? "none" : "0 2px 8px rgba(0,0,0,.1)",
                         }}
                       >
                         ›
@@ -1204,7 +1211,7 @@ function App() {
                     </div>
 
                     {/* 缩略图 — 拖拽排序 */}
-                    <div className="slide-thumbnails" style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, alignItems: "flex-start" }}>
+                    <div className="slide-thumbnails" style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6, alignItems: "flex-start" }}>
                       {slides.map((s, i) => {
                         const isSlideTarget = slideDrag.target === i && slideDrag.active !== i;
                         return (
@@ -1230,22 +1237,22 @@ function App() {
                             className="slide-thumb-item"
                             style={{
                               flexShrink: 0,
-                              width: 60,
-                              borderRadius: 6,
+                              width: 64,
+                              borderRadius: 8,
                               overflow: "hidden",
                               boxShadow:
                                 slideIdx === i
                                   ? `0 0 0 2px ${palette.a}`
                                   : isSlideTarget
-                                    ? `0 0 0 2px ${palette.a}88, -3px 0 0 ${palette.a}`
-                                    : "0 1px 4px rgba(0,0,0,.12)",
-                              opacity: slideDrag.active === i ? 0.3 : slideIdx === i ? 1 : 0.75,
-                              transition: "all .15s",
+                                    ? `0 0 0 2px ${palette.a}88`
+                                    : "0 1px 3px rgba(0,0,0,.1)",
+                              opacity: slideDrag.active === i ? 0.4 : slideIdx === i ? 1 : 0.8,
+                              transition: "all .2s ease",
                               background: "#fff",
                               cursor: "grab",
                             }}
                           >
-                            <div className="slide-thumb-img" style={{ width: 60, height: 80, overflow: "hidden", position: "relative", flexShrink: 0, borderRadius: "6px 6px 0 0" }}>
+                            <div className="slide-thumb-img" style={{ width: 64, height: 85, overflow: "hidden", position: "relative", flexShrink: 0, borderRadius: "8px 8px 0 0" }}>
                               <div
                                 style={{
                                   width: 375,
@@ -1265,14 +1272,14 @@ function App() {
                               className="slide-thumb-label"
                               style={{
                                 textAlign: "center",
-                                padding: "3px 0",
-                                fontSize: 9,
-                                fontWeight: 700,
-                                color: slideIdx === i ? palette.a : "#aaa",
+                                padding: "4px 0",
+                                fontSize: 10,
+                                fontWeight: 600,
+                                color: slideIdx === i ? palette.a : "#888",
                                 background: "#fff",
                               }}
                             >
-                              {i === 0 ? "封" : i === slides.length - 1 ? "尾" : i}
+                              {i === 0 ? "封面" : i === slides.length - 1 ? "结尾" : `第${i}页`}
                             </div>
                           </div>
                         );
