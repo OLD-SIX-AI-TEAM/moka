@@ -11,6 +11,8 @@ export function ContentPanel({
   error,
   onGenerate,
   palette,
+  llmConfig,
+  onOpenLLMConfig,
 }) {
   return (
     <div className="content-panel">
@@ -81,6 +83,30 @@ export function ContentPanel({
         </button>
         
         {error && <div className="error-message">{error}</div>}
+      </div>
+
+      {/* LLM配置 */}
+      <div className="panel-section llm-section">
+        <div className="llm-config-header">
+          <h3 className="section-title">🤖 AI模型配置</h3>
+          <button
+            className="llm-config-btn"
+            onClick={onOpenLLMConfig}
+            title="修改LLM配置"
+          >
+            ⚙️ 修改
+          </button>
+        </div>
+        <div className="llm-config-info">
+          <div className="llm-info-item">
+            <span className="llm-info-label">提供商类型</span>
+            <span className="llm-info-value">{llmConfig?.provider === 'openai' ? 'OpenAI' : 'Anthropic'}</span>
+          </div>
+          <div className="llm-info-item">
+            <span className="llm-info-label">模型</span>
+            <span className="llm-info-value">{llmConfig?.model || '默认'}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

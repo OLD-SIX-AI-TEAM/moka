@@ -917,7 +917,8 @@ body {
 .content-panel {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .content-panel .panel-section {
@@ -933,7 +934,8 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
+  min-height: 0;
 }
 
 .content-panel .panel-section.content-section .section-title {
@@ -1266,4 +1268,67 @@ body {
 .efdk:focus {
   background: rgba(255, 255, 255, 0.14);
   box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.2);
+}
+
+/* ========== LLM配置区域 ========== */
+.llm-section {
+  flex-shrink: 0;
+}
+
+.llm-config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.llm-config-header .section-title {
+  margin-bottom: 0;
+}
+
+.llm-config-btn {
+  padding: 6px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.llm-config-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--theme-primary);
+  color: var(--text-primary);
+}
+
+.llm-config-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.llm-info-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.llm-info-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.llm-info-value {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 500;
 }
