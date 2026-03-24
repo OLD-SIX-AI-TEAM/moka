@@ -284,7 +284,7 @@ function SplitView({
       {/* 隐藏的导出容器 */}
       <div className="export-hidden" aria-hidden="true">
         {slides.map((s, i) => (
-          <div key={i} ref={(el) => (slideRefs.current[i] = el)}>
+          <div key={i} ref={(el) => (slideRefs.current[i] = el)} style={{ width: '420px', height: '560px' }}>
             {renderSlide(s, i, slides.length, undefined)}
           </div>
         ))}
