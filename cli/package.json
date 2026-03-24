@@ -1,0 +1,22 @@
+{
+  "name": "imarticle-cli",
+  "version": "1.0.0",
+  "description": "Imarticle CLI - 命令行图文卡片生成工具",
+  "type": "module",
+  "bin": {
+    "imarticle": "./bin/imarticle.js"
+  },
+  "scripts": {
+    "start": "node bin/imarticle.js"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "puppeteer": "^22.0.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1",
+    "fs-extra": "^11.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
