@@ -29,27 +29,25 @@ export function DarkContent({ s, a, idx, total, ed }) {
   return (
     <div style={{ background: "#0a0a0a", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 80% 20%, ${a}15 0%, transparent 40%)` }} />
-      <div style={{ display: "flex", height: "100%" }}>
-        <div style={{ width: "25%", background: `linear-gradient(180deg, ${a}30, ${a}10)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderRight: `1px solid ${a}20` }}>
-          <div style={{ fontSize: 56, fontWeight: 300, color: a, opacity: 0.8 }}>{String(idx).padStart(2, "0")}</div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "32px 28px", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+          <div style={{ width: 52, height: 52, background: `linear-gradient(135deg, ${a}40, ${a}20)`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${a}30` }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: a }}>{String(idx).padStart(2, "0")}</div>
+          </div>
+          <div style={{ width: 3, height: 30, background: a }} />
         </div>
-        <div style={{ flex: 1, padding: "28px 24px", display: "flex", flexDirection: "column", boxSizing: "border-box", position: "relative", zIndex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-            <div style={{ width: 3, height: 30, background: a }} />
-            <EditableText v={s.heading} on={ed?.heading} block dk style={{ flex: 1, fontSize: 18, fontWeight: 600, color: "#fff", lineHeight: 1.3 }} />
+        <EditableText v={s.heading} on={ed?.heading} block dk style={{ fontSize: 20, fontWeight: 600, color: "#fff", lineHeight: 1.3, marginBottom: 16 }} />
+        <div style={{ flex: 1 }}>
+          <EditableText v={s.text} on={ed?.text} block dk style={{ fontSize: 14, color: "#888", lineHeight: 1.9 }} />
+        </div>
+        {s.extra && (
+          <div style={{ marginTop: 20, padding: "16px 20px", background: `${a}10`, border: `1px solid ${a}30`, borderRadius: 8 }}>
+            <div style={{ fontSize: 10, color: a, marginBottom: 8, letterSpacing: "1px" }}>◆ INSIGHT</div>
+            <EditableText v={s.extra} on={ed?.extra} block dk style={{ fontSize: 13, color: "#aaa", lineHeight: 1.7 }} />
           </div>
-          <div style={{ flex: 1 }}>
-            <EditableText v={s.text} on={ed?.text} block dk style={{ fontSize: 13, color: "#666", lineHeight: 1.9 }} />
-          </div>
-          {s.extra && (
-            <div style={{ marginTop: 16, padding: "14px 18px", background: `${a}10`, border: `1px solid ${a}30` }}>
-              <div style={{ fontSize: 10, color: a, marginBottom: 6, letterSpacing: "1px" }}>◆ INSIGHT</div>
-              <EditableText v={s.extra} on={ed?.extra} block dk style={{ fontSize: 12, color: "#888", lineHeight: 1.7 }} />
-            </div>
-          )}
-          <div style={{ display: "flex", gap: 6, marginTop: 20, alignItems: "center" }}>
-            {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 28 : 6, height: 2, background: i === idx ? a : "#333" }} />)}
-          </div>
+        )}
+        <div style={{ display: "flex", gap: 6, marginTop: 24, alignItems: "center" }}>
+          {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 28 : 6, height: 2, background: i === idx ? a : "#333" }} />)}
         </div>
       </div>
     </div>

@@ -4,12 +4,14 @@ import { FONT_FAMILY } from "../../../constants";
 export function FashionCover({ s, a, total, ed }) {
   return (
     <div style={{ background: "#0d0d0d", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "35%", background: a, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "32px 24px", boxSizing: "border-box" }}>
-        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.7)", letterSpacing: "4px", marginBottom: 16, writingMode: "vertical-rl", textOrientation: "mixed", transform: "rotate(180deg)", alignSelf: "center" }}>{s.category?.toUpperCase?.() || ""}</div>
-        <div style={{ width: 2, height: 60, background: "rgba(255,255,255,0.4)", margin: "0 auto" }} />
-      </div>
-      <div style={{ marginLeft: "35%", padding: "48px 40px 48px 48px", display: "flex", flexDirection: "column", height: "100%", boxSizing: "border-box" }}>
-        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", letterSpacing: "3px", marginBottom: 20 }}>FASHION</div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "48px 40px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 32 }}>
+          <div style={{ width: 60, height: 60, background: a, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.9)", letterSpacing: "2px", fontWeight: 600 }}>{s.category?.toUpperCase?.() || ""}</div>
+          </div>
+          <div style={{ width: 2, height: 60, background: "rgba(255,255,255,0.4)" }} />
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", letterSpacing: "3px" }}>FASHION</div>
+        </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 42, fontWeight: 900, color: "#fff", lineHeight: 1.05, letterSpacing: "-1px", marginBottom: 24 }} />
           {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 16, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, fontStyle: "italic", maxWidth: "85%" }} />}
@@ -25,27 +27,26 @@ export function FashionCover({ s, a, total, ed }) {
 export function FashionContent({ s, a, idx, total, ed }) {
   return (
     <div style={{ background: "#fff", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", height: "100%" }}>
-        <div style={{ width: "25%", background: a, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px" }}>
-          <div style={{ fontSize: 56, fontWeight: 300, color: "rgba(255,255,255,0.9)", fontFamily: "Georgia, serif" }}>{String.fromCharCode(8544 + idx - 1)}</div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "36px 32px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 28 }}>
+          <div style={{ width: 56, height: 56, background: a, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ fontSize: 22, fontWeight: 300, color: "rgba(255,255,255,0.95)", fontFamily: "Georgia, serif" }}>{String.fromCharCode(8544 + idx - 1)}</div>
+          </div>
+          <div style={{ flex: 1, height: 1, background: "#f0f0f0" }} />
         </div>
-        <div style={{ flex: 1, padding: "36px 32px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 24, paddingBottom: 16, borderBottom: "1px solid #f0f0f0" }}>
-            <EditableText v={s.heading} on={ed?.heading} block style={{ flex: 1, fontSize: 22, fontWeight: 800, color: "#111", lineHeight: 1.2, textTransform: "uppercase", letterSpacing: "0.5px" }} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#444", lineHeight: 1.9 }} />
-            {s.extra && (
-              <div style={{ marginTop: 24, padding: "20px 24px", background: "#f8f8f8", position: "relative" }}>
-                <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: a }} />
-                <div style={{ fontSize: 10, fontWeight: 700, color: a, letterSpacing: "2px", marginBottom: 8 }}>STYLE NOTE</div>
-                <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#555", lineHeight: 1.75 }} />
-              </div>
-            )}
-          </div>
-          <div style={{ display: "flex", gap: 8, marginTop: 24, alignItems: "center" }}>
-            {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 32 : 8, height: 3, background: i === idx ? a : "#e0e0e0" }} />)}
-          </div>
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 24, fontWeight: 800, color: "#111", lineHeight: 1.2, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 16 }} />
+        <div style={{ flex: 1 }}>
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#444", lineHeight: 1.9 }} />
+          {s.extra && (
+            <div style={{ marginTop: 24, padding: "20px 24px", background: "#f8f8f8", position: "relative", borderRadius: 8 }}>
+              <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: a, borderRadius: "4px 0 0 4px" }} />
+              <div style={{ fontSize: 10, fontWeight: 700, color: a, letterSpacing: "2px", marginBottom: 8 }}>STYLE NOTE</div>
+              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#555", lineHeight: 1.75 }} />
+            </div>
+          )}
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 28, alignItems: "center" }}>
+          {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 32 : 8, height: 3, background: i === idx ? a : "#e0e0e0" }} />)}
         </div>
       </div>
     </div>

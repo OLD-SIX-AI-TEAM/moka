@@ -28,27 +28,24 @@ export function CleanCover({ s, a, total, ed }) {
 export function CleanContent({ s, a, idx, total, ed }) {
   return (
     <div style={{ background: "#fff", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", height: "100%" }}>
-        <div style={{ width: "28%", background: a, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ fontSize: 48, fontWeight: 300, color: "rgba(255,255,255,0.9)" }}>{String.fromCharCode(8544 + idx - 1)}</div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "36px 32px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
+          <div style={{ width: 52, height: 52, background: a, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ fontSize: 22, fontWeight: 300, color: "rgba(255,255,255,0.95)" }}>{String.fromCharCode(8544 + idx - 1)}</div>
+          </div>
+          <div style={{ flex: 1, height: 1, background: "#f0f0f0" }} />
         </div>
-        <div style={{ flex: 1, padding: "32px 28px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: `${a}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: a }}>{idx}</div>
-            <div style={{ flex: 1, height: 1, background: "#f0f0f0" }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 24, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.3, marginBottom: 16 }} />
+        <div style={{ flex: 1 }}>
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#555", lineHeight: 1.9 }} />
+        </div>
+        {s.extra && (
+          <div style={{ marginTop: 24, padding: "18px 22px", background: `${a}08`, borderRadius: 8, borderLeft: `4px solid ${a}` }}>
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#444", lineHeight: 1.75 }} />
           </div>
-          <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 22, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.3, marginBottom: 16 }} />
-          <div style={{ flex: 1 }}>
-            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#555", lineHeight: 1.9 }} />
-          </div>
-          {s.extra && (
-            <div style={{ marginTop: 20, padding: "16px 20px", background: `${a}08`, borderRadius: 8, borderLeft: `4px solid ${a}` }}>
-              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#444", lineHeight: 1.75 }} />
-            </div>
-          )}
-          <div style={{ display: "flex", gap: 6, marginTop: 24, alignItems: "center" }}>
-            {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 28 : 6, height: 4, borderRadius: 2, background: i === idx ? a : "#e5e5e5" }} />)}
-          </div>
+        )}
+        <div style={{ display: "flex", gap: 6, marginTop: 28, alignItems: "center" }}>
+          {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 28 : 6, height: 4, borderRadius: 2, background: i === idx ? a : "#e5e5e5" }} />)}
         </div>
       </div>
     </div>

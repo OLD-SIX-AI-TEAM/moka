@@ -35,31 +35,33 @@ export function FoodCover({ s, a, total, ed }) {
 export function FoodContent({ s, a, idx, total, ed }) {
   return (
     <div style={{ background: "#fef9f3", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", height: "100%" }}>
-        <div style={{ width: "30%", background: a, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
-          <div style={{ position: "absolute", top: 10, left: 0, right: 0, height: 6, background: "rgba(255,255,255,0.2)" }} />
-          <div style={{ fontSize: 48, marginBottom: 8, filter: "brightness(0) invert(1)" }}>{["🥘", "🍜", "🥗", "🍰", "🍹"][(idx - 1) % 5]}</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", letterSpacing: "2px" }}>STEP {idx}</div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "32px 28px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+          <div style={{ width: 60, height: 60, background: a, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+            <div style={{ fontSize: 32, filter: "brightness(0) invert(1)" }}>{["🥘", "🍜", "🥗", "🍰", "🍹"][(idx - 1) % 5]}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: a, letterSpacing: "2px", fontWeight: 700 }}>STEP {idx}</div>
+            <div style={{ fontSize: 10, color: "#888" }}>Recipe Guide</div>
+          </div>
         </div>
-        <div style={{ flex: 1, padding: "32px 28px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-          <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 22, fontWeight: 800, color: "#2d1f14", lineHeight: 1.25, marginBottom: 16 }} />
-          <div style={{ flex: 1 }}>
-            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#5a4535", lineHeight: 1.85 }} />
-          </div>
-          {s.extra && (
-            <div style={{ marginTop: 20, padding: "16px 20px", background: "#fff", borderRadius: 8, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", position: "relative" }}>
-              <div style={{ position: "absolute", top: -1, left: 20, right: 20, height: 3, background: a, borderRadius: "0 0 4px 4px" }} />
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <span style={{ fontSize: 16 }}>👨‍🍳</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: a, letterSpacing: "1px" }}>CHEF'S TIP</span>
-              </div>
-              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#5a4535", lineHeight: 1.7 }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 24, fontWeight: 800, color: "#2d1f14", lineHeight: 1.25, marginBottom: 16 }} />
+        <div style={{ flex: 1 }}>
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#5a4535", lineHeight: 1.85 }} />
+        </div>
+        {s.extra && (
+          <div style={{ marginTop: 20, padding: "18px 22px", background: "#fff", borderRadius: 8, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", position: "relative" }}>
+            <div style={{ position: "absolute", top: -1, left: 20, right: 20, height: 3, background: a, borderRadius: "0 0 4px 4px" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 18 }}>👨‍🍳</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: a, letterSpacing: "1px" }}>CHEF'S TIP</span>
             </div>
-          )}
-          <div style={{ display: "flex", gap: 6, marginTop: 20, alignItems: "center" }}>
-            <div style={{ flex: 1, height: 1, background: `${a}20` }} />
-            {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 20 : 6, height: 6, borderRadius: 3, background: i === idx ? a : `${a}25` }} />)}
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#5a4535", lineHeight: 1.7 }} />
           </div>
+        )}
+        <div style={{ display: "flex", gap: 6, marginTop: 24, alignItems: "center" }}>
+          <div style={{ flex: 1, height: 1, background: `${a}20` }} />
+          {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 20 : 6, height: 6, borderRadius: 3, background: i === idx ? a : `${a}25` }} />)}
         </div>
       </div>
     </div>

@@ -26,29 +26,29 @@ export function PopContent({ s, a, idx, total, ed }) {
   const shapes = ["■", "●", "▲", "◆", "★"];
   return (
     <div style={{ background: "#fff", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", height: "100%" }}>
-        <div style={{ width: "25%", background: "#000", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
-          <div style={{ fontSize: 48, color: a, transform: "rotate(-5deg)", filter: `drop-shadow(2px 2px 0 ${a})` }}>{shapes[(idx - 1) % 5]}</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.7)", letterSpacing: "2px", marginTop: 8, transform: "rotate(-5deg)" }}>SECTION</div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "32px 28px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+          <div style={{ width: 56, height: 56, background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ fontSize: 24, color: a, transform: "rotate(-5deg)", filter: `drop-shadow(2px 2px 0 ${a})` }}>{shapes[(idx - 1) % 5]}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: "#000", letterSpacing: "2px", fontWeight: 700 }}>SECTION</div>
+            <div style={{ width: 40, height: 3, background: idx % 2 === 0 ? a : "#000", marginTop: 8 }} />
+          </div>
+          <div style={{ width: 3, height: 3, background: "#000", transform: "rotate(45deg)" }} />
         </div>
-        <div style={{ flex: 1, padding: "28px 24px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-            <div style={{ width: 40, height: 3, background: idx % 2 === 0 ? a : "#000" }} />
-            <div style={{ width: 3, height: 3, background: "#000", transform: "rotate(45deg)" }} />
-            <EditableText v={s.heading} on={ed?.heading} block style={{ flex: 1, fontSize: 20, fontWeight: 900, color: "#000", lineHeight: 1.2, textTransform: "uppercase" }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 22, fontWeight: 900, color: "#000", lineHeight: 1.2, marginBottom: 16, textTransform: "uppercase" }} />
+        <div style={{ flex: 1 }}>
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#333", lineHeight: 1.8 }} />
+        </div>
+        {s.extra && (
+          <div style={{ marginTop: 20, padding: "16px 20px", border: `3px solid ${a}`, position: "relative", transform: "rotate(0.5deg)" }}>
+            <div style={{ position: "absolute", top: -10, left: 12, background: "#fff", padding: "0 8px", fontSize: 11, fontWeight: 900, color: a }}>HOT TIP!</div>
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#333", lineHeight: 1.7 }} />
           </div>
-          <div style={{ flex: 1 }}>
-            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#333", lineHeight: 1.8 }} />
-          </div>
-          {s.extra && (
-            <div style={{ marginTop: 16, padding: "14px 18px", border: `3px solid ${a}`, position: "relative", transform: "rotate(0.5deg)" }}>
-              <div style={{ position: "absolute", top: -10, left: 12, background: "#fff", padding: "0 8px", fontSize: 11, fontWeight: 900, color: a }}>HOT TIP!</div>
-              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 12, color: "#333", lineHeight: 1.7 }} />
-            </div>
-          )}
-          <div style={{ display: "flex", gap: 8, marginTop: 20, alignItems: "center" }}>
-            {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 28 : 8, height: 8, background: i === idx ? a : "#000", transform: "rotate(-1deg)" }} />)}
-          </div>
+        )}
+        <div style={{ display: "flex", gap: 8, marginTop: 24, alignItems: "center" }}>
+          {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 28 : 8, height: 8, background: i === idx ? a : "#000", transform: "rotate(-1deg)" }} />)}
         </div>
       </div>
     </div>

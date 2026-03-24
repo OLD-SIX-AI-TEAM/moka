@@ -29,29 +29,32 @@ export function FinanceCover({ s, a, total, ed }) {
 export function FinanceContent({ s, a, idx, total, ed }) {
   return (
     <div style={{ background: "#f8f9fa", width: "100%", aspectRatio: "3/4", fontFamily: FONT_FAMILY, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", height: "100%" }}>
-        <div style={{ width: "30%", background: "#1a1a2e", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
-          <div style={{ fontSize: 64, fontWeight: 300, color: "#ffd700", fontFamily: "Georgia, serif" }}>{String.fromCharCode(65 + idx - 1)}</div>
-          <div style={{ position: "absolute", bottom: 20, fontSize: 9, color: "rgba(255,255,255,0.5)", letterSpacing: "2px" }}>MARKET INSIGHT</div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "32px 28px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+          <div style={{ width: 48, height: 48, background: "#1a1a2e", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%" }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#ffd700" }}>{String.fromCharCode(65 + idx - 1)}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 9, color: "#1a1a2e", letterSpacing: "2px", fontWeight: 600 }}>MARKET INSIGHT</div>
+            <div style={{ fontSize: 10, color: "#888" }}>Section {idx}</div>
+          </div>
         </div>
-        <div style={{ flex: 1, padding: "28px 24px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-          <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 18, fontWeight: 700, color: "#1a1a2e", lineHeight: 1.35, marginBottom: 16 }} />
-          <div style={{ flex: 1 }}>
-            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 13, color: "#444", lineHeight: 1.85 }} />
-          </div>
-          {s.extra && (
-            <div style={{ marginTop: 16, padding: "14px 18px", background: "#fff", borderLeft: "3px solid #ffd700" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <span style={{ fontSize: 14 }}>📈</span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#ffd700", letterSpacing: "1px" }}>ANALYST VIEW</span>
-              </div>
-              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 12, color: "#555", lineHeight: 1.7 }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 20, fontWeight: 700, color: "#1a1a2e", lineHeight: 1.35, marginBottom: 16 }} />
+        <div style={{ flex: 1 }}>
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#444", lineHeight: 1.85 }} />
+        </div>
+        {s.extra && (
+          <div style={{ marginTop: 20, padding: "16px 20px", background: "#fff", borderRadius: 8, borderLeft: "4px solid #ffd700", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 16 }}>📈</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#ffd700", letterSpacing: "1px" }}>ANALYST VIEW</span>
             </div>
-          )}
-          <div style={{ display: "flex", gap: 6, marginTop: 20, alignItems: "center" }}>
-            <div style={{ flex: 1, height: 1, background: "#ddd" }} />
-            {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 24 : 6, height: 4, background: i === idx ? "#1a1a2e" : "#ccc" }} />)}
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#555", lineHeight: 1.7 }} />
           </div>
+        )}
+        <div style={{ display: "flex", gap: 6, marginTop: 24, alignItems: "center" }}>
+          <div style={{ flex: 1, height: 1, background: "#ddd" }} />
+          {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === idx ? 24 : 6, height: 4, background: i === idx ? "#1a1a2e" : "#ccc" }} />)}
         </div>
       </div>
     </div>
