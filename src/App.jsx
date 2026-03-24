@@ -96,8 +96,8 @@ function App() {
 
   // LLM 配置
   const [showLLMConfig, setShowLLMConfig] = useState(false);
-  const llmConfig = getEnvLLMConfig();
-  const envConfigValid = isEnvConfigValid();
+  const [llmConfig, setLlmConfig] = useState(getEnvLLMConfig());
+  const envConfigValid = !!llmConfig.apiKey;
 
   // Refs
   const cardRef = useRef(null);
@@ -286,7 +286,8 @@ function App() {
   // 处理LLM配置保存
   const handleLLMConfigSave = useCallback((config) => {
     saveLLMConfig(config);
-    window.location.reload();
+    setLlmConfig(config);
+    setShowLLMConfig(false);
   }, []);
 
   // AI设计生成
@@ -597,6 +598,8 @@ function App() {
           error={error}
           onGenerate={generate}
           palette={palette}
+          llmConfig={llmConfig}
+          onOpenLLMConfig={() => setShowLLMConfig(true)}
         />
       </div>
 

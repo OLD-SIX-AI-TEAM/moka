@@ -96,9 +96,9 @@ export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
           <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: "#333" }}>
             🔧 配置 LLM
           </h2>
-          <p style={{ margin: "8px 0 0 0", fontSize: "13px", color: "#666", lineHeight: 1.5 }}>
+          {/* <p style={{ margin: "8px 0 0 0", fontSize: "13px", color: "#666", lineHeight: 1.5 }}>
             未检测到LLM配置，请填写以下信息以继续使用AI生成功能
-          </p>
+          </p> */}
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -113,7 +113,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
                 marginBottom: "6px",
               }}
             >
-              提供商
+              提供商类型
             </label>
             <div style={{ display: "flex", gap: "8px" }}>
               {Object.entries(LLM_PROVIDERS).map(([key, provider]) => (
