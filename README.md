@@ -19,7 +19,7 @@ AI驱动的爆款文案排版工具，专为小红书、微信公众号等内容
 - **框架**: React 19 + Vite 6
 - **样式**: CSS-in-JS
 - **部署**: Cloudflare Pages + Cloudflare Workers
-- **图片导出**: html-to-image（优先）+ html2canvas（降级）
+- **图片导出**: html-to-image
 - **AI服务**: 支持 Anthropic Claude、OpenAI GPT 等多种 LLM
 
 ## 本地开发
@@ -46,17 +46,25 @@ cp .env.example .env
 编辑 `.env` 文件：
 
 ```env
-# LLM 提供商: anthropic | openai
-VITE_LLM_PROVIDER=anthropic
+# LLM 配置
+# 提供商：openai、anthropic 或 aliyun
+VITE_LLM_PROVIDER=aliyun
 
-# API 基础地址（可选，留空使用默认）
-VITE_LLM_BASE_URL=
+# API 基础 URL (可选，留空使用默认值)
+# OpenAI 默认：https://api.openai.com/v1
+# Anthropic 默认：https://api.anthropic.com/v1
+# 阿里云百炼默认：https://dashscope.aliyuncs.com/compatible-mode/v1
+VITE_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 
-# API 密钥
-VITE_LLM_API_KEY=your_api_key_here
+# API 密钥 (必填)
+# 阿里云百炼请使用 DASHSCOPE_API_KEY
+VITE_LLM_API_KEY=sk-xxx
 
-# 模型名称（可选，留空使用默认）
-VITE_LLM_MODEL=
+# 模型 ID (可选，留空使用默认值)
+# OpenAI 默认：gpt-4o-mini
+# Anthropic 默认：claude-sonnet-4-20250514
+# 阿里云百炼推荐：qwen-plus, qwen-max, qwen-turbo
+VITE_LLM_MODEL=qwen-plus
 ```
 
 ### 启动开发服务器
@@ -106,66 +114,31 @@ npm run lint
 3. 进入 **Pages** > **Create a project** > **Upload assets**
 4. 上传 `dist` 文件夹内的所有文件
 
-### 部署 LLM Proxy Worker
-
-为了解决前端直接调用 OpenAI/Anthropic API 时的 CORS 跨域问题，需要部署 Cloudflare Worker 作为代理。
-
-详细步骤请参考 [workers/README.md](./workers/README.md)。
-
-快速部署：
-
-```bash
-# 安装 Wrangler CLI
-npm install -g wrangler
-
-# 登录 Cloudflare
-wrangler login
-
-# 部署 Worker
-cd workers
-wrangler deploy
-
-# 或使用脚本
-./deploy-worker.sh
-```
-
-部署后在 Cloudflare Dashboard 中设置环境变量：
-- `RSA_PRIVATE_KEY`: RSA 私钥（用于解密用户上传的 API Key）
-- `RSA_PUBLIC_KEY`: RSA 公钥（用于前端加密 API Key）
-- `ANTHROPIC_API_KEY`: 你的 Anthropic API Key
-- `OPENAI_API_KEY`: 你的 OpenAI API Key（可选）
-- `DASHSCOPE_API_KEY`: 阿里云百炼 API Key（可选）
-
-生成 RSA 密钥对：
-```bash
-# 生成私钥
-openssl genrsa -out private_key.pem 2048
-
-# 提取公钥
-openssl rsa -in private_key.pem -pubout -out public_key.pem
-
-# 转换为 Base64 格式（去掉换行符和 PEM 头尾）
-cat private_key.pem | base64 | tr -d '\n'
-cat public_key.pem | base64 | tr -d '\n'
-```
-
 ## 项目结构
 
 ```
-├── functions/              # Cloudflare Pages Functions
-│   └── api/
-│       └── proxy.js        # API 代理路由
 ├── public/                 # 静态资源
 │   ├── favicon.svg
-│   └── icons.svg
+│   ├── icons.svg
+│   └── logo.svg
 ├── src/
 │   ├── assets/            # 图片资源
 │   ├── components/        # 组件
 │   │   ├── common/       # 通用组件
 │   │   │   ├── DragRow.jsx
+│   │   │   ├── EditableEmoji.jsx
 │   │   │   ├── EditableText.jsx
 │   │   │   ├── Icons.jsx
 │   │   │   └── LLMConfigModal.jsx
+│   │   ├── layout/       # 布局组件
+│   │   │   ├── ContentPanel.jsx
+│   │   │   ├── ControlPanel.jsx
+│   │   │   ├── EditorLayout.jsx
+│   │   │   ├── Header.jsx
+│   │   │   ├── PreviewArea.jsx
+│   │   │   ├── PreviewPanel.jsx
+│   │   │   ├── SettingsPanel.jsx
+│   │   │   └── TopBar.jsx
 │   │   ├── templates/    # 模板组件
 │   │   │   ├── single/   # 单页模板（29种）
 │   │   │   │   ├── Editorial.jsx
@@ -185,33 +158,33 @@ cat public_key.pem | base64 | tr -d '\n'
 │   │   ├── ReferenceImageUploader.jsx
 │   │   └── VersionHistory.jsx
 │   ├── constants/         # 常量配置
-│   │   └── index.js
 │   ├── hooks/            # 自定义 Hooks
 │   │   ├── useDragReorder.js
-│   │   ├── useHtml2Canvas.js
-│   │   └── useHtmlToImage.js
+│   │   ├── useHtmlToImage.js
+│   │   ├── useLanguage.jsx
+│   │   └── useTheme.js
+│   ├── i18n/             # 国际化
+│   │   ├── en.js
+│   │   └── zh.js
 │   ├── prompts/          # AI Prompts
-│   │   └── aiDesignPrompt.js
 │   ├── services/         # 服务层
-│   │   └── llm.js        # LLM 客户端封装
+│   ├── utils/            # 工具函数
 │   ├── App.jsx           # 主应用
 │   ├── App.css           # 全局样式
-│   ├── constants.js      # 常量定义
 │   ├── index.css         # 入口样式
 │   └── main.jsx          # 入口文件
-├── workers/              # Cloudflare Worker
+├── cli/                  # 命令行工具
+│   ├── bin/
+│   ├── src/
 │   ├── README.md
-│   ├── llm-proxy.js      # LLM 代理 Worker
-│   └── wrangler.toml     # Wrangler 配置
-├── _headers              # Cloudflare Headers 配置
-├── _redirects            # Cloudflare Redirects 配置
+│   └── package.json
 ├── .env.example          # 环境变量示例
 ├── .nvmrc                # Node 版本锁定
-├── deploy-worker.sh      # Worker 部署脚本
 ├── eslint.config.js      # ESLint 配置
 ├── index.html            # HTML 入口
 ├── package.json
-└── vite.config.js        # Vite 配置
+├── vite.config.js        # Vite 配置
+└── wrangler.jsonc        # Wrangler 配置
 ```
 
 ## 模板分类
@@ -260,41 +233,12 @@ cat public_key.pem | base64 | tr -d '\n'
 5. 支持拖拽排序调整页面顺序
 6. 可单独导出当前页或一次性导出全部
 
-## API 端点
-
-部署 Worker 后，前端可通过以下端点调用：
-
-- **Anthropic**: `/api/anthropic/v1/messages`
-- **OpenAI**: `/api/openai/v1/chat/completions`
-- **通用代理**: `/api/proxy?url=<目标URL>&key=<API Key>`
-
 ## 注意事项
 
-1. **API Key 安全**: 生产环境请使用 Cloudflare Worker 代理，不要将 API Key 直接暴露在前端代码中
-2. **图片导出**: 优先使用 html-to-image，如遇到问题会自动降级到 html2canvas
+1. **API Key 安全**: 请妥善保管你的 API Key，不要将其提交到代码仓库
+2. **图片导出**: 使用 html-to-image 生成高清图片
 3. **浏览器兼容**: 推荐使用 Chrome、Edge、Safari 最新版本
 4. **移动端**: 支持移动端浏览器访问，但建议使用桌面端获得最佳编辑体验
-
-## 常见问题
-
-### API Key 解密失败
-
-**错误信息**: `API Key 解密失败，请重新配置`
-
-**原因**: 前端加密使用的 RSA 公钥与后端解密的私钥不匹配。
-
-**解决方案**:
-1. 清除浏览器 localStorage:
-   ```javascript
-   // 在浏览器控制台执行
-   localStorage.clear()
-   ```
-2. 重新刷新页面
-3. 在设置中重新输入 API Key
-
-**预防措施**: 
-- 确保 Cloudflare Worker 环境变量 `RSA_PUBLIC_KEY` 和 `RSA_PRIVATE_KEY` 是匹配的密钥对
-- 部署后所有用户需要重新配置 API Key
 
 ## 许可证
 

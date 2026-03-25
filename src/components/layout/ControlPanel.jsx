@@ -1,5 +1,5 @@
 /** @jsxImportSource react */
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ReferenceImageUploader } from "../ReferenceImageUploader";
 import { Dots } from "../common/Icons";
 import { useLanguage } from "../../hooks/useLanguage";
@@ -159,11 +159,25 @@ function ContentTab({
   onGenerate
 }) {
   const { t } = useLanguage();
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.selectionStart = textareaRef.current.value.length;
+        textareaRef.current.selectionEnd = textareaRef.current.value.length;
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="tab-panel">
       <section className="panel-section">
         <label className="section-label">{t('content')}</label>
         <textarea
+          ref={textareaRef}
           className="content-textarea"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -172,6 +186,7 @@ function ContentTab({
             : t('contentPlaceholderMulti')
           }
           rows={8}
+          autoFocus
         />
       </section>
 

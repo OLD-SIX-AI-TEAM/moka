@@ -1,5 +1,5 @@
 /** @jsxImportSource react */
-import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle, useRef } from "react";
 import { Dots } from "../common/Icons";
 import { LLM_PROVIDERS } from "../../services/llm";
 import { useLanguage } from "../../hooks/useLanguage";
@@ -18,6 +18,16 @@ export const ContentPanel = forwardRef(function ContentPanel({
   onOpenLLMConfig,
 }, ref) {
   const { t } = useLanguage();
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   // 获取显示的 provider 名称
   const getProviderName = () => {
@@ -117,14 +127,16 @@ export const ContentPanel = forwardRef(function ContentPanel({
       <div className="panel-section content-section">
         <h3 className="section-title">{t('content')}</h3>
         <textarea
+          ref={textareaRef}
           className="content-input-large"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={mode === "single" 
+          placeholder={mode === "single"
             ? t('contentPlaceholderSingle')
             : t('contentPlaceholderMulti')
           }
           rows={6}
+          autoFocus
         />
       </div>
 
