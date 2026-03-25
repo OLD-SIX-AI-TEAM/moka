@@ -13,8 +13,8 @@ export function PaperCover({ s, a, total, ed }) {
           <span style={{ fontSize: 10, color: a, letterSpacing: "2px", fontWeight: 600 }}>MY JOURNAL</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 30, fontWeight: 800, color: "#3d3d3d", lineHeight: 1.25, marginBottom: 16, transform: "rotate(-0.5deg)" }} />
-          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#666", lineHeight: 1.7, transform: "rotate(-0.5deg)" }} />}
+          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 30, fontWeight: 800, color: "#3d3d3d", lineHeight: 1.25, marginBottom: 16, transform: "rotate(-0.5deg)", ...ed?.titleStyle }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
+          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#666", lineHeight: 1.7, transform: "rotate(-0.5deg)", ...ed?.subtitleStyle }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           {Array.from({ length: total }).map((_, i) => <div key={i} style={{ width: i === 0 ? 24 : 6, height: 6, borderRadius: 3, background: i === 0 ? a : "#ddd" }} />)}
@@ -37,7 +37,7 @@ export function PaperContent({ s, a, idx, total, ed }) {
               <span style={{ fontSize: 8, color: "#999" }}>Day {idx}</span>
             </div>
             <div style={{ flex: 1, paddingTop: 8 }}>
-              <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 20, fontWeight: 800, color: "#3d3d3d", lineHeight: 1.3, marginBottom: 8 }} />
+              <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 20, fontWeight: 800, color: "#3d3d3d", lineHeight: 1.3, marginBottom: 8, ...ed?.headingStyle }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                 <div style={{ width: 20, height: 2, background: a }} />
                 <span style={{ fontSize: 10, color: "#999" }}>Page {idx}</span>
@@ -45,11 +45,11 @@ export function PaperContent({ s, a, idx, total, ed }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#555", lineHeight: 1.9 }} />
+            <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#555", lineHeight: 1.9, ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
           </div>
           {s.extra && (
             <div style={{ marginTop: 16, padding: "14px 18px", background: "#fff", border: `1px dashed ${a}60`, boxShadow: "2px 2px 0 rgba(0,0,0,0.05)", transform: "rotate(0.5deg)" }}>
-              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#666", lineHeight: 1.7 }} />
+              <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#666", lineHeight: 1.7, ...ed?.extraStyle }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
             </div>
           )}
           <div style={{ display: "flex", gap: 6, marginTop: 20, alignItems: "center" }}>
@@ -71,8 +71,8 @@ export function PaperEnd({ s, a, ed }) {
           <span style={{ fontSize: 32, transform: "rotate(5deg)" }}>💖</span>
           <span style={{ fontSize: 32, transform: "rotate(-5deg)" }}>✨</span>
         </div>
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 24, fontWeight: 800, color: "#3d3d3d", marginBottom: 12, lineHeight: 1.3 }} />
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#666", marginBottom: 28, lineHeight: 1.6 }} />
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 24, fontWeight: 800, color: "#3d3d3d", marginBottom: 12, lineHeight: 1.3, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#666", marginBottom: 28, lineHeight: 1.6, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>
           {s.tags.map((t, i) => <span key={i} style={{ padding: "6px 14px", background: "#fff", border: `1px solid ${a}50`, borderRadius: 4, fontSize: 12, color: a, boxShadow: "2px 2px 0 rgba(0,0,0,0.06)", transform: `rotate(${(i - 1) * 2}deg)` }}><EditableTag text={`#${t}`} c={a} on={ed?.tag?.(i)} /></span>)}
         </div>

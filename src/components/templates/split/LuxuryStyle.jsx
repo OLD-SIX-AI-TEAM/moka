@@ -32,11 +32,11 @@ export function LuxuryCover({ s, a, total, ed }) {
         <div style={{ width: 1, height: 60, background: "linear-gradient(180deg, transparent, #d4af37, transparent)", marginBottom: 32 }} />
         
         {/* 标题 */}
-        <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 42, fontWeight: 400, color: "#1a1a1a", lineHeight: 1.2, letterSpacing: "2px", marginBottom: 24 }} />
+        <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 42, fontWeight: 400, color: "#1a1a1a", lineHeight: 1.2, letterSpacing: "2px", marginBottom: 24, ...ed?.titleStyle }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
         
         {/* 副标题 */}
         {s.subtitle && (
-          <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#666", lineHeight: 1.8, fontStyle: "italic", letterSpacing: "1px", maxWidth: "80%" }} />
+          <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#666", lineHeight: 1.8, fontStyle: "italic", letterSpacing: "1px", maxWidth: "80%", ...ed?.subtitleStyle }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />
         )}
         
         {/* 底部装饰 */}
@@ -75,18 +75,18 @@ export function LuxuryContent({ s, a, idx, total, ed }) {
         </div>
         
         {/* 标题 */}
-        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 28, fontWeight: 400, color: "#1a1a1a", lineHeight: 1.3, letterSpacing: "1px", marginBottom: 32, paddingBottom: 24, borderBottom: "1px solid rgba(212,175,55,0.3)" }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 28, fontWeight: 400, color: "#1a1a1a", lineHeight: 1.3, letterSpacing: "1px", marginBottom: 32, paddingBottom: 24, borderBottom: "1px solid rgba(212,175,55,0.3)", ...ed?.headingStyle }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
         
         {/* 内容 */}
         <div style={{ flex: 1 }}>
-          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#444", lineHeight: 2, textAlign: "justify" }} />
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#444", lineHeight: 2, textAlign: "justify", ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
         </div>
         
         {/* 引用块 */}
         {s.extra && (
           <div style={{ marginTop: 32, padding: "28px 32px", background: "#f5f4f2", borderLeft: "3px solid #d4af37", position: "relative" }}>
             <div style={{ position: "absolute", top: -12, left: 24, background: "#faf9f7", padding: "0 16px", fontSize: 10, color: "#d4af37", letterSpacing: "3px" }}>✦ NOTE ✦</div>
-            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#555", lineHeight: 1.8, fontStyle: "italic" }} />
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#555", lineHeight: 1.8, fontStyle: "italic", ...ed?.extraStyle }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
           </div>
         )}
         
@@ -120,11 +120,11 @@ export function LuxuryEnd({ s, a, ed }) {
         
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", letterSpacing: "4px", marginBottom: 24 }}>THE FINALE</div>
         
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 32, fontWeight: 400, color: "#fff", marginBottom: 20, letterSpacing: "2px", lineHeight: 1.3 }} />
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 32, fontWeight: 400, color: "#fff", marginBottom: 20, letterSpacing: "2px", lineHeight: 1.3, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
         
         <div style={{ width: 60, height: 1, background: "#d4af37", margin: "24px auto" }} />
         
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 32, fontStyle: "italic", letterSpacing: "1px" }} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 32, fontStyle: "italic", letterSpacing: "1px", ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         
         {/* 标签 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center", marginBottom: 32 }}>

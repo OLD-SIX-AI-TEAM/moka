@@ -18,8 +18,8 @@ export function FoodCover({ s, a, total, ed }) {
           <div style={{ fontSize: 32 }}>🍴</div>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 36, fontWeight: 800, color: "#2d1f14", lineHeight: 1.1, marginBottom: 20 }} />
-          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 15, color: "#6b5344", lineHeight: 1.7, fontStyle: "italic" }} />}
+          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 36, fontWeight: 800, color: "#2d1f14", lineHeight: 1.1, marginBottom: 20, ...ed?.titleStyle }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
+          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 15, color: "#6b5344", lineHeight: 1.7, fontStyle: "italic", ...ed?.subtitleStyle }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${a}40, transparent)` }} />
@@ -45,9 +45,9 @@ export function FoodContent({ s, a, idx, total, ed }) {
             <div style={{ fontSize: 10, color: "#888" }}>Recipe Guide</div>
           </div>
         </div>
-        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 24, fontWeight: 800, color: "#2d1f14", lineHeight: 1.25, marginBottom: 16 }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 24, fontWeight: 800, color: "#2d1f14", lineHeight: 1.25, marginBottom: 16, ...ed?.headingStyle }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
         <div style={{ flex: 1 }}>
-          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#5a4535", lineHeight: 1.85 }} />
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 15, color: "#5a4535", lineHeight: 1.85, ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
         </div>
         {s.extra && (
           <div style={{ marginTop: 20, padding: "18px 22px", background: "#fff", borderRadius: 8, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", position: "relative" }}>
@@ -56,7 +56,7 @@ export function FoodContent({ s, a, idx, total, ed }) {
               <span style={{ fontSize: 18 }}>👨‍🍳</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: a, letterSpacing: "1px" }}>CHEF'S TIP</span>
             </div>
-            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#5a4535", lineHeight: 1.7 }} />
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 14, color: "#5a4535", lineHeight: 1.7, ...ed?.extraStyle }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
           </div>
         )}
         <div style={{ display: "flex", gap: 6, marginTop: 24, alignItems: "center" }}>
@@ -80,8 +80,8 @@ export function FoodEnd({ s, a, ed }) {
           <span style={{ fontSize: 36 }}>🍽️</span>
           <span style={{ fontSize: 28 }}>🌟</span>
         </div>
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 26, fontWeight: 800, color: "#2d1f14", marginBottom: 12, lineHeight: 1.3 }} />
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#6b5344", marginBottom: 28, lineHeight: 1.6 }} />
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 26, fontWeight: 800, color: "#2d1f14", marginBottom: 12, lineHeight: 1.3, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#6b5344", marginBottom: 28, lineHeight: 1.6, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>
           {s.tags.map((t, i) => <span key={i} style={{ padding: "8px 18px", background: a, borderRadius: 20, fontSize: 12, color: "#fff", fontWeight: 600 }}><EditableTag text={t} c="#fff" on={ed?.tag?.(i)} /></span>)}
         </div>
