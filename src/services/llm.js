@@ -555,7 +555,8 @@ export function extractJSON(text) {
   cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
   
   // 第四步：修复属性值后面缺少逗号的情况（如 "key": "value" "key2":）
-  cleaned = cleaned.replace(/"\s*"/g, '","');
+  // 使用更精确的正则，只匹配 JSON 结构中的情况
+  cleaned = cleaned.replace(/("[^"]*")\s*(?=")/g, '$1,');
   
   // 第五步：修复未闭合的字符串（简单处理）
   // 计算引号数量，如果是奇数，在末尾添加一个引号
