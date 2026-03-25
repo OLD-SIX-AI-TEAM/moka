@@ -6,6 +6,72 @@ import { Dots } from './common/Icons';
 import { MAX_TOKENS } from '../constants';
 import './AIDesignGenerator.css';
 
+// 尝试从流式内容中解析部分JSON
+function tryParsePartialJSON(text) {
+  try {
+    // 尝试找到JSON对象
+    const startIdx = text.indexOf('{');
+    const endIdx = text.lastIndexOf('}');
+    
+    if (startIdx === -1) return null;
+    
+    // 尝试解析完整的JSON
+    let jsonText = text.substring(startIdx, endIdx !== -1 ? endIdx + 1 : undefined);
+    
+    // 如果JSON不完整，尝试补全
+    if (endIdx === -1) {
+      // 计算未闭合的括号
+      let openBraces = 0;
+      let openBrackets = 0;
+      let inString = false;
+      let escaped = false;
+      
+      for (let i = 0; i < jsonText.length; i++) {
+        const char = jsonText[i];
+        
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        
+        if (char === '\\') {
+          escaped = true;
+          continue;
+        }
+        
+        if (char === '"' && !escaped) {
+          inString = !inString;
+          continue;
+        }
+        
+        if (!inString) {
+          if (char === '{') openBraces++;
+          else if (char === '}') openBraces--;
+          else if (char === '[') openBrackets++;
+          else if (char === ']') openBrackets--;
+        }
+      }
+      
+      // 补全未闭合的括号
+      while (openBrackets > 0) {
+        jsonText += ']';
+        openBrackets--;
+      }
+      while (openBraces > 0) {
+        jsonText += '}';
+        openBraces--;
+      }
+    }
+    
+    // 清理尾部逗号
+    jsonText = jsonText.replace(/,\s*([}\]])/g, '$1');
+    
+    return JSON.parse(jsonText);
+  } catch (e) {
+    return null;
+  }
+}
+
 // AI设计系统提示词
 const AI_DESIGN_PROMPT = `你是专业的小红书视觉设计师和排版专家。
 
@@ -256,11 +322,12 @@ const AI_DESIGN_WITH_REFERENCE_PROMPT = `你是专业的小红书视觉设计师
 // 版本历史存储键
 const VERSION_HISTORY_KEY = 'imarticle_ai_design_history';
 
-export function AIDesignGenerator({ input, onDesignChange, onError, onLoadingChange }) {
+export function AIDesignGenerator({ input, onDesignChange, onError, onLoadingChange, onStreamContent }) {
   const [referenceImage, setReferenceImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [versions, setVersions] = useState([]);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
+  const [streamContent, setStreamContent] = useState('');
 
   // 加载历史版本
   useEffect(() => {
@@ -315,6 +382,7 @@ export function AIDesignGenerator({ input, onDesignChange, onError, onLoadingCha
 
     setLoading(true);
     onLoadingChange?.(true);
+    setStreamContent('');
     
     try {
       const llmConfig = getEnvLLMConfig();
@@ -351,10 +419,24 @@ export function AIDesignGenerator({ input, onDesignChange, onError, onLoadingCha
         }];
       }
 
+      let accumulatedContent = '';
+      
       const response = await client.chat({
         system: referenceImage ? AI_DESIGN_WITH_REFERENCE_PROMPT : AI_DESIGN_PROMPT,
         messages,
         maxTokens: MAX_TOKENS.aiDesign,
+        stream: true,
+        onStream: (delta, full) => {
+          accumulatedContent = full;
+          setStreamContent(full);
+          onStreamContent?.(full);
+          
+          // 尝试解析部分JSON并实时更新预览
+          const partialData = tryParsePartialJSON(full);
+          if (partialData && partialData.styleConfig && partialData.content) {
+            onDesignChange?.(partialData);
+          }
+        },
       });
 
       const data = extractJSON(response.content);
@@ -371,8 +453,9 @@ export function AIDesignGenerator({ input, onDesignChange, onError, onLoadingCha
     } finally {
       setLoading(false);
       onLoadingChange?.(false);
+      setStreamContent('');
     }
-  }, [input, referenceImage, onError, onDesignChange, saveToHistory]);
+  }, [input, referenceImage, onError, onDesignChange, saveToHistory, onStreamContent]);
 
   // 切换到指定版本
   const switchVersion = useCallback((index) => {

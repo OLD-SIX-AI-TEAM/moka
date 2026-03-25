@@ -189,17 +189,19 @@ export function createLLMClient(config) {
      * @param {Array} params.messages - 消息列表
      * @param {number} params.maxTokens - 最大 token 数
      * @param {boolean} params.webSearch - 是否启用 web 搜索
+     * @param {boolean} params.stream - 是否启用流式响应
+     * @param {Function} params.onStream - 流式响应回调函数
      * @returns {Promise<Object>} 响应结果
      */
     async chat(params) {
-      const { system, messages, maxTokens = 1000, webSearch = true } = params;
+      const { system, messages, maxTokens = 1000, webSearch = true, stream = false, onStream } = params;
 
       if (this.provider === "openai") {
-        return this._callOpenAI({ system, messages, maxTokens, webSearch });
+        return this._callOpenAI({ system, messages, maxTokens, webSearch, stream, onStream });
       } else if (this.provider === "anthropic") {
-        return this._callAnthropic({ system, messages, maxTokens, webSearch });
+        return this._callAnthropic({ system, messages, maxTokens, webSearch, stream, onStream });
       } else if (this.provider === "aliyun") {
-        return this._callAliyun({ system, messages, maxTokens, webSearch });
+        return this._callAliyun({ system, messages, maxTokens, webSearch, stream, onStream });
       }
 
       throw new Error(`未实现的提供商：${this.provider}`);
@@ -209,7 +211,7 @@ export function createLLMClient(config) {
      * 调用 OpenAI API
      * 使用 Pages Function 代理避免 CORS 问题
      */
-    async _callOpenAI({ system, messages, maxTokens, webSearch }) {
+    async _callOpenAI({ system, messages, maxTokens, webSearch, stream, onStream }) {
       // 检测是否在 Cloudflare Pages 环境
       const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
         window.location.hostname.includes('workers.dev');
@@ -234,9 +236,12 @@ export function createLLMClient(config) {
         messages: system ? [{ role: "system", content: system }, ...messages] : messages,
         max_tokens: maxTokens,
         temperature: 0.7,
+        stream,
         ...(tools && { tools }),
         ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
       };
+
+      console.log('[LLM Client] Request body encryptedApiKey:', !!this.encryptedApiKey);
 
       const response = await fetch(url, {
         method: "POST",
@@ -247,6 +252,44 @@ export function createLLMClient(config) {
       if (!response.ok) {
         const error = await response.text();
         throw new Error(`OpenAI API 错误: ${error}`);
+      }
+
+      // 处理流式响应
+      if (stream && onStream) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
+
+              try {
+                const parsed = JSON.parse(data);
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) {
+                  fullContent += delta;
+                  onStream(delta, fullContent);
+                }
+              } catch (e) {
+                // 忽略解析错误
+              }
+            }
+          }
+        }
+
+        return {
+          content: fullContent,
+          model: this.model,
+        };
       }
 
       const data = await response.json();
@@ -289,7 +332,7 @@ export function createLLMClient(config) {
      * 调用阿里云百炼 API
      * 使用 enable_search 参数启用网络搜索
      */
-    async _callAliyun({ system, messages, maxTokens, webSearch }) {
+    async _callAliyun({ system, messages, maxTokens, webSearch, stream, onStream }) {
       // 检测是否在 Cloudflare Pages 环境
       const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
         window.location.hostname.includes('workers.dev');
@@ -310,8 +353,11 @@ export function createLLMClient(config) {
         max_tokens: maxTokens,
         temperature: 0.7,
         enable_search: webSearch,
+        stream,
         ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
       };
+
+      console.log('[LLM Client] Aliyun request encryptedApiKey:', !!this.encryptedApiKey);
 
       const response = await fetch(url, {
         method: "POST",
@@ -322,6 +368,44 @@ export function createLLMClient(config) {
       if (!response.ok) {
         const error = await response.text();
         throw new Error(`阿里云百炼 API 错误：${error}`);
+      }
+
+      // 处理流式响应
+      if (stream && onStream) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
+
+              try {
+                const parsed = JSON.parse(data);
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) {
+                  fullContent += delta;
+                  onStream(delta, fullContent);
+                }
+              } catch (e) {
+                // 忽略解析错误
+              }
+            }
+          }
+        }
+
+        return {
+          content: fullContent,
+          model: this.model,
+        };
       }
 
       const data = await response.json();
@@ -347,7 +431,7 @@ export function createLLMClient(config) {
      * 调用 Anthropic API
      * 使用 Pages Function 代理避免 CORS 问题
      */
-    async _callAnthropic({ system, messages, maxTokens, webSearch }) {
+    async _callAnthropic({ system, messages, maxTokens, webSearch, stream, onStream }) {
       // 检测是否在 Cloudflare Pages 环境
       const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
         window.location.hostname.includes('workers.dev');
@@ -375,9 +459,12 @@ export function createLLMClient(config) {
           content: m.content,
         })),
         max_tokens: maxTokens,
+        stream,
         ...(tools && { tools }),
         ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
       };
+
+      console.log('[LLM Client] Anthropic request encryptedApiKey:', !!this.encryptedApiKey);
 
       const response = await fetch(url, {
         method: "POST",
@@ -388,6 +475,44 @@ export function createLLMClient(config) {
       if (!response.ok) {
         const error = await response.text();
         throw new Error(`Anthropic API 错误: ${error}`);
+      }
+
+      // 处理流式响应
+      if (stream && onStream) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
+
+              try {
+                const parsed = JSON.parse(data);
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) {
+                  fullContent += delta;
+                  onStream(delta, fullContent);
+                }
+              } catch (e) {
+                // 忽略解析错误
+              }
+            }
+          }
+        }
+
+        return {
+          content: fullContent,
+          model: this.model,
+        };
       }
 
       const data = await response.json();
