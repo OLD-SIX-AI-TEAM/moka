@@ -1,4 +1,4 @@
-/* 文字卡片生成器 - 现代化三列布局，支持亮色/暗色双主题 */
+/* 墨卡 Moka - 现代化三列布局，支持亮色/暗色双主题 */
 
 /* ========== 基础变量定义（默认亮色主题）========== */
 :root {
@@ -220,14 +220,42 @@ body {
 .brand-icon {
   width: 32px;
   height: 32px;
-  background: var(--theme-gradient);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  color: white;
-  font-weight: 700;
+  overflow: hidden;
+}
+
+.github-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.github-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--accent-color);
+}
+
+.github-btn svg {
+  flex-shrink: 0;
+}
+
+.star-text {
+  color: var(--accent-color);
+  font-weight: 600;
 }
 
 .brand-text {

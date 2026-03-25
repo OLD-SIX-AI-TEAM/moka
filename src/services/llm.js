@@ -5,7 +5,7 @@
 
 import { storeEncryptedApiKey, getEncryptedApiKey, hasEncryptedApiKey, getDecryptedApiKey } from "../utils/crypto";
 
-const STORAGE_KEY = "imarticle_llm_config";
+const STORAGE_KEY = "moka_llm_config";
 
 // Pages Function 代理地址（直接代理，不经过独立 Worker）
 const PAGES_PROXY_URL = "/api/llm";

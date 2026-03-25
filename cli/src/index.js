@@ -34,7 +34,7 @@ export async function generateCard(options) {
     throw new Error('请提供文案内容，使用 -t 或 -f 参数');
   }
 
-  console.log(chalk.cyan('🎨 Imarticle CLI - 图文卡片生成器'));
+  console.log(chalk.cyan('🎨 moka CLI - 图文卡片生成器'));
   console.log(chalk.gray(`模式: ${mode === 'single' ? '单页' : '分页'}`));
   console.log(chalk.gray(`提供商: ${provider}`));
   console.log('');
