@@ -360,7 +360,7 @@ const AI_DESIGN_WITH_REFERENCE_PROMPT = `你是专业的小红书视觉设计师
 【重要】只返回JSON，不要任何解释、注释或markdown标记。确保JSON格式完全正确。`;
 
 // 版本历史存储键
-const VERSION_HISTORY_KEY = 'imarticle_ai_design_history';
+const VERSION_HISTORY_KEY = 'moka_ai_design_history';
 
 export function AIDesignGenerator({ input, onDesignChange, onError, onLoadingChange, onStreamContent }) {
   const [referenceImage, setReferenceImage] = useState(null);

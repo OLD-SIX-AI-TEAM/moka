@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import chalk from 'chalk';
 
-const CONFIG_DIR = path.join(os.homedir(), '.imarticle');
+const CONFIG_DIR = path.join(os.homedir(), '.moka');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
 
 const DEFAULT_CONFIG = {
@@ -70,7 +70,7 @@ class ConfigManager {
     }
     
     console.log('');
-    console.log(chalk.gray('提示: 可以通过环境变量或 imarticle config --<provider>-key <key> 设置API密钥'));
+    console.log(chalk.gray('提示: 可以通过环境变量或 moka config --<provider>-key <key> 设置API密钥'));
   }
 
   validateProvider(provider) {
@@ -90,7 +90,7 @@ class ConfigManager {
       throw new Error(
         `未找到 ${provider} 的API密钥。请通过以下方式设置:\n` +
         `  1. 环境变量: export ${keyName}=your_key\n` +
-        `  2. CLI配置: imarticle config --${provider}-key your_key`
+        `  2. CLI配置: moka config --${provider}-key your_key`
       );
     }
 

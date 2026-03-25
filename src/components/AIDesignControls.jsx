@@ -292,7 +292,7 @@ ${mode === 'single' ? AI_DESIGN_SINGLE_PROMPT.replace(/【设计要求】.*$/, '
 export { AI_DESIGN_SINGLE_PROMPT, AI_DESIGN_SPLIT_PROMPT, AI_DESIGN_WITH_REFERENCE_PROMPT };
 
 // 版本历史存储键
-const VERSION_HISTORY_KEY = 'imarticle_ai_design_history';
+const VERSION_HISTORY_KEY = 'moka_ai_design_history';
 
 export function AIDesignControls({ 
   mode, 

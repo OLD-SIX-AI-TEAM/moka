@@ -1,4 +1,4 @@
-# Imarticle CLI
+# moka CLI
 
 命令行图文卡片生成工具，基于 AI 生成精美的小红书风格图文卡片。
 
@@ -83,19 +83,19 @@ cd cli
 npm link
 
 # 之后可以直接使用
-imarticle generate -t "文案内容" -o output.png
-imarticle config --anthropic-key your_key
+moka generate -t "文案内容" -o output.png
+moka config --anthropic-key your_key
 ```
 
 ## 示例
 
 ```bash
 # 生成单页卡片
-imarticle generate -t "今天学习了React Hooks，感觉打开了新世界的大门！" -o react-hooks.png
+moka generate -t "今天学习了React Hooks，感觉打开了新世界的大门！" -o react-hooks.png
 
 # 生成分页卡片
-imarticle generate -f article.txt -m split -o article-slides.png
+moka generate -f article.txt -m split -o article-slides.png
 
 # 使用阿里云百炼
-imarticle generate -t "文案内容" -p aliyun -o output.png
+moka generate -t "文案内容" -p aliyun -o output.png
 ```

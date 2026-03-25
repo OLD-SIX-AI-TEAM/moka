@@ -1,7 +1,7 @@
 /** @jsxImportSource react */
 import { useEffect, useState } from "react";
 
-const THEME_KEY = "imarticle-theme";
+const THEME_KEY = "moka-theme";
 
 export function useTheme() {
   const [theme, setTheme] = useState(() => {

@@ -189,7 +189,7 @@ export async function getDecryptedApiKey(provider) {
   // 如果是加密的数据，尝试用旧的方式解密（兼容旧数据）
   // 注意：生产环境应该在服务器端解密，这里是为了兼容旧版本
   try {
-    const RSA_KEY_PAIR_KEY = 'imarticle_rsa_keypair';
+    const RSA_KEY_PAIR_KEY = 'moka_rsa_keypair';
     const stored = localStorage.getItem(RSA_KEY_PAIR_KEY);
     if (stored) {
       const { privateKey } = JSON.parse(stored);

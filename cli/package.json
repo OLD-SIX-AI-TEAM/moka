@@ -1,13 +1,13 @@
 {
-  "name": "imarticle-cli",
+  "name": "moka-cli",
   "version": "1.0.0",
-  "description": "Imarticle CLI - 命令行图文卡片生成工具",
+  "description": "moka CLI - 命令行图文卡片生成工具",
   "type": "module",
   "bin": {
-    "imarticle": "./bin/imarticle.js"
+    "moka": "./bin/moka.js"
   },
   "scripts": {
-    "start": "node bin/imarticle.js"
+    "start": "node bin/moka.js"
   },
   "dependencies": {
     "commander": "^12.0.0",

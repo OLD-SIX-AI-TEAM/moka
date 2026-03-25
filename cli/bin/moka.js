@@ -5,8 +5,8 @@ import chalk from 'chalk';
 import { generateCard } from '../src/index.js';
 
 program
-  .name('imarticle')
-  .description('Imarticle CLI - 生成精美图文卡片')
+  .name('moka')
+  .description('moka CLI - 生成精美图文卡片')
   .version('1.0.0');
 
 program

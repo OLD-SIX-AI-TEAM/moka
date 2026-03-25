@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.3.0",
   "type": "module",
-  "description": "文字卡片生成器 - AI驱动的爆款文案排版工具",
+  "description": "墨卡 Moka - AI驱动的爆款文案排版工具",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
