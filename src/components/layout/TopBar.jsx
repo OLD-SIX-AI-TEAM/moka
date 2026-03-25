@@ -1,8 +1,9 @@
 /** @jsxImportSource react */
 import { useLanguage } from '../../hooks/useLanguage';
 
-export function TopBar({ mode, setMode, toggleTheme, isLight }) {
+export function TopBar({ mode, setMode, toggleTheme, isLight, loading, exporting }) {
   const { language, toggleLanguage, t } = useLanguage();
+  const isProcessing = loading || exporting;
 
   return (
     <header className="top-bar">
@@ -25,18 +26,22 @@ export function TopBar({ mode, setMode, toggleTheme, isLight }) {
           <h1 className="brand-text">墨卡 Moka</h1>
         </div>
       </div>
-      
+
       <div className="top-bar-center">
-        <div className="mode-switcher">
-          <button 
+        <div className={`mode-switcher ${isProcessing ? 'disabled' : ''}`}>
+          <button
             className={`mode-pill ${mode === "single" ? "active" : ""}`}
-            onClick={() => setMode("single")}
+            onClick={() => !isProcessing && setMode("single")}
+            disabled={isProcessing}
+            title={isProcessing ? "生成中不可切换" : ""}
           >
             <span>{t('singleMode')}</span>
           </button>
-          <button 
+          <button
             className={`mode-pill ${mode === "split" ? "active" : ""}`}
-            onClick={() => setMode("split")}
+            onClick={() => !isProcessing && setMode("split")}
+            disabled={isProcessing}
+            title={isProcessing ? "生成中不可切换" : ""}
           >
             <span>{t('multiMode')}</span>
           </button>

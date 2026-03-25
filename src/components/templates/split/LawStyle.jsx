@@ -14,9 +14,9 @@ export function LawCover({ s, a, total, ed }) {
           </div>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
             <div style={{ borderLeft: "3px solid #8b4513", paddingLeft: 16, marginBottom: 20 }}>
-              <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 28, fontWeight: 700, color: "#1a1510", lineHeight: 1.3 }} />
+              <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 28, fontWeight: 700, color: "#1a1510", lineHeight: 1.3, ...ed?.titleStyle }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
             </div>
-            {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#5a4a3a", lineHeight: 1.7, fontStyle: "italic", paddingLeft: 16 }} />}
+            {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#5a4a3a", lineHeight: 1.7, fontStyle: "italic", paddingLeft: 16, ...ed?.subtitleStyle }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />}
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <div style={{ flex: 1, height: 1, background: "#d4a57450" }} />
@@ -45,9 +45,9 @@ export function LawContent({ s, a, idx, total, ed }) {
             <div style={{ fontSize: 10, color: "#888" }}>SEC. {idx}</div>
           </div>
         </div>
-        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 20, fontWeight: 700, color: "#1a1510", lineHeight: 1.4, marginBottom: 16, textDecoration: "underline", textDecorationColor: "#d4a57450" }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 20, fontWeight: 700, color: "#1a1510", lineHeight: 1.4, marginBottom: 16, textDecoration: "underline", textDecorationColor: "#d4a57450", ...ed?.headingStyle }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
         <div style={{ flex: 1 }}>
-          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#4a3a2a", lineHeight: 1.9 }} />
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#4a3a2a", lineHeight: 1.9, ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
         </div>
         {s.extra && (
           <div style={{ marginTop: 20, padding: "16px 20px", background: "#fff8e8", border: "1px solid #d4a574", borderRadius: 8 }}>
@@ -55,7 +55,7 @@ export function LawContent({ s, a, idx, total, ed }) {
               <span style={{ fontSize: 16 }}>📋</span>
               <span style={{ fontSize: 10, fontWeight: 700, color: "#8b4513", letterSpacing: "1px" }}>LEGAL NOTE</span>
             </div>
-            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#5a4a3a", lineHeight: 1.7 }} />
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#5a4a3a", lineHeight: 1.7, ...ed?.extraStyle }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
           </div>
         )}
         <div style={{ display: "flex", gap: 6, marginTop: 24, alignItems: "center" }}>
@@ -74,8 +74,8 @@ export function LawEnd({ s, a, ed }) {
         <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 24 }}>
           <span style={{ fontSize: 32 }}>⚖️</span>
         </div>
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 24, fontWeight: 700, color: "#1a1510", marginBottom: 12, lineHeight: 1.3 }} />
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 13, color: "#5a4a3a", marginBottom: 28, lineHeight: 1.6, fontStyle: "italic" }} />
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 24, fontWeight: 700, color: "#1a1510", marginBottom: 12, lineHeight: 1.3, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 13, color: "#5a4a3a", marginBottom: 28, lineHeight: 1.6, fontStyle: "italic", ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>
           {s.tags.map((t, i) => <span key={i} style={{ padding: "6px 14px", background: "#fff", border: "1px solid #8b4513", fontSize: 11, color: "#8b4513" }}><EditableTag text={t} c="#8b4513" on={ed?.tag?.(i)} /></span>)}
         </div>

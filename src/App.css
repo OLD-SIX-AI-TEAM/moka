@@ -379,6 +379,25 @@ body {
   background: var(--theme-gradient);
 }
 
+/* 模式切换禁用状态 */
+.mode-switcher.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mode-switcher.disabled .mode-pill {
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
+
+.mode-switcher.disabled .mode-pill:hover {
+  color: var(--text-muted);
+}
+
+.mode-switcher.disabled .mode-pill.active {
+  opacity: 0.8;
+}
+
 /* ========== 三列主布局 ========== */
 .three-column-layout {
   display: grid;
@@ -741,7 +760,7 @@ body {
   color: var(--text-secondary);
 }
 
-/* 流式内容覆盖层 - 在白色卡片内显示 */
+/* 流式内容覆盖层 - 适配主题色 */
 .stream-content-overlay {
   position: absolute;
   top: 0;
@@ -750,7 +769,7 @@ body {
   bottom: 0;
   overflow: hidden;
   z-index: 0;
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%);
+  background: var(--bg-secondary);
   border-radius: var(--radius-xl);
 }
 

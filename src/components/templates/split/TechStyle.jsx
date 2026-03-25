@@ -80,7 +80,7 @@ export function TechContent({ s, a, idx, total, ed }) {
       {/* 背景代码雨效果 */}
       <div style={{ position: "absolute", inset: 0, opacity: 0.03, fontSize: 10, color: "#00ff88", overflow: "hidden", whiteSpace: "pre", lineHeight: 1.2 }}>
         {Array.from({ length: 20 }).map((_, i) => (
-          <div key={i}>{Array.from({ length: 30 }).map(() => String.fromCharCode(0x30A0 + Math.random() * 96)).join('')}</div>
+          <div key={i}>{Array.from({ length: 30 }).map((_, j) => String.fromCharCode(0x30A0 + ((i * 30 + j) * 7) % 96)).join('')}</div>
         ))}
       </div>
       
@@ -93,7 +93,7 @@ export function TechContent({ s, a, idx, total, ed }) {
             <span style={{ fontSize: 10, color: "#666" }}>NODE_{String(idx).padStart(2, "0")}</span>
           </div>
           <div style={{ fontSize: 10, color: a }}>STATUS: ACTIVE</div>
-          <div style={{ fontSize: 10, color: "#666" }}>MEM: {(Math.random() * 30 + 40).toFixed(1)}%</div>
+          <div style={{ fontSize: 10, color: "#666" }}>MEM: {(idx * 7 % 30 + 40).toFixed(1)}%</div>
         </div>
         
         {/* 内容卡片 */}
@@ -108,7 +108,7 @@ export function TechContent({ s, a, idx, total, ed }) {
           <div style={{ flex: 1, position: "relative" }}>
             <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg, ${a}, transparent)` }} />
             <div style={{ paddingLeft: 16 }}>
-              <EditableText v={s.text} on={ed?.text} block dk style={{ fontSize: 13, color: "#ccc", lineHeight: 1.9, ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
+              <EditableText v={s.text} on={ed?.text} block dk style={{ fontSize: 13, color: "#e0e0e0", lineHeight: 1.9, ...ed?.textStyle }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
             </div>
           </div>
           

@@ -885,7 +885,7 @@ function App() {
 
   return (
     <div className="app">
-      <TopBar mode={mode} setMode={setMode} theme={theme} toggleTheme={toggleTheme} isLight={isLight} />
+      <TopBar mode={mode} setMode={setMode} theme={theme} toggleTheme={toggleTheme} isLight={isLight} loading={loading} exporting={exporting} />
       
       <div className="three-column-layout">
         {/* 第一列：风格和配色 */}

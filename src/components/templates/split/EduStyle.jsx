@@ -42,9 +42,9 @@ export function EduCover({ s, a, total, ed }) {
         
         {/* 标题区域 */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 32, fontWeight: 800, color: "#2c3e50", lineHeight: 1.2, marginBottom: 20 }} />
+          <EditableText v={s.title} on={ed?.title} block style={{ fontSize: 32, fontWeight: 800, color: "#2c3e50", lineHeight: 1.2, marginBottom: 20 }} draggable={!!ed?.updateTitleStyle} onStyleChange={ed?.updateTitleStyle} />
           <div style={{ width: 60, height: 3, background: a, marginBottom: 20 }} />
-          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#5a6a7a", lineHeight: 1.8 }} />}
+          {s.subtitle && <EditableText v={s.subtitle} on={ed?.subtitle} block style={{ fontSize: 14, color: "#5a6a7a", lineHeight: 1.8 }} draggable={!!ed?.updateSubtitleStyle} onStyleChange={ed?.updateSubtitleStyle} />}
         </div>
         
         {/* 底部页码 - 学术风格 */}
@@ -107,12 +107,12 @@ export function EduContent({ s, a, idx, total, ed }) {
         </div>
         
         {/* 标题 */}
-        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 20, fontWeight: 700, color: "#2c3e50", lineHeight: 1.35, marginBottom: 16 }} />
+        <EditableText v={s.heading} on={ed?.heading} block style={{ fontSize: 20, fontWeight: 700, color: "#2c3e50", lineHeight: 1.35, marginBottom: 16 }} draggable={!!ed?.updateHeadingStyle} onStyleChange={ed?.updateHeadingStyle} />
         
         {/* 正文区域 - 带书签装饰 */}
         <div style={{ flex: 1, position: "relative", paddingLeft: 16 }}>
           <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg, ${a}, ${a}30, transparent)`, borderRadius: 2 }} />
-          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#555", lineHeight: 1.9 }} />
+          <EditableText v={s.text} on={ed?.text} block style={{ fontSize: 14, color: "#555", lineHeight: 1.9 }} draggable={!!ed?.updateTextStyle} onStyleChange={ed?.updateTextStyle} />
         </div>
         
         {s.extra && (
@@ -128,7 +128,7 @@ export function EduContent({ s, a, idx, total, ed }) {
               <span style={{ fontSize: 16 }}>💡</span>
               <span style={{ fontSize: 10, fontWeight: 700, color: a, letterSpacing: "1px" }}>KEY POINT</span>
             </div>
-            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#555", lineHeight: 1.7 }} />
+            <EditableText v={s.extra} on={ed?.extra} block style={{ fontSize: 13, color: "#555", lineHeight: 1.7 }} draggable={!!ed?.updateExtraStyle} onStyleChange={ed?.updateExtraStyle} />
           </div>
         )}
         
@@ -176,8 +176,8 @@ export function EduEnd({ s, a, ed }) {
           <span style={{ fontSize: 48 }}>🎓</span>
         </div>
         
-        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 26, fontWeight: 800, color: "#2c3e50", marginBottom: 12, lineHeight: 1.3 }} />
-        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#5a6a7a", marginBottom: 28, lineHeight: 1.6 }} />
+        <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 26, fontWeight: 800, color: "#2c3e50", marginBottom: 12, lineHeight: 1.3 }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
+        <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#5a6a7a", marginBottom: 28, lineHeight: 1.6 }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         
         {/* 标签 - 学术风格 */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 28 }}>

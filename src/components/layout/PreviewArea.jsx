@@ -12,6 +12,7 @@ export function PreviewArea({
   slideIdx,
   loading,
   cardRef,
+  CardRenderer,
   singleEd,
   sectionDrag,
   aiSingleEd,
