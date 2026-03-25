@@ -2,6 +2,9 @@
  * Cloudflare Worker 入口 - 处理 API 路由和静态资源
  */
 
+// 本地开发使用的内存存储（当 USAGE_KV 未配置时）
+const localUsageStore = new Map();
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -86,14 +89,24 @@ function getThisMonth() {
 async function checkUsageLimits(env) {
   const today = getToday();
   const thisMonth = getThisMonth();
-  
+
   // 获取当前使用量
   const dailyKey = `usage:daily:${today}`;
   const monthlyKey = `usage:monthly:${thisMonth}`;
-  
-  const dailyCount = parseInt(await env.USAGE_KV?.get(dailyKey) || '0');
-  const monthlyCount = parseInt(await env.USAGE_KV?.get(monthlyKey) || '0');
-  
+
+  let dailyCount = 0;
+  let monthlyCount = 0;
+
+  if (env.USAGE_KV) {
+    // 使用 Cloudflare KV
+    dailyCount = parseInt(await env.USAGE_KV.get(dailyKey) || '0');
+    monthlyCount = parseInt(await env.USAGE_KV.get(monthlyKey) || '0');
+  } else {
+    // 使用本地内存存储
+    dailyCount = parseInt(localUsageStore.get(dailyKey) || '0');
+    monthlyCount = parseInt(localUsageStore.get(monthlyKey) || '0');
+  }
+
   return {
     dailyCount,
     monthlyCount,
@@ -107,17 +120,34 @@ async function checkUsageLimits(env) {
 async function recordUsage(env, tokens = 1) {
   const today = getToday();
   const thisMonth = getThisMonth();
-  
+
   const dailyKey = `usage:daily:${today}`;
   const monthlyKey = `usage:monthly:${thisMonth}`;
-  
-  // 使用 KV 存储计数（如果配置了）
+
+  console.log('[recordUsage] Checking USAGE_KV:', !!env.USAGE_KV);
+
   if (env.USAGE_KV) {
+    // 使用 Cloudflare KV
     const dailyCount = parseInt(await env.USAGE_KV.get(dailyKey) || '0');
     const monthlyCount = parseInt(await env.USAGE_KV.get(monthlyKey) || '0');
-    
+
+    console.log('[recordUsage] Current KV counts - daily:', dailyCount, 'monthly:', monthlyCount);
+
     await env.USAGE_KV.put(dailyKey, String(dailyCount + 1), { expirationTtl: 86400 * 2 });
     await env.USAGE_KV.put(monthlyKey, String(monthlyCount + 1), { expirationTtl: 86400 * 35 });
+
+    console.log('[recordUsage] Updated KV counts - daily:', dailyCount + 1, 'monthly:', monthlyCount + 1);
+  } else {
+    // 使用本地内存存储
+    const dailyCount = parseInt(localUsageStore.get(dailyKey) || '0');
+    const monthlyCount = parseInt(localUsageStore.get(monthlyKey) || '0');
+
+    console.log('[recordUsage] Current local counts - daily:', dailyCount, 'monthly:', monthlyCount);
+
+    localUsageStore.set(dailyKey, String(dailyCount + 1));
+    localUsageStore.set(monthlyKey, String(monthlyCount + 1));
+
+    console.log('[recordUsage] Updated local counts - daily:', dailyCount + 1, 'monthly:', monthlyCount + 1);
   }
 }
 
@@ -265,9 +295,12 @@ async function handleLLM(request, env) {
     
     // 如果没有使用用户 API Key，记录使用量
     if (!userApiKey) {
+      console.log('[LLM Proxy] Recording usage, USAGE_KV exists:', !!env.USAGE_KV);
       await recordUsage(env);
+    } else {
+      console.log('[LLM Proxy] Using user API key, skipping usage record');
     }
-    
+
     return result;
   } catch (error) {
     console.error('LLM Proxy Error:', error);
@@ -278,7 +311,7 @@ async function handleLLM(request, env) {
   }
 }
 
-async function callAnthropic(env, messages, system, max_tokens, model, tools, corsHeaders, userApiKey) {
+async function callAnthropic(env, messages, system, max_tokens, model, tools, corsHeaders, userApiKey, stream = false) {
   const apiKey = userApiKey || env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured' }), {
@@ -292,6 +325,7 @@ async function callAnthropic(env, messages, system, max_tokens, model, tools, co
     max_tokens,
     system,
     messages,
+    stream,
     ...(tools && { tools }),
   };
 
@@ -305,6 +339,17 @@ async function callAnthropic(env, messages, system, max_tokens, model, tools, co
     body: JSON.stringify(requestBody),
   });
 
+  // 如果是流式响应，直接透传
+  if (stream) {
+    return new Response(response.body, {
+      status: response.status,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream',
+      },
+    });
+  }
+
   const data = await response.json();
 
   return new Response(JSON.stringify(data), {
@@ -316,7 +361,7 @@ async function callAnthropic(env, messages, system, max_tokens, model, tools, co
   });
 }
 
-async function callAliyun(env, messages, system, max_tokens, model, enable_search, corsHeaders, userApiKey) {
+async function callAliyun(env, messages, system, max_tokens, model, enable_search, corsHeaders, userApiKey, stream = false) {
   const apiKey = userApiKey || env.DASHSCOPE_API_KEY;
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'DASHSCOPE_API_KEY not configured' }), {
@@ -334,6 +379,7 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
     max_tokens,
     messages: openaiMessages,
     temperature: 0.7,
+    stream,
     ...(enable_search !== undefined && { enable_search }),
   };
 
@@ -345,6 +391,17 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
     },
     body: JSON.stringify(requestBody),
   });
+
+  // 如果是流式响应，直接透传
+  if (stream) {
+    return new Response(response.body, {
+      status: response.status,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream',
+      },
+    });
+  }
 
   const data = await response.json();
   
@@ -359,7 +416,7 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
   });
 }
 
-async function callOpenAI(env, messages, system, max_tokens, model, tools, corsHeaders, userApiKey) {
+async function callOpenAI(env, messages, system, max_tokens, model, tools, corsHeaders, userApiKey, stream = false) {
   const apiKey = userApiKey || env.OPENAI_API_KEY;
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'OPENAI_API_KEY not configured' }), {
@@ -377,6 +434,7 @@ async function callOpenAI(env, messages, system, max_tokens, model, tools, corsH
     max_tokens,
     messages: openaiMessages,
     temperature: 0.7,
+    stream,
     ...(tools && { tools }),
   };
 
@@ -388,6 +446,17 @@ async function callOpenAI(env, messages, system, max_tokens, model, tools, corsH
     },
     body: JSON.stringify(requestBody),
   });
+
+  // 如果是流式响应，直接透传
+  if (stream) {
+    return new Response(response.body, {
+      status: response.status,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream',
+      },
+    });
+  }
 
   const data = await response.json();
 

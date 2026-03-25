@@ -381,6 +381,67 @@ function App() {
     setShowLLMConfig(false);
   }, []);
 
+  // 尝试从流式内容中解析部分JSON
+  const tryParsePartialJSON = useCallback((text) => {
+    try {
+      const startIdx = text.indexOf('{');
+      const endIdx = text.lastIndexOf('}');
+      
+      if (startIdx === -1) return null;
+      
+      let jsonText = text.substring(startIdx, endIdx !== -1 ? endIdx + 1 : undefined);
+      
+      // 如果JSON不完整，尝试补全
+      if (endIdx === -1) {
+        let openBraces = 0;
+        let openBrackets = 0;
+        let inString = false;
+        let escaped = false;
+        
+        for (let i = 0; i < jsonText.length; i++) {
+          const char = jsonText[i];
+          
+          if (escaped) {
+            escaped = false;
+            continue;
+          }
+          
+          if (char === '\\') {
+            escaped = true;
+            continue;
+          }
+          
+          if (char === '"' && !escaped) {
+            inString = !inString;
+            continue;
+          }
+          
+          if (!inString) {
+            if (char === '{') openBraces++;
+            else if (char === '}') openBraces--;
+            else if (char === '[') openBrackets++;
+            else if (char === ']') openBrackets--;
+          }
+        }
+        
+        while (openBrackets > 0) {
+          jsonText += ']';
+          openBrackets--;
+        }
+        while (openBraces > 0) {
+          jsonText += '}';
+          openBraces--;
+        }
+      }
+      
+      jsonText = jsonText.replace(/,\s*([}\]])/g, '$1');
+      
+      return JSON.parse(jsonText);
+    } catch (e) {
+      return null;
+    }
+  }, []);
+
   // AI设计生成
   const generateAIDesign = useCallback(async (isSplitMode = false) => {
     if (!input.trim()) return;
@@ -413,6 +474,23 @@ function App() {
         system: isSplitMode ? AI_DESIGN_PROMPT_SPLIT : AI_DESIGN_PROMPT_SINGLE,
         messages,
         maxTokens: MAX_TOKENS.single * 2,
+        stream: true,
+        onStream: (delta, full) => {
+          // 尝试解析部分JSON并实时更新预览
+          const partialData = tryParsePartialJSON(full);
+          if (partialData) {
+            if (isSplitMode) {
+              if (partialData.slides && partialData.styleConfig) {
+                setAiSplitDesign(partialData);
+                setSlides(partialData.slides);
+              }
+            } else {
+              if (partialData.styleConfig && partialData.content) {
+                setAiSingleDesign(partialData);
+              }
+            }
+          }
+        },
       });
 
       const data = extractJSON(response.content);
@@ -438,7 +516,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [input, aiReferenceImage, llmConfig, envConfigValid]);
+  }, [input, aiReferenceImage, llmConfig, envConfigValid, tryParsePartialJSON]);
 
   // 生成内容
   const generate = useCallback(async () => {

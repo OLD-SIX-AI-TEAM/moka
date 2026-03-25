@@ -5,7 +5,12 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), cloudflare()],
+  plugins: [
+    react(),
+    cloudflare({
+      configPath: './wrangler.jsonc',
+    })
+  ],
   base: './', // 使用相对路径，支持 Cloudflare Pages
   build: {
     outDir: 'dist',
