@@ -1,77 +1,58 @@
 /**
- * RSA 加密工具类
- * 从服务端获取公钥进行加密
+ * 加密工具模块
+ * 使用 RSA 加密存储 API Key
  */
 
-let cachedPublicKey = null;
+// 缓存从服务器获取的公钥
+let cachedServerPublicKey = null;
 
 /**
- * 从服务端获取公钥
- * @returns {Promise<string>} - PEM 格式的公钥
+ * 从服务器获取 RSA 公钥
+ * @returns {Promise<string>} - Base64 编码的公钥
  */
-async function getPublicKeyFromServer() {
-  if (cachedPublicKey) {
-    return cachedPublicKey;
+export async function getServerPublicKey() {
+  if (cachedServerPublicKey) {
+    return cachedServerPublicKey;
+  }
+
+  // 本地开发时直接返回 null，使用明文存储
+  const isLocalDev = window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1';
+  if (isLocalDev) {
+    console.log('[Crypto] 本地开发模式，使用明文存储');
+    return null;
   }
 
   try {
     const response = await fetch('/api/public-key');
     if (!response.ok) {
-      throw new Error('获取公钥失败');
+      throw new Error(`获取公钥失败: ${response.status}`);
     }
     const data = await response.json();
-    cachedPublicKey = data.publicKey;
-    return cachedPublicKey;
+    if (!data.publicKey) {
+      throw new Error('服务器未配置公钥');
+    }
+    cachedServerPublicKey = data.publicKey;
+    return cachedServerPublicKey;
   } catch (error) {
-    console.error('获取公钥失败:', error);
-    throw new Error('无法获取加密公钥');
+    console.error('获取服务器公钥失败:', error);
+    throw new Error('无法获取加密公钥，请稍后重试');
   }
 }
 
 /**
- * 将字符串转换为 ArrayBuffer
- */
-function str2ab(str) {
-  const buf = new ArrayBuffer(str.length);
-  const bufView = new Uint8Array(buf);
-  for (let i = 0, strLen = str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  return buf;
-}
-
-/**
- * 将 ArrayBuffer 转换为 Base64 字符串
- */
-function arrayBufferToBase64(buffer) {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-/**
- * 使用 RSA 公钥加密文本
+ * 使用公钥加密数据
  * @param {string} text - 要加密的文本
- * @returns {Promise<string>} - Base64 编码的加密结果
+ * @param {string} publicKeyBase64 - Base64 编码的公钥
+ * @returns {Promise<string>} - Base64 编码的加密数据
  */
-export async function encryptWithPublicKey(text) {
+export async function encryptWithPublicKey(text, publicKeyBase64) {
   try {
-    // 从服务端获取公钥
-    const publicKeyPem = await getPublicKeyFromServer();
+    const publicKeyBuffer = Uint8Array.from(atob(publicKeyBase64), c => c.charCodeAt(0));
 
-    // 清理公钥格式
-    const publicKeyBase64 = publicKeyPem
-      .replace(/-----BEGIN PUBLIC KEY-----/g, '')
-      .replace(/-----END PUBLIC KEY-----/g, '')
-      .replace(/\s/g, '');
-
-    // 导入公钥
-    const publicKey = await window.crypto.subtle.importKey(
+    const publicKey = await crypto.subtle.importKey(
       'spki',
-      str2ab(atob(publicKeyBase64)),
+      publicKeyBuffer.buffer,
       {
         name: 'RSA-OAEP',
         hash: 'SHA-256',
@@ -80,9 +61,8 @@ export async function encryptWithPublicKey(text) {
       ['encrypt']
     );
 
-    // 加密数据
     const encoded = new TextEncoder().encode(text);
-    const encrypted = await window.crypto.subtle.encrypt(
+    const encrypted = await crypto.subtle.encrypt(
       {
         name: 'RSA-OAEP',
       },
@@ -90,8 +70,7 @@ export async function encryptWithPublicKey(text) {
       encoded
     );
 
-    // 返回 Base64 编码的结果
-    return arrayBufferToBase64(encrypted);
+    return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
   } catch (error) {
     console.error('加密失败:', error);
     throw new Error('API Key 加密失败');
@@ -99,53 +78,128 @@ export async function encryptWithPublicKey(text) {
 }
 
 /**
- * 加密 API Key 并存储到 localStorage
- * @param {string} apiKey - 原始 API Key
- * @param {string} provider - provider 类型
+ * 使用私钥解密数据
+ * @param {string} encryptedBase64 - Base64 编码的加密数据
+ * @param {string} privateKeyBase64 - Base64 编码的私钥
+ * @returns {Promise<string>} - 解密后的文本
+ */
+export async function decryptWithPrivateKey(encryptedBase64, privateKeyBase64) {
+  try {
+    const privateKeyBuffer = Uint8Array.from(atob(privateKeyBase64), c => c.charCodeAt(0));
+
+    const privateKey = await crypto.subtle.importKey(
+      'pkcs8',
+      privateKeyBuffer.buffer,
+      {
+        name: 'RSA-OAEP',
+        hash: 'SHA-256',
+      },
+      false,
+      ['decrypt']
+    );
+
+    const encryptedBuffer = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+
+    const decrypted = await crypto.subtle.decrypt(
+      {
+        name: 'RSA-OAEP',
+      },
+      privateKey,
+      encryptedBuffer.buffer
+    );
+
+    return new TextDecoder().decode(decrypted);
+  } catch (error) {
+    console.error('解密失败:', error);
+    throw new Error('API Key 解密失败');
+  }
+}
+
+/**
+ * 存储加密的 API Key
+ * 生产环境使用服务器公钥加密，本地开发使用明文存储
+ * @param {string} apiKey - API Key
+ * @param {string} provider - 提供商
+ * @returns {Promise<void>}
  */
 export async function storeEncryptedApiKey(apiKey, provider) {
-  if (!apiKey) return;
-
-  try {
-    const encrypted = await encryptWithPublicKey(apiKey);
-    const storageKey = `llm_config_${provider}`;
-    const stored = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    stored.encryptedApiKey = encrypted;
-    stored.hasEncryptedKey = true;
-    localStorage.setItem(storageKey, JSON.stringify(stored));
-  } catch (error) {
-    console.error('存储加密 API Key 失败:', error);
-    throw error;
+  // 本地开发时使用明文存储
+  const isLocalDev = window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1';
+  
+  if (isLocalDev) {
+    console.log('[Crypto] 本地开发模式，明文存储 API Key');
+    localStorage.setItem(`llm_config_${provider}`, apiKey);
+    return;
   }
+  
+  // 生产环境使用服务器公钥加密
+  const serverPublicKey = await getServerPublicKey();
+  if (!serverPublicKey) {
+    throw new Error('无法获取加密公钥');
+  }
+  
+  const encrypted = await encryptWithPublicKey(apiKey, serverPublicKey);
+  localStorage.setItem(`llm_config_${provider}`, encrypted);
 }
 
 /**
- * 获取存储的加密 API Key
- * @param {string} provider - provider 类型
- * @returns {string|null} - 加密的 API Key 或 null
+ * 获取加密的 API Key
+ * @param {string} provider - 提供商
+ * @returns {string|null} - 加密的 API Key
  */
 export function getEncryptedApiKey(provider) {
-  try {
-    const storageKey = `llm_config_${provider}`;
-    const stored = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    return stored.encryptedApiKey || null;
-  } catch (error) {
-    console.error('获取加密 API Key 失败:', error);
-    return null;
-  }
+  return localStorage.getItem(`llm_config_${provider}`);
 }
 
 /**
- * 检查是否已配置加密的 API Key
- * @param {string} provider - provider 类型
+ * 检查是否有加密的 API Key
+ * @param {string} provider - 提供商
  * @returns {boolean}
  */
 export function hasEncryptedApiKey(provider) {
-  try {
-    const storageKey = `llm_config_${provider}`;
-    const stored = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    return stored.hasEncryptedKey || false;
-  } catch (error) {
-    return false;
+  return !!localStorage.getItem(`llm_config_${provider}`);
+}
+
+/**
+ * 获取解密的 API Key（本地开发直接使用明文）
+ * @param {string} provider - 提供商
+ * @returns {Promise<string|null>} - API Key
+ */
+export async function getDecryptedApiKey(provider) {
+  const encryptedKey = getEncryptedApiKey(provider);
+  if (!encryptedKey) return null;
+
+  // 本地开发模式：直接使用明文
+  const isLocalDev = window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1';
+  
+  if (isLocalDev) {
+    console.log('[Crypto] 本地开发模式，直接返回明文 API Key');
+    return encryptedKey;
   }
+
+  // 生产环境：检查是否是明文存储（兼容旧数据）
+  // 如果长度小于 100，可能是明文存储的 key
+  if (encryptedKey.length < 100) {
+    console.log('[Crypto] 检测到明文存储的 API Key');
+    return encryptedKey;
+  }
+
+  // 如果是加密的数据，尝试用旧的方式解密（兼容旧数据）
+  // 注意：生产环境应该在服务器端解密，这里是为了兼容旧版本
+  try {
+    const RSA_KEY_PAIR_KEY = 'imarticle_rsa_keypair';
+    const stored = localStorage.getItem(RSA_KEY_PAIR_KEY);
+    if (stored) {
+      const { privateKey } = JSON.parse(stored);
+      console.log('[Crypto] 使用本地私钥解密（旧版本兼容）');
+      return await decryptWithPrivateKey(encryptedKey, privateKey);
+    }
+  } catch (error) {
+    console.warn('本地解密 API Key 失败（旧版本兼容）:', error);
+  }
+
+  // 生产环境下，返回加密的内容，让服务器去解密
+  return encryptedKey;
 }

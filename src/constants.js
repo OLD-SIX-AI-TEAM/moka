@@ -71,14 +71,31 @@ export const TEMPLATES = [
 
 // 配色方案
 export const PALETTES = [
+  // 暖色系
   { id: "coral", label: "珊瑚", a: "#e05a4b", bg: "#fff8f6", tc: "#2a1210", bc: "#4a3330" },
-  { id: "sage", label: "抹茶", a: "#4a7c59", bg: "#f4faf6", tc: "#172312", bc: "#344d38" },
-  { id: "ink", label: "水墨", a: "#2d3561", bg: "#f4f5fb", tc: "#0f1220", bc: "#333650" },
   { id: "amber", label: "琥珀", a: "#c47c2b", bg: "#fffbf4", tc: "#1f1508", bc: "#4a3010" },
-  { id: "plum", label: "梅子", a: "#8b3a62", bg: "#fdf4f8", tc: "#2a1020", bc: "#4a2a38" },
-  { id: "slate", label: "青石", a: "#4a7c8a", bg: "#f4fafb", tc: "#101e22", bc: "#2a3e44" },
   { id: "rust", label: "铁锈", a: "#a0522d", bg: "#fef8f4", tc: "#200e08", bc: "#4a2818" },
+  { id: "rose", label: "玫瑰", a: "#d44d6e", bg: "#fdf4f6", tc: "#2a1018", bc: "#5a2a38" },
+  { id: "sunset", label: "晚霞", a: "#e85d4e", bg: "#fff5f4", tc: "#2a1210", bc: "#5a3028" },
+  { id: "peach", label: "蜜桃", a: "#f4a261", bg: "#fff8f4", tc: "#2a1a10", bc: "#5a4028" },
+  // 冷色系
+  { id: "sage", label: "抹茶", a: "#4a7c59", bg: "#f4faf6", tc: "#172312", bc: "#344d38" },
+  { id: "slate", label: "青石", a: "#4a7c8a", bg: "#f4fafb", tc: "#101e22", bc: "#2a3e44" },
   { id: "pine", label: "松针", a: "#2d6a4f", bg: "#f0faf5", tc: "#0a1e14", bc: "#1e4432" },
+  { id: "ocean", label: "海洋", a: "#2e86ab", bg: "#f4f9fb", tc: "#0f1e26", bc: "#2a4a5a" },
+  { id: "lavender", label: "薰衣草", a: "#7b68ee", bg: "#f7f5fd", tc: "#1a1030", bc: "#4a3a7a" },
+  { id: "mint", label: "薄荷", a: "#3eb489", bg: "#f4fbf8", tc: "#0f2218", bc: "#2a5a48" },
+  // 深色系
+  { id: "ink", label: "水墨", a: "#2d3561", bg: "#f4f5fb", tc: "#0f1220", bc: "#333650" },
+  { id: "plum", label: "梅子", a: "#8b3a62", bg: "#fdf4f8", tc: "#2a1020", bc: "#4a2a38" },
+  { id: "midnight", label: "午夜", a: "#1a1a2e", bg: "#f4f4f6", tc: "#0a0a14", bc: "#2a2a3e" },
+  { id: "wine", label: "红酒", a: "#722f37", bg: "#fdf4f5", tc: "#1f0a0c", bc: "#4a2028" },
+  { id: "forest", label: "森林", a: "#1b4332", bg: "#f0f5f2", tc: "#0a1a14", bc: "#2a4a3a" },
+  // 中性色
+  { id: "coffee", label: "咖啡", a: "#6f4e37", bg: "#faf6f4", tc: "#1a1410", bc: "#4a3a2a" },
+  { id: "charcoal", label: "炭灰", a: "#4a4a4a", bg: "#f5f5f5", tc: "#1a1a1a", bc: "#3a3a3a" },
+  { id: "terracotta", label: "陶土", a: "#c65d3b", bg: "#fdf6f4", tc: "#2a1814", bc: "#5a3a2a" },
+  { id: "gold", label: "金色", a: "#d4a574", bg: "#fdf9f4", tc: "#2a2018", bc: "#5a4a3a" },
 ];
 
 // 字体

@@ -130,8 +130,24 @@ wrangler deploy
 ```
 
 部署后在 Cloudflare Dashboard 中设置环境变量：
+- `RSA_PRIVATE_KEY`: RSA 私钥（用于解密用户上传的 API Key）
+- `RSA_PUBLIC_KEY`: RSA 公钥（用于前端加密 API Key）
 - `ANTHROPIC_API_KEY`: 你的 Anthropic API Key
 - `OPENAI_API_KEY`: 你的 OpenAI API Key（可选）
+- `DASHSCOPE_API_KEY`: 阿里云百炼 API Key（可选）
+
+生成 RSA 密钥对：
+```bash
+# 生成私钥
+openssl genrsa -out private_key.pem 2048
+
+# 提取公钥
+openssl rsa -in private_key.pem -pubout -out public_key.pem
+
+# 转换为 Base64 格式（去掉换行符和 PEM 头尾）
+cat private_key.pem | base64 | tr -d '\n'
+cat public_key.pem | base64 | tr -d '\n'
+```
 
 ## 项目结构
 
@@ -258,6 +274,27 @@ wrangler deploy
 2. **图片导出**: 优先使用 html-to-image，如遇到问题会自动降级到 html2canvas
 3. **浏览器兼容**: 推荐使用 Chrome、Edge、Safari 最新版本
 4. **移动端**: 支持移动端浏览器访问，但建议使用桌面端获得最佳编辑体验
+
+## 常见问题
+
+### API Key 解密失败
+
+**错误信息**: `API Key 解密失败，请重新配置`
+
+**原因**: 前端加密使用的 RSA 公钥与后端解密的私钥不匹配。
+
+**解决方案**:
+1. 清除浏览器 localStorage:
+   ```javascript
+   // 在浏览器控制台执行
+   localStorage.clear()
+   ```
+2. 重新刷新页面
+3. 在设置中重新输入 API Key
+
+**预防措施**: 
+- 确保 Cloudflare Worker 环境变量 `RSA_PUBLIC_KEY` 和 `RSA_PRIVATE_KEY` 是匹配的密钥对
+- 部署后所有用户需要重新配置 API Key
 
 ## 许可证
 

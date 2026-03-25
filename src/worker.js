@@ -383,6 +383,8 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
     ...(enable_search !== undefined && { enable_search }),
   };
 
+  console.log('[Aliyun Proxy] Request:', { model: requestBody.model, stream, messageCount: openaiMessages.length });
+
   const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -391,6 +393,18 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
     },
     body: JSON.stringify(requestBody),
   });
+
+  console.log('[Aliyun Proxy] Response status:', response.status);
+
+  // 如果响应不成功，返回错误信息
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[Aliyun Proxy] Error response:', errorText);
+    return new Response(JSON.stringify({ error: `API 错误: ${response.status}`, details: errorText }), {
+      status: response.status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 
   // 如果是流式响应，直接透传
   if (stream) {
@@ -405,7 +419,7 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
 
   const data = await response.json();
   
-  console.log('[Aliyun Proxy] Response status:', response.status, 'Model:', data.model);
+  console.log('[Aliyun Proxy] Response model:', data.model);
 
   return new Response(JSON.stringify(data), {
     status: response.status,

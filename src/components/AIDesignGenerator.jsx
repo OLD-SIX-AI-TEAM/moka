@@ -1,5 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { createLLMClient, extractJSON, getEnvLLMConfig, isEnvConfigValid } from '../services/llm';
+
+// 环境判断：本地开发使用流式，部署端使用非流式
+const USE_STREAM_MODE = process.env.NODE_ENV === 'development';
+
 import { ReferenceImageUploader } from './ReferenceImageUploader';
 import { VersionHistory } from './VersionHistory';
 import { Dots } from './common/Icons';
@@ -11,9 +15,45 @@ function tryParsePartialJSON(text) {
   try {
     // 尝试找到JSON对象
     const startIdx = text.indexOf('{');
-    const endIdx = text.lastIndexOf('}');
     
     if (startIdx === -1) return null;
+    
+    // 智能查找 JSON 结束位置：找到与起始 { 匹配的 }
+    let braceCount = 0;
+    let inString = false;
+    let escaped = false;
+    let endIdx = -1;
+    
+    for (let i = startIdx; i < text.length; i++) {
+      const char = text[i];
+      
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      
+      if (char === '"' && !escaped) {
+        inString = !inString;
+        continue;
+      }
+      
+      if (!inString) {
+        if (char === '{') {
+          braceCount++;
+        } else if (char === '}') {
+          braceCount--;
+          if (braceCount === 0) {
+            endIdx = i;
+            break;
+          }
+        }
+      }
+    }
     
     // 尝试解析完整的JSON
     let jsonText = text.substring(startIdx, endIdx !== -1 ? endIdx + 1 : undefined);
@@ -420,26 +460,53 @@ export function AIDesignGenerator({ input, onDesignChange, onError, onLoadingCha
       }
 
       let accumulatedContent = '';
+      let response;
+      let data;
+      let retryCount = 0;
+      const maxRetries = 2;
       
-      const response = await client.chat({
-        system: referenceImage ? AI_DESIGN_WITH_REFERENCE_PROMPT : AI_DESIGN_PROMPT,
-        messages,
-        maxTokens: MAX_TOKENS.aiDesign,
-        stream: true,
-        onStream: (delta, full) => {
-          accumulatedContent = full;
-          setStreamContent(full);
-          onStreamContent?.(full);
-          
-          // 尝试解析部分JSON并实时更新预览
-          const partialData = tryParsePartialJSON(full);
-          if (partialData && partialData.styleConfig && partialData.content) {
-            onDesignChange?.(partialData);
+      while (retryCount <= maxRetries) {
+        try {
+          if (USE_STREAM_MODE) {
+            // 本地开发使用流式模式
+            response = await client.chat({
+              system: referenceImage ? AI_DESIGN_WITH_REFERENCE_PROMPT : AI_DESIGN_PROMPT,
+              messages,
+              maxTokens: MAX_TOKENS.aiDesign,
+              stream: true,
+              onStream: (delta, full) => {
+                accumulatedContent = full;
+                setStreamContent(full);
+                onStreamContent?.(full);
+                
+                // 尝试解析部分JSON并实时更新预览
+                const partialData = tryParsePartialJSON(full);
+                if (partialData && partialData.styleConfig && partialData.content) {
+                  onDesignChange?.(partialData);
+                }
+              },
+            });
+            data = extractJSON(response.content);
+          } else {
+            // 部署端使用非流式模式
+            response = await client.chat({
+              system: referenceImage ? AI_DESIGN_WITH_REFERENCE_PROMPT : AI_DESIGN_PROMPT,
+              messages,
+              maxTokens: MAX_TOKENS.aiDesign,
+              stream: false,
+            });
+            data = extractJSON(response.content);
           }
-        },
-      });
-
-      const data = extractJSON(response.content);
+          break;
+        } catch (parseError) {
+          if (retryCount < maxRetries) {
+            console.warn(`[extractJSON] Parse failed, retrying (${retryCount + 1}/${maxRetries})...`);
+            retryCount++;
+          } else {
+            throw parseError;
+          }
+        }
+      }
       
       if (!data.styleConfig || !data.content) {
         throw new Error('AI返回的数据格式不正确');

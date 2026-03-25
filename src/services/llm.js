@@ -3,7 +3,7 @@
  * 支持 OpenAI、Anthropic 和阿里云百炼三种 API 格式
  */
 
-import { storeEncryptedApiKey, getEncryptedApiKey, hasEncryptedApiKey } from "../utils/crypto";
+import { storeEncryptedApiKey, getEncryptedApiKey, hasEncryptedApiKey, getDecryptedApiKey } from "../utils/crypto";
 
 const STORAGE_KEY = "imarticle_llm_config";
 
@@ -83,7 +83,7 @@ function getMergedConfig() {
   
   // 如果 localStorage 中有有效配置，优先使用
   if (storageConfig && hasEncryptedKey) {
-    console.log("[LLM Config] 使用 localStorage 配置（API Key 已加密）");
+    // console.log("[LLM Config] 使用 localStorage 配置（API Key 已加密）");
     return {
       provider: storageConfig.provider || ENV_CONFIG.provider,
       baseUrl: storageConfig.baseUrl || ENV_CONFIG.baseUrl,
@@ -258,11 +258,14 @@ export function createLLMClient(config) {
       if (stream && onStream) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let fullContent = '';
+        let finalContent = '';      // 只包含 content（最终结果）
+        let displayContent = '';    // 包含 content + reasoning_content（UI显示）
 
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            break;
+          }
 
           const chunk = decoder.decode(value, { stream: true });
           const lines = chunk.split('\n');
@@ -270,14 +273,26 @@ export function createLLMClient(config) {
           for (const line of lines) {
             if (line.startsWith('data: ')) {
               const data = line.slice(6);
-              if (data === '[DONE]') continue;
+              if (data === '[DONE]') {
+                continue;
+              }
 
               try {
                 const parsed = JSON.parse(data);
-                const delta = parsed.choices?.[0]?.delta?.content;
-                if (delta) {
-                  fullContent += delta;
-                  onStream(delta, fullContent);
+                const deltaContent = parsed.choices?.[0]?.delta?.content;
+                const deltaReasoning = parsed.choices?.[0]?.delta?.reasoning_content;
+                
+                // 处理 reasoning_content（思考过程）
+                if (deltaReasoning) {
+                  displayContent += deltaReasoning;
+                  onStream(deltaReasoning, displayContent, true);
+                }
+                
+                // 处理 content（实际内容）
+                if (deltaContent) {
+                  finalContent += deltaContent;
+                  displayContent += deltaContent;
+                  onStream(deltaContent, displayContent, false);
                 }
               } catch (e) {
                 // 忽略解析错误
@@ -287,7 +302,7 @@ export function createLLMClient(config) {
         }
 
         return {
-          content: fullContent,
+          content: finalContent,
           model: this.model,
         };
       }
@@ -300,9 +315,6 @@ export function createLLMClient(config) {
       
       // 如果模型返回了 tool_calls，尝试提取信息
       if (message?.tool_calls) {
-        // 记录工具调用信息用于调试
-        console.log('[OpenAI Response] Tool calls:', message.tool_calls);
-        
         // 如果有 tool_calls 但没有 content，尝试从工具调用中提取信息
         if (!content) {
           content = message.tool_calls.map(tc => {
@@ -333,31 +345,54 @@ export function createLLMClient(config) {
      * 使用 enable_search 参数启用网络搜索
      */
     async _callAliyun({ system, messages, maxTokens, webSearch, stream, onStream }) {
-      // 检测是否在 Cloudflare Pages 环境
+      // 检测环境
       const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
         window.location.hostname.includes('workers.dev');
+      const isLocalDev = window.location.hostname === 'localhost' || 
+        window.location.hostname === '127.0.0.1';
 
       let url;
       let headers;
       let body;
 
-      // 使用 Pages Function 代理
-      url = PAGES_PROXY_URL;
-      headers = {
-        'Content-Type': 'application/json',
-      };
-      body = {
-        provider: 'aliyun',
-        model: this.model,
-        messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-        max_tokens: maxTokens,
-        temperature: 0.7,
-        enable_search: webSearch,
-        stream,
-        ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
-      };
+      // 本地开发直接调用阿里云 API
+      if (isLocalDev) {
+        // 本地开发时从 localStorage 获取解密的 API Key
+        const apiKey = await getDecryptedApiKey('aliyun');
+        if (!apiKey) {
+          throw new Error('请先配置 LLM API Key');
+        }
 
-      console.log('[LLM Client] Aliyun request encryptedApiKey:', !!this.encryptedApiKey);
+        url = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+        headers = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        };
+        body = {
+          model: this.model,
+          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+          max_tokens: maxTokens,
+          temperature: 0.7,
+          enable_search: webSearch,
+          stream,
+        };
+      } else {
+        // 使用 Pages Function 代理
+        url = PAGES_PROXY_URL;
+        headers = {
+          'Content-Type': 'application/json',
+        };
+        body = {
+          provider: 'aliyun',
+          model: this.model,
+          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+          max_tokens: maxTokens,
+          temperature: 0.7,
+          enable_search: webSearch,
+          stream,
+          ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }),
+        };
+      }
 
       const response = await fetch(url, {
         method: "POST",
@@ -366,19 +401,35 @@ export function createLLMClient(config) {
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`阿里云百炼 API 错误：${error}`);
+        const errorText = await response.text();
+        console.error('[LLM Client] Error response:', errorText);
+        let errorMessage = `阿里云百炼 API 错误 (${response.status})`;
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.error) {
+            errorMessage = `阿里云百炼 API 错误: ${errorJson.error}`;
+            if (errorJson.details) {
+              errorMessage += ` - ${errorJson.details}`;
+            }
+          }
+        } catch (e) {
+          errorMessage = `阿里云百炼 API 错误: ${errorText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       // 处理流式响应
       if (stream && onStream) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let fullContent = '';
+        let finalContent = '';      // 只包含 content（最终结果）
+        let displayContent = '';    // 包含 content + reasoning_content（UI显示）
 
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            break;
+          }
 
           const chunk = decoder.decode(value, { stream: true });
           const lines = chunk.split('\n');
@@ -386,14 +437,26 @@ export function createLLMClient(config) {
           for (const line of lines) {
             if (line.startsWith('data: ')) {
               const data = line.slice(6);
-              if (data === '[DONE]') continue;
+              if (data === '[DONE]') {
+                continue;
+              }
 
               try {
                 const parsed = JSON.parse(data);
-                const delta = parsed.choices?.[0]?.delta?.content;
-                if (delta) {
-                  fullContent += delta;
-                  onStream(delta, fullContent);
+                const deltaContent = parsed.choices?.[0]?.delta?.content;
+                const deltaReasoning = parsed.choices?.[0]?.delta?.reasoning_content;
+                
+                // 处理 reasoning_content（思考过程）
+                if (deltaReasoning) {
+                  displayContent += deltaReasoning;
+                  onStream(deltaReasoning, displayContent, true);
+                }
+                
+                // 处理 content（实际内容）
+                if (deltaContent) {
+                  finalContent += deltaContent;
+                  displayContent += deltaContent;
+                  onStream(deltaContent, displayContent, false);
                 }
               } catch (e) {
                 // 忽略解析错误
@@ -403,25 +466,25 @@ export function createLLMClient(config) {
         }
 
         return {
-          content: fullContent,
+          content: finalContent,
           model: this.model,
         };
       }
 
       const data = await response.json();
 
-      // 调试日志
-      console.log('[Aliyun Response]', data);
-
-      // 检查响应格式
-      if (!data.choices || !data.choices[0]?.message?.content) {
+      // 检响格式（支持 content 或 reasoning_content）
+      const message = data.choices?.[0]?.message;
+      const content = message?.content || message?.reasoning_content;
+      
+      if (!data.choices || !content) {
         console.error('[Aliyun Response] Invalid response format:', data);
         throw new Error('阿里云百炼返回的响应格式不正确');
       }
 
       // 统一响应格式
       return {
-        content: data.choices[0].message.content,
+        content: content,
         usage: data.usage,
         model: data.model,
       };
@@ -464,8 +527,6 @@ export function createLLMClient(config) {
         ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
       };
 
-      console.log('[LLM Client] Anthropic request encryptedApiKey:', !!this.encryptedApiKey);
-
       const response = await fetch(url, {
         method: "POST",
         headers,
@@ -497,10 +558,11 @@ export function createLLMClient(config) {
 
               try {
                 const parsed = JSON.parse(data);
-                const delta = parsed.choices?.[0]?.delta?.content;
-                if (delta) {
-                  fullContent += delta;
-                  onStream(delta, fullContent);
+                // 优先使用 content，忽略 reasoning_content（思考过程不应包含在最终内容中）
+                const deltaContent = parsed.choices?.[0]?.delta?.content;
+                if (deltaContent) {
+                  fullContent += deltaContent;
+                  onStream(deltaContent, fullContent);
                 }
               } catch (e) {
                 // 忽略解析错误
@@ -518,14 +580,12 @@ export function createLLMClient(config) {
       const data = await response.json();
 
       // 处理响应内容（支持普通响应和 web_search 响应）
-      let content = data.content?.map((c) => c.text || "").join("") || "";
+      let content = data.content?.map((c) => c.text || "").join("") || data.choices?.[0]?.message?.content || "";
       
       // 如果模型返回了 tool_use，尝试提取信息
       if (data.content) {
         const toolUses = data.content.filter(c => c.type === "tool_use");
         if (toolUses.length > 0) {
-          console.log('[Anthropic Response] Tool uses:', toolUses);
-          
           // 如果有工具调用但没有文本内容，生成提示信息
           if (!content) {
             content = toolUses.map(tu => {
@@ -656,20 +716,140 @@ export function extractJSON(text) {
   // 移除 markdown 代码块标记
   let cleaned = text.replace(/```json\s*|```\s*/gi, "").trim();
 
-  // 尝试找到 JSON 对象的开始和结束位置
-  const startIdx = cleaned.indexOf('{');
-  const endIdx = cleaned.lastIndexOf('}');
-
-  if (startIdx === -1 || endIdx === -1 || startIdx >= endIdx) {
+  // 移除思考过程（如 DeepSeek 的 "Thinking Process:"）
+  // 更健壮的方法：直接找到第一个 { 或 [，这应该是 JSON 的开始
+  // 因为思考过程中的文本不太可能包含 { 或 [
+  const firstBrace = cleaned.indexOf('{');
+  const firstBracket = cleaned.indexOf('[');
+  
+  let jsonStartIdx = -1;
+  if (firstBrace !== -1 && firstBracket !== -1) {
+    jsonStartIdx = Math.min(firstBrace, firstBracket);
+  } else if (firstBrace !== -1) {
+    jsonStartIdx = firstBrace;
+  } else if (firstBracket !== -1) {
+    jsonStartIdx = firstBracket;
+  }
+  
+  if (jsonStartIdx !== -1) {
+    cleaned = cleaned.substring(jsonStartIdx).trim();
+  }
+  
+  if (jsonStartIdx === -1) {
     console.error('[extractJSON] No JSON object found in:', cleaned.substring(0, 500));
     throw new Error('No valid JSON object found in response');
   }
 
-  // 提取 JSON 部分
-  cleaned = cleaned.substring(startIdx, endIdx + 1);
+  // 智能查找 JSON 结束位置：找到与起始 { 或 [ 匹配的 } 或 ]
+  let braceCount = 0;
+  let bracketCount = 0;
+  let inString = false;
+  let escaped = false;
+  let endIdx = -1;
+  const isArray = cleaned[0] === '[' || cleaned[0] === '{' ? cleaned[0] === '[' : cleaned.indexOf('[') === 0;
+  
+  for (let i = 0; i < cleaned.length; i++) {
+    const char = cleaned[i];
+    
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    
+    if (char === '\\') {
+      escaped = true;
+      continue;
+    }
+    
+    if (char === '"' && !escaped) {
+      inString = !inString;
+      continue;
+    }
+    
+    if (!inString) {
+      if (char === '{') {
+        braceCount++;
+      } else if (char === '}') {
+        braceCount--;
+        if (!isArray && braceCount === 0) {
+          endIdx = i;
+          break;
+        }
+      } else if (char === '[') {
+        bracketCount++;
+      } else if (char === ']') {
+        bracketCount--;
+        if (isArray && bracketCount === 0) {
+          endIdx = i;
+          break;
+        }
+      }
+    }
+  }
+  
+  if (endIdx === -1) {
+    console.warn('[extractJSON] No matching closing brace found, attempting aggressive recovery...');
+    
+    // 尝试找到最长的平衡 JSON 结构
+    let maxValidEnd = -1;
+    let tempBraceCount = 0;
+    let tempBracketCount = 0;
+    let tempInString = false;
+    let tempEscaped = false;
+    
+    for (let i = 0; i < cleaned.length; i++) {
+      const char = cleaned[i];
+      
+      if (tempEscaped) {
+        tempEscaped = false;
+        continue;
+      }
+      
+      if (char === '\\') {
+        tempEscaped = true;
+        continue;
+      }
+      
+      if (char === '"' && !tempEscaped) {
+        tempInString = !tempInString;
+        continue;
+      }
+      
+      if (!tempInString) {
+        if (char === '{') tempBraceCount++;
+        else if (char === '}') {
+          tempBraceCount--;
+          if (tempBraceCount === 0 && tempBracketCount === 0) {
+            maxValidEnd = i;
+          }
+        }
+        else if (char === '[') tempBracketCount++;
+        else if (char === ']') {
+          tempBracketCount--;
+          if (tempBraceCount === 0 && tempBracketCount === 0) {
+            maxValidEnd = i;
+          }
+        }
+      }
+    }
+    
+    if (maxValidEnd !== -1) {
+      console.log('[extractJSON] Found valid JSON ending at position:', maxValidEnd);
+      endIdx = maxValidEnd;
+    } else {
+      console.error('[extractJSON] No matching closing brace found in:', cleaned.substring(0, 500));
+      throw new Error('No valid JSON object found in response');
+    }
+  }
 
-  // 第一步：移除零宽字符和 BOM
+  // 提取 JSON 部分
+  cleaned = cleaned.substring(0, endIdx + 1);
+
+  // 第零步：移除零宽字符和 BOM
   cleaned = cleaned.replace(/[\u200B-\u200D\uFEFF]/g, '');
+  
+  // 第一步：转义字符串内的控制字符（换行、制表符等）
+  cleaned = escapeSpecialCharsInJSON(cleaned);
 
   // 第二步：修复单引号键名和字符串值
   cleaned = cleaned
@@ -695,36 +875,150 @@ export function extractJSON(text) {
   }
   
   // 第六步：修复缺少值的属性（如 "key": , 或 "key": }）
-  cleaned = cleaned.replace(/"\w+":\s*,/g, '"$1": null,');
-  cleaned = cleaned.replace(/"\w+":\s*([}\]])/g, '"$1": null $2');
+  cleaned = cleaned.replace(/"(\w+)":\s*,/g, '"$1": null,');
+  cleaned = cleaned.replace(/"(\w+)":\s*([}\]])/g, '"$1": null $2');
+
+  // 第六步半：修复 sections 数组格式错误（如 "sections文案产出效率",）
+  // LLM 有时会把 sections 数组写成 "sections标题内容", "text": "..." 的错误格式
+  
+  // 首先处理 "sections内容", 后面直接跟属性的情况
+  if (/"sections[^":]+",/.test(cleaned)) {
+    // 提取 sections 后面的内容作为第一个 heading
+    cleaned = cleaned.replace(/"sections([^",]+)",\s*/g, '"sections": [{"heading": "$1"}, ');
+    
+    // 尝试修复后续的内容：如果有独立的 "text": 或 "heading": 属性，把它们归入 sections
+    // 找到 sections 数组开始的位置
+    const sectionsMatch = cleaned.match(/"sections":\s*\[/);
+    if (sectionsMatch) {
+      const sectionsStart = cleaned.indexOf(sectionsMatch[0]) + sectionsMatch[0].length;
+      let sectionsPart = cleaned.substring(sectionsStart);
+      
+      // 查找 sections 数组应该结束的位置（在 "tip" 或 "tags" 之前）
+      const endMatch = sectionsPart.match(/,\s*"(?:tip|tags)"/);
+      if (endMatch) {
+        const sectionsEnd = sectionsPart.indexOf(endMatch[0]);
+        let sectionsContent = sectionsPart.substring(0, sectionsEnd);
+        
+        // 尝试从混乱的内容中提取 heading 和 text 对
+        // 模式：可能包含多个独立的 "heading": "xxx" 或 "text": "xxx"
+        const items = [];
+        let currentItem = {};
+        
+        // 提取所有 heading 和 text
+        const headingMatches = [...sectionsContent.matchAll(/"heading"\s*:\s*"([^"]+)"/g)];
+        const textMatches = [...sectionsContent.matchAll(/"text"\s*:\s*"([^"]+)"/g)];
+        
+        // 匹配 heading 和 text
+        for (let i = 0; i < Math.max(headingMatches.length, textMatches.length); i++) {
+          const item = {};
+          if (headingMatches[i]) item.heading = headingMatches[i][1];
+          if (textMatches[i]) item.text = textMatches[i][1];
+          if (Object.keys(item).length > 0) {
+            items.push(item);
+          }
+        }
+        
+        // 如果有提取到内容，重建 sections 数组
+        if (items.length > 0) {
+          const newSections = JSON.stringify(items);
+          cleaned = cleaned.substring(0, sectionsStart) + newSections.substring(1, newSections.length - 1) + 
+                    sectionsPart.substring(sectionsEnd);
+        }
+      }
+    }
+  }
+  
+  // 修复数组结尾：确保 sections 数组正确闭合
+  if (cleaned.includes('"sections":') && !cleaned.includes('"sections": []') && !cleaned.includes('"sections":[')) {
+    // 尝试在 tip 或 tags 之前添加 ]
+    cleaned = cleaned.replace(/(,"tip":)/, ']$1');
+    cleaned = cleaned.replace(/(,"tags":)/, ']$1');
+  }
 
   // 尝试解析
+  console.log('[extractJSON] Attempting to parse cleaned JSON (first 500 chars):', cleaned.substring(0, 500));
   try {
     return JSON.parse(cleaned);
   } catch (parseError) {
-    // 第七步：修复字符串中的特殊字符
+    // 第七步：激进清理 - 移除所有控制字符（跳过特殊字符转义，因为第一步已处理）
     try {
-      cleaned = escapeSpecialCharsInJSON(cleaned);
+      cleaned = cleaned.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
       return JSON.parse(cleaned);
     } catch {
-      // 第八步：激进清理 - 移除所有控制字符
+      // 第八步：尝试使用正则提取可解析的 JSON 部分
       try {
-        cleaned = cleaned.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
-        return JSON.parse(cleaned);
-      } catch {
-        // 第九步：尝试使用 Function 构造器作为最后的手段
-        try {
-          // 注意：这有一定的安全风险，但在受控环境中可以使用
-          const result = new Function('return ' + cleaned)();
-          if (result && typeof result === 'object') {
-            return result;
+        // 尝试提取最外层的大括号包裹的内容
+        const objectMatch = cleaned.match(/\{[\s\S]*\}/);
+        if (objectMatch) {
+          const extracted = objectMatch[0];
+          // 尝试平衡括号
+          let braceCount = 0;
+          let inString = false;
+          let escaped = false;
+          let lastValidEnd = -1;
+          
+          for (let i = 0; i < extracted.length; i++) {
+            const char = extracted[i];
+            
+            if (escaped) {
+              escaped = false;
+              continue;
+            }
+            
+            if (char === '\\') {
+              escaped = true;
+              continue;
+            }
+            
+            if (char === '"' && !escaped) {
+              inString = !inString;
+              continue;
+            }
+            
+            if (!inString) {
+              if (char === '{') {
+                braceCount++;
+              } else if (char === '}') {
+                braceCount--;
+                if (braceCount === 0) {
+                  lastValidEnd = i;
+                }
+              }
+            }
           }
-        } catch {}
-        
-        console.error("[JSON Parse Error] Raw text:", text);
-        console.error("[JSON Parse Error] Cleaned text:", cleaned);
-        throw new Error(`JSON parse error: ${parseError.message}`);
-      }
+          
+          if (lastValidEnd !== -1) {
+            const balancedJSON = extracted.substring(0, lastValidEnd + 1);
+            // 进一步清理：确保所有字符串正确闭合
+            let fixedJSON = balancedJSON;
+            
+            // 修复 sections 数组中的常见问题
+            // 查找并修复不完整的对象
+            fixedJSON = fixedJSON.replace(/\{\s*"heading"\s*:\s*"([^"]*)"\s*\}/g, '{"heading":"$1","text":""}');
+            fixedJSON = fixedJSON.replace(/\}\s*,\s*\{/g, '},{');
+            
+            // 修复数组结尾
+            if (fixedJSON.includes('"sections":[') && !fixedJSON.includes('"tip":')) {
+              fixedJSON = fixedJSON.replace(/(\])\s*$/, '$1,"tip":"","tags":[]');
+            }
+            
+            return JSON.parse(fixedJSON);
+          }
+        }
+      } catch {}
+      
+      // 第九步：尝试使用 Function 构造器作为最后的手段
+      try {
+        // 注意：这有一定的安全风险，但在受控环境中可以使用
+        const result = new Function('return ' + cleaned)();
+        if (result && typeof result === 'object') {
+          return result;
+        }
+      } catch {}
+      
+      console.error("[JSON Parse Error] Raw text:", text);
+      console.error("[JSON Parse Error] Cleaned text:", cleaned);
+      throw new Error(`JSON parse error: ${parseError.message}`);
     }
   }
 }
