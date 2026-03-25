@@ -372,19 +372,17 @@ function App() {
   };
 
   // 处理LLM配置保存
-  const handleLLMConfigSave = useCallback((config) => {
-    saveLLMConfig(config);
-    setLlmConfig(config);
+  const handleLLMConfigSave = useCallback(async (config) => {
+    await saveLLMConfig(config);
+    // 重新获取配置（包含加密状态）
+    const updatedConfig = getEnvLLMConfig();
+    setLlmConfig(updatedConfig);
     setShowLLMConfig(false);
   }, []);
 
   // AI设计生成
   const generateAIDesign = useCallback(async (isSplitMode = false) => {
     if (!input.trim()) return;
-    if (!envConfigValid) {
-      setShowLLMConfig(true);
-      return;
-    }
 
     setLoading(true);
     setError("");
@@ -441,10 +439,6 @@ function App() {
   // 生成内容
   const generate = useCallback(async () => {
     if (!input.trim()) return;
-    if (!envConfigValid) {
-      setShowLLMConfig(true);
-      return;
-    }
 
     // AI设计模式
     if (mode === 'single' && tpl === 'ai') {

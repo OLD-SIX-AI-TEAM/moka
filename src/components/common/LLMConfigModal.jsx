@@ -6,13 +6,18 @@ import { LLM_PROVIDERS } from "../../services/llm";
  * 用于在没有配置时弹出让用户输入LLM信息
  */
 export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
-  const [config, setConfig] = useState(() => ({
-    provider: initialConfig?.provider || "openai",
-    baseUrl: initialConfig?.baseUrl || "",
-    apiKey: initialConfig?.apiKey || "",
-    model: initialConfig?.model || "",
-  }));
+  const [config, setConfig] = useState(() => {
+    const provider = initialConfig?.provider || "aliyun";
+    const providerConfig = LLM_PROVIDERS[provider];
+    return {
+      provider: provider,
+      baseUrl: initialConfig?.baseUrl || providerConfig?.defaultBaseUrl || "",
+      apiKey: "",
+      model: initialConfig?.model || providerConfig?.defaultModel || "",
+    };
+  });
   const [errors, setErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
 
 
@@ -24,11 +29,12 @@ export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
   };
 
   const handleProviderChange = (provider) => {
+    const providerConfig = LLM_PROVIDERS[provider];
     setConfig((prev) => ({
       ...prev,
       provider,
-      baseUrl: "",
-      model: "",
+      baseUrl: providerConfig?.defaultBaseUrl || "",
+      model: providerConfig?.defaultModel || "",
     }));
   };
 
@@ -41,16 +47,24 @@ export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
-      onSave({
-        provider: config.provider,
-        baseUrl: config.baseUrl.trim() || undefined,
-        apiKey: config.apiKey.trim(),
-        model: config.model.trim() || undefined,
-      });
-      onClose();
+      setIsSaving(true);
+      try {
+        await onSave({
+          provider: config.provider,
+          baseUrl: config.baseUrl.trim() || undefined,
+          apiKey: config.apiKey.trim(),
+          model: config.model.trim() || undefined,
+        });
+        onClose();
+      } catch (error) {
+        console.error('保存配置失败:', error);
+        setErrors({ apiKey: '保存失败，请重试' });
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -205,6 +219,24 @@ export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
               <span style={{ fontSize: "11px", color: "#e05a4b", marginTop: "4px", display: "block" }}>
                 {errors.apiKey}
               </span>
+            )}
+            {config.provider === 'aliyun' && (
+              <div style={{ marginTop: "8px", fontSize: "12px" }}>
+                <span style={{ color: "#666" }}>还没有 API Key？</span>
+                <a
+                  href="https://bailian.console.aliyun.com/cn-beijing?tab=model#/api-key"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#4a7c59",
+                    textDecoration: "none",
+                    fontWeight: 600,
+                    marginLeft: "4px",
+                  }}
+                >
+                  前往阿里云百炼开通 →
+                </a>
+              </div>
             )}
           </div>
 

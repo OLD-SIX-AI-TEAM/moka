@@ -1,5 +1,7 @@
 /** @jsxImportSource react */
+import { useState, useEffect } from "react";
 import { Dots } from "../common/Icons";
+import { LLM_PROVIDERS } from "../../services/llm";
 
 export function ContentPanel({
   mode,
@@ -14,6 +16,49 @@ export function ContentPanel({
   llmConfig,
   onOpenLLMConfig,
 }) {
+  // 获取显示的 provider 名称
+  const getProviderName = () => {
+    const provider = llmConfig?.provider || "aliyun";
+    return LLM_PROVIDERS[provider]?.name || "阿里云百炼";
+  };
+
+  // 获取显示的 baseUrl
+  const getBaseUrl = () => {
+    if (llmConfig?.baseUrl) return llmConfig.baseUrl;
+    const provider = llmConfig?.provider || "aliyun";
+    return LLM_PROVIDERS[provider]?.defaultBaseUrl || "https://dashscope.aliyuncs.com/compatible-mode/v1";
+  };
+
+  // 获取显示的 model
+  const getModel = () => {
+    if (llmConfig?.model) return llmConfig.model;
+    const provider = llmConfig?.provider || "aliyun";
+    return LLM_PROVIDERS[provider]?.defaultModel || "qwen3.5-plus";
+  };
+
+  // 使用次数状态
+  const [usage, setUsage] = useState({
+    dailyRemaining: 5,
+    monthlyRemaining: 50,
+    dailyMax: 5,
+  });
+
+  // 获取使用次数
+  useEffect(() => {
+    const fetchUsage = async () => {
+      try {
+        const response = await fetch('/api/usage');
+        if (response.ok) {
+          const data = await response.json();
+          setUsage(data);
+        }
+      } catch (e) {
+        console.error('获取使用次数失败:', e);
+      }
+    };
+    fetchUsage();
+  }, []);
+
   return (
     <div className="content-panel">
       {/* 平台选择 - 仅在分页模式下显示 */}
@@ -97,21 +142,112 @@ export function ContentPanel({
             ⚙️ 修改
           </button>
         </div>
+        
+        {/* 免费体验提示 - 仅当没有配置自己的 API Key 时显示 */}
+        {!llmConfig?.hasEncryptedKey && (
+          <>
+            <div style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '8px',
+              padding: '10px 12px',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '16px' }}>🎁</span>
+                <span style={{
+                  fontSize: '13px',
+                  color: '#fff',
+                  fontWeight: 500,
+                }}>
+                  免费限量体验
+                </span>
+              </div>
+              <span style={{
+                fontSize: '13px',
+                color: '#fff',
+                fontWeight: 600,
+                backgroundColor: 'rgba(255,255,255,0.2)',
+                padding: '4px 10px',
+                borderRadius: '12px',
+              }}>
+                今日剩余 {usage.dailyRemaining}/{usage.dailyMax} 次
+              </span>
+            </div>
+            
+            {/* 建议配置自己的 API Key */}
+            <div style={{
+              backgroundColor: '#f0f7f2',
+              borderRadius: '8px',
+              padding: '8px 12px',
+              marginBottom: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
+              <span style={{ fontSize: '14px' }}>💡</span>
+              <span style={{
+                fontSize: '12px',
+                color: '#4a7c59',
+                flex: 1,
+              }}>
+                建议配置自己的 API Key，获得无限次使用
+              </span>
+              <button
+                onClick={onOpenLLMConfig}
+                style={{
+                  fontSize: '12px',
+                  color: '#4a7c59',
+                  backgroundColor: 'transparent',
+                  border: '1px solid #4a7c59',
+                  borderRadius: '4px',
+                  padding: '4px 10px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                去配置
+              </button>
+            </div>
+          </>
+        )}
+        
+        {/* 已配置 API Key 的提示 */}
+        {llmConfig?.hasEncryptedKey && (
+          <div style={{
+            backgroundColor: '#e8f5e9',
+            borderRadius: '8px',
+            padding: '10px 12px',
+            marginBottom: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}>
+            <span style={{ fontSize: '16px' }}>✅</span>
+            <span style={{
+              fontSize: '13px',
+              color: '#2e7d32',
+              fontWeight: 500,
+            }}>
+              已配置自己的 API Key，无限次使用
+            </span>
+          </div>
+        )}
+        
         <div className="llm-config-info">
           <div className="llm-info-item">
             <span className="llm-info-label">提供商类型</span>
-            <span className="llm-info-value">
-              {llmConfig?.provider === 'openai' ? 'OpenAI' : 
-               llmConfig?.provider === 'aliyun' ? '阿里云百炼' : 'Anthropic'}
-            </span>
+            <span className="llm-info-value">{getProviderName()}</span>
           </div>
           <div className="llm-info-item">
             <span className="llm-info-label">基础URL</span>
-            <span className="llm-info-value llm-info-value-url" title={llmConfig?.baseUrl}>{llmConfig?.baseUrl || '未知'}</span>
+            <span className="llm-info-value llm-info-value-url" title={getBaseUrl()}>{getBaseUrl()}</span>
           </div>
           <div className="llm-info-item">
             <span className="llm-info-label">模型</span>
-            <span className="llm-info-value">{llmConfig?.model || '默认'}</span>
+            <span className="llm-info-value">{getModel()}</span>
           </div>
         </div>
       </div>

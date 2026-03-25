@@ -1,7 +1,9 @@
 /**
  * 通用 LLM 服务模块
- * 支持 OpenAI 和 Anthropic 两种 API 格式
+ * 支持 OpenAI、Anthropic 和阿里云百炼三种 API 格式
  */
+
+import { storeEncryptedApiKey, getEncryptedApiKey, hasEncryptedApiKey } from "../utils/crypto";
 
 const STORAGE_KEY = "imarticle_llm_config";
 
@@ -10,7 +12,7 @@ const PAGES_PROXY_URL = "/api/llm";
 
 // 从环境变量读取配置
 const ENV_CONFIG = {
-  provider: import.meta.env.VITE_LLM_PROVIDER || "anthropic",
+  provider: import.meta.env.VITE_LLM_PROVIDER || "aliyun",
   baseUrl: import.meta.env.VITE_LLM_BASE_URL || "",
   apiKey: import.meta.env.VITE_LLM_API_KEY || "",
   model: import.meta.env.VITE_LLM_MODEL || "",
@@ -29,11 +31,19 @@ function getStorageConfig() {
   return null;
 }
 
-// 保存配置到 localStorage
-export function saveLLMConfig(config) {
+// 保存配置到 localStorage（加密存储 API Key）
+export async function saveLLMConfig(config) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-    console.log("[LLM Config] 配置已保存到 localStorage");
+    const { apiKey, ...restConfig } = config;
+    
+    // 加密存储 API Key
+    if (apiKey) {
+      await storeEncryptedApiKey(apiKey, config.provider || "aliyun");
+    }
+    
+    // 存储其他配置（不包含明文 apiKey）
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(restConfig));
+    console.log("[LLM Config] 配置已保存到 localStorage（API Key 已加密）");
     return true;
   } catch (e) {
     console.error("[LLM Config] 保存配置失败:", e);
@@ -45,6 +55,10 @@ export function saveLLMConfig(config) {
 export function clearLLMConfig() {
   try {
     localStorage.removeItem(STORAGE_KEY);
+    // 清除所有 provider 的加密 key
+    Object.keys(LLM_PROVIDERS).forEach(provider => {
+      localStorage.removeItem(`llm_config_${provider}`);
+    });
     console.log("[LLM Config] 配置已从 localStorage 清除");
     return true;
   } catch (e) {
@@ -53,24 +67,39 @@ export function clearLLMConfig() {
   }
 }
 
+// 检查是否配置了加密的 API Key
+export function hasUserApiKey(provider) {
+  return hasEncryptedApiKey(provider || "aliyun");
+}
+
 // 获取合并后的配置（优先使用 localStorage）
 function getMergedConfig() {
   const storageConfig = getStorageConfig();
+  const provider = storageConfig?.provider || ENV_CONFIG.provider;
+  
+  // 检查是否有加密的 API Key
+  const encryptedApiKey = getEncryptedApiKey(provider);
+  const hasEncryptedKey = hasEncryptedApiKey(provider);
   
   // 如果 localStorage 中有有效配置，优先使用
-  if (storageConfig && storageConfig.apiKey) {
-    console.log("[LLM Config] 使用 localStorage 配置");
+  if (storageConfig && hasEncryptedKey) {
+    console.log("[LLM Config] 使用 localStorage 配置（API Key 已加密）");
     return {
       provider: storageConfig.provider || ENV_CONFIG.provider,
       baseUrl: storageConfig.baseUrl || ENV_CONFIG.baseUrl,
-      apiKey: storageConfig.apiKey,
+      encryptedApiKey: encryptedApiKey,
+      hasEncryptedKey: true,
       model: storageConfig.model || ENV_CONFIG.model,
     };
   }
   
   // 否则使用环境变量配置
   console.log("[LLM Config] 使用环境变量配置");
-  return ENV_CONFIG;
+  return {
+    ...ENV_CONFIG,
+    encryptedApiKey: null,
+    hasEncryptedKey: false,
+  };
 }
 
 const MERGED_CONFIG = getMergedConfig();
@@ -98,7 +127,7 @@ export const LLM_PROVIDERS = {
   aliyun: {
     name: "阿里云百炼",
     defaultBaseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    defaultModel: "qwen-plus",
+    defaultModel: "qwen3.5-plus",
     requireAuth: true,
   },
 };
@@ -112,31 +141,32 @@ export function getEnvLLMConfig() {
   return {
     provider: config.provider,
     baseUrl: config.baseUrl || undefined,
-    apiKey: config.apiKey,
+    encryptedApiKey: config.encryptedApiKey,
+    hasEncryptedKey: config.hasEncryptedKey,
     model: config.model || undefined,
   };
 }
 
 /**
- * 检查 LLM 配置是否有效
+ * 检查 LLM 配置是否有效（是否有加密的 API Key）
  * @returns {boolean}
  */
 export function isEnvConfigValid() {
   const config = getMergedConfig();
-  return !!config.apiKey;
+  return config.hasEncryptedKey;
 }
 
 /**
  * 创建 LLM 客户端
  * @param {Object} config - 配置对象
- * @param {string} config.provider - 提供商: 'openai' | 'anthropic'
+ * @param {string} config.provider - 提供商: 'openai' | 'anthropic' | 'aliyun'
  * @param {string} config.baseUrl - API 基础 URL
- * @param {string} config.apiKey - API 密钥
+ * @param {string} config.encryptedApiKey - 加密的 API 密钥
  * @param {string} config.model - 模型 ID
  * @returns {Object} LLM 客户端实例
  */
 export function createLLMClient(config) {
-  const { provider = "anthropic", baseUrl, apiKey, model } = config;
+  const { provider = "anthropic", baseUrl, encryptedApiKey, model } = config;
 
   const providerConfig = LLM_PROVIDERS[provider];
   if (!providerConfig) {
@@ -149,7 +179,7 @@ export function createLLMClient(config) {
   return {
     provider,
     baseUrl: finalBaseUrl,
-    apiKey,
+    encryptedApiKey,
     model: finalModel,
 
     /**
@@ -193,35 +223,20 @@ export function createLLMClient(config) {
       // 暂时禁用，等待进一步测试
       const tools = undefined;
 
-      if (isCloudflarePages) {
-        // 使用 Pages Function 代理 - API Key 在服务端配置
-        url = PAGES_PROXY_URL;
-        headers = {
-          'Content-Type': 'application/json',
-        };
-        body = {
-          provider: 'openai',
-          model: this.model,
-          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-          max_tokens: maxTokens,
-          temperature: 0.7,
-          ...(tools && { tools }),
-        };
-      } else {
-        // 本地开发直接调用
-        url = `${this.baseUrl}/chat/completions`;
-        headers = {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        };
-        body = {
-          model: this.model,
-          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-          max_tokens: maxTokens,
-          temperature: 0.7,
-          ...(tools && { tools }),
-        };
-      }
+      // 使用 Pages Function 代理
+      url = PAGES_PROXY_URL;
+      headers = {
+        'Content-Type': 'application/json',
+      };
+      body = {
+        provider: 'openai',
+        model: this.model,
+        messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+        max_tokens: maxTokens,
+        temperature: 0.7,
+        ...(tools && { tools }),
+        ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
+      };
 
       const response = await fetch(url, {
         method: "POST",
@@ -283,35 +298,20 @@ export function createLLMClient(config) {
       let headers;
       let body;
 
-      if (isCloudflarePages) {
-        // 使用 Pages Function 代理 - API Key 在服务端配置
-        url = PAGES_PROXY_URL;
-        headers = {
-          'Content-Type': 'application/json',
-        };
-        body = {
-          provider: 'aliyun',
-          model: this.model,
-          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-          max_tokens: maxTokens,
-          temperature: 0.7,
-          enable_search: webSearch,
-        };
-      } else {
-        // 本地开发直接调用
-        url = `${this.baseUrl}/chat/completions`;
-        headers = {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        };
-        body = {
-          model: this.model,
-          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-          max_tokens: maxTokens,
-          temperature: 0.7,
-          enable_search: webSearch,
-        };
-      }
+      // 使用 Pages Function 代理
+      url = PAGES_PROXY_URL;
+      headers = {
+        'Content-Type': 'application/json',
+      };
+      body = {
+        provider: 'aliyun',
+        model: this.model,
+        messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+        max_tokens: maxTokens,
+        temperature: 0.7,
+        enable_search: webSearch,
+        ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
+      };
 
       const response = await fetch(url, {
         method: "POST",
@@ -361,42 +361,23 @@ export function createLLMClient(config) {
       // 暂时禁用，等待进一步测试
       const tools = undefined;
 
-      if (isCloudflarePages) {
-        // 使用 Pages Function 代理 - API Key 在服务端配置
-        url = PAGES_PROXY_URL;
-        headers = {
-          'Content-Type': 'application/json',
-        };
-        body = {
-          provider: 'anthropic',
-          model: this.model,
-          system,
-          messages: messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          max_tokens: maxTokens,
-          ...(tools && { tools }),
-        };
-      } else {
-        // 本地开发直接调用
-        url = `${this.baseUrl}/messages`;
-        headers = {
-          'Content-Type': 'application/json',
-          'x-api-key': this.apiKey,
-          'anthropic-version': '2023-06-01',
-        };
-        body = {
-          model: this.model,
-          max_tokens: maxTokens,
-          system,
-          messages: messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          ...(tools && { tools }),
-        };
-      }
+      // 使用 Pages Function 代理
+      url = PAGES_PROXY_URL;
+      headers = {
+        'Content-Type': 'application/json',
+      };
+      body = {
+        provider: 'anthropic',
+        model: this.model,
+        system,
+        messages: messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        max_tokens: maxTokens,
+        ...(tools && { tools }),
+        ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
+      };
 
       const response = await fetch(url, {
         method: "POST",
