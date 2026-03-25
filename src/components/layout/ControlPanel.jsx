@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ReferenceImageUploader } from "../ReferenceImageUploader";
 import { Dots } from "../common/Icons";
+import { useLanguage } from "../../hooks/useLanguage";
 
 export function ControlPanel({
   mode,
@@ -34,12 +35,13 @@ export function ControlPanel({
   slideIdx,
   h2cOk,
 }) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("content");
 
   const tabs = [
-    { id: "content", label: "内容", icon: "✍️" },
-    { id: "style", label: "风格", icon: "🎨" },
-    { id: "settings", label: "设置", icon: "⚙️" },
+    { id: "content", label: t('content'), icon: "✍️" },
+    { id: "style", label: t('style'), icon: "🎨" },
+    { id: "settings", label: t('settings'), icon: "⚙️" },
   ];
 
   return (
@@ -145,28 +147,29 @@ export function ControlPanel({
   );
 }
 
-function ContentTab({ 
-  mode, 
-  input, 
-  setInput, 
-  platform, 
-  setPlatform, 
-  palette, 
-  loading, 
-  error, 
-  onGenerate 
+function ContentTab({
+  mode,
+  input,
+  setInput,
+  platform,
+  setPlatform,
+  palette,
+  loading,
+  error,
+  onGenerate
 }) {
+  const { t } = useLanguage();
   return (
     <div className="tab-panel">
       <section className="panel-section">
-        <label className="section-label">文案内容</label>
+        <label className="section-label">{t('content')}</label>
         <textarea
           className="content-textarea"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={mode === "single" 
-            ? "输入文案内容，AI将为你生成精美的整页排版..."
-            : "输入文案内容，AI将为你生成多张分页卡片..."
+          placeholder={mode === "single"
+            ? t('contentPlaceholderSingle')
+            : t('contentPlaceholderMulti')
           }
           rows={8}
         />
@@ -174,23 +177,23 @@ function ContentTab({
 
       {mode === "split" && (
         <section className="panel-section">
-          <label className="section-label">发布平台</label>
+          <label className="section-label">{t('platform')}</label>
           <div className="platform-selector">
             <button
               className={`platform-option ${platform === "xhs" ? "active" : ""}`}
               onClick={() => setPlatform("xhs")}
             >
               <span className="platform-icon">📕</span>
-              <span className="platform-name">小红书</span>
-              <span className="platform-tag">情绪化</span>
+              <span className="platform-name">{t('xiaohongshu')}</span>
+              <span className="platform-tag">{t('xiaohongshuTag')}</span>
             </button>
             <button
               className={`platform-option ${platform === "wechat" ? "active" : ""}`}
               onClick={() => setPlatform("wechat")}
             >
               <span className="platform-icon">💬</span>
-              <span className="platform-name">微信推文</span>
-              <span className="platform-tag">专业</span>
+              <span className="platform-name">{t('wechat')}</span>
+              <span className="platform-tag">{t('wechatTag')}</span>
             </button>
           </div>
         </section>
@@ -206,40 +209,47 @@ function ContentTab({
           {loading ? (
             <>
               <Dots />
-              <span>生成中...</span>
+              <span>{t('generating')}</span>
             </>
           ) : (
             <>
               <span>✨</span>
-              <span>{mode === "single" ? "生成整页排版" : "生成分页卡片"}</span>
+              <span>{mode === "single" ? t('generateSingle') : t('generateSplit')}</span>
             </>
           )}
         </button>
-        
+
         {error && <div className="error-alert">{error}</div>}
       </section>
     </div>
   );
 }
 
-function StyleTab({ 
-  mode, 
-  splitStyle, 
-  setSplitStyle, 
-  tpl, 
-  setTpl, 
-  splitStyles, 
+function StyleTab({
+  mode,
+  splitStyle,
+  setSplitStyle,
+  tpl,
+  setTpl,
+  splitStyles,
   templates,
   palette,
   aiReferenceImage,
   setAiReferenceImage
 }) {
+  const { t } = useLanguage();
+
+  const getTemplateName = (item) => {
+    const key = 'template' + item.id.charAt(0).toUpperCase() + item.id.slice(1);
+    return t(key);
+  };
+
   return (
     <div className="tab-panel">
       {mode === "single" ? (
         <>
           <section className="panel-section">
-            <label className="section-label">选择模板</label>
+            <label className="section-label">{t('selectTemplate')}</label>
             <div className="template-grid-compact">
               {templates.map((t) => (
                 <button
@@ -248,7 +258,7 @@ function StyleTab({
                   onClick={() => setTpl(t.id)}
                 >
                   <span className="template-emoji">{t.icon}</span>
-                  <span className="template-title">{t.name}</span>
+                  <span className="template-title">{getTemplateName(t)}</span>
                   <span className="template-desc">{t.desc}</span>
                 </button>
               ))}
@@ -257,14 +267,14 @@ function StyleTab({
 
           {tpl === "ai" && (
             <section className="panel-section">
-              <label className="section-label">AI 参考图（可选）</label>
+              <label className="section-label">{t('aiReferenceImage')}</label>
               <ReferenceImageUploader
                 image={aiReferenceImage}
                 onChange={setAiReferenceImage}
                 onClear={() => setAiReferenceImage(null)}
               />
               <p className="help-text">
-                {aiReferenceImage ? "AI将参考此图风格" : "不上传则AI自由发挥"}
+                {aiReferenceImage ? t('aiReferenceImageWith') : t('aiReferenceImageWithout')}
               </p>
             </section>
           )}
@@ -272,7 +282,7 @@ function StyleTab({
       ) : (
         <>
           <section className="panel-section">
-            <label className="section-label">卡片风格</label>
+            <label className="section-label">{t('cardStyle')}</label>
             <div className="template-grid-compact">
               {splitStyles.map((s) => (
                 <button
@@ -281,7 +291,7 @@ function StyleTab({
                   onClick={() => setSplitStyle(s.id)}
                 >
                   <span className="template-emoji">{s.icon}</span>
-                  <span className="template-title">{s.name}</span>
+                  <span className="template-title">{getTemplateName(s)}</span>
                 </button>
               ))}
             </div>
@@ -289,14 +299,14 @@ function StyleTab({
 
           {splitStyle === "ai" && (
             <section className="panel-section">
-              <label className="section-label">AI 参考图（可选）</label>
+              <label className="section-label">{t('aiReferenceImage')}</label>
               <ReferenceImageUploader
                 image={aiReferenceImage}
                 onChange={setAiReferenceImage}
                 onClear={() => setAiReferenceImage(null)}
               />
               <p className="help-text">
-                {aiReferenceImage ? "AI将参考此图风格" : "不上传则AI自由发挥"}
+                {aiReferenceImage ? t('aiReferenceImageWith') : t('aiReferenceImageWithout')}
               </p>
             </section>
           )}
@@ -307,10 +317,17 @@ function StyleTab({
 }
 
 function SettingsTab({ palId, setPalId, palettes, palette }) {
+  const { t } = useLanguage();
+
+  const getPaletteLabel = (item) => {
+    const key = 'palette' + item.id.charAt(0).toUpperCase() + item.id.slice(1);
+    return t(key);
+  };
+
   return (
     <div className="tab-panel">
       <section className="panel-section">
-        <label className="section-label">配色方案</label>
+        <label className="section-label">{t('palette')}</label>
         <div className="palette-list">
           {palettes.map((p) => (
             <button
@@ -319,7 +336,7 @@ function SettingsTab({ palId, setPalId, palettes, palette }) {
               onClick={() => setPalId(p.id)}
             >
               <span className="palette-preview" style={{ background: p.a }}></span>
-              <span className="palette-name">{p.label}</span>
+              <span className="palette-name">{getPaletteLabel(p)}</span>
               <span className="palette-check">✓</span>
             </button>
           ))}
@@ -328,12 +345,12 @@ function SettingsTab({ palId, setPalId, palettes, palette }) {
 
       <section className="panel-section">
         <div className="tips-box">
-          <h4>💡 使用提示</h4>
+          <h4>💡 {t('tipsTitle')}</h4>
           <ul>
-            <li>点击左侧预览区的文字可直接编辑</li>
-            <li>分页模式下可拖拽底部缩略图调整顺序</li>
-            <li>导出高清图适合社交媒体发布</li>
-            <li>导出超清 4K 图适合打印</li>
+            <li>{t('tipEdit')}</li>
+            <li>{t('tipReorder')}</li>
+            <li>{t('tipHdExport')}</li>
+            <li>{t('tipUltraExport')}</li>
           </ul>
         </div>
       </section>
