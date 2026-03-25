@@ -27,6 +27,8 @@ export function PreviewArea({
   onExportSingle,
   onExportSlide,
   onExportAll,
+  streamContent,
+  aiReferenceImage,
 }) {
   const hasContent = mode === "single"
     ? (cardData || aiSingleDesign)
@@ -141,7 +143,7 @@ export function PreviewArea({
               </button>
             </>
           )}
-          
+
           {mode === "split" && hasContent && (
             <>
               <button
@@ -166,6 +168,11 @@ export function PreviewArea({
       <div className="preview-area">
         {loading && (
           <div className="loading-content">
+            {streamContent && (
+              <div className="stream-content-overlay">
+                <pre>{streamContent}</pre>
+              </div>
+            )}
             <span className="loading-icon">✨</span>
             <span className="loading-text">AI 正在生成排版...</span>
           </div>

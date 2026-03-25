@@ -48,7 +48,7 @@ export function ControlPanel({
       <div className="control-header">
         <h2 className="panel-title">排版生成器</h2>
         <div className="export-actions">
-          {mode === "single" && hasSingleContent && (
+          {mode === "single" && hasSingleContent && aiReferenceImage && (
             <>
               <button 
                 className="export-btn outline"
@@ -66,7 +66,7 @@ export function ControlPanel({
               </button>
             </>
           )}
-          {mode === "split" && hasSplitContent && (
+          {mode === "split" && hasSplitContent && aiReferenceImage && (
             <>
               <button 
                 className="export-btn outline"

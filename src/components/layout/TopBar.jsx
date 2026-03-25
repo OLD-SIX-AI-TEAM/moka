@@ -15,13 +15,15 @@ export function TopBar({ mode, setMode, theme, toggleTheme, isLight }) {
             className={`mode-pill ${mode === "single" ? "active" : ""}`}
             onClick={() => setMode("single")}
           >
-            📄 整页版
+            <span>📄</span>
+            <span>整页版</span>
           </button>
           <button 
             className={`mode-pill ${mode === "split" ? "active" : ""}`}
             onClick={() => setMode("split")}
           >
-            📑 分页版
+            <span>📑</span>
+            <span>分页版</span>
           </button>
         </div>
       </div>
@@ -33,14 +35,14 @@ export function TopBar({ mode, setMode, theme, toggleTheme, isLight }) {
             onClick={() => isLight || toggleTheme()}
             title="亮色主题"
           >
-            ☀️
+            <span>☀️</span>
           </button>
           <button
             className={`theme-btn-header ${!isLight ? "active" : ""}`}
             onClick={() => !isLight || toggleTheme()}
             title="暗色主题"
           >
-            🌙
+            <span>🌙</span>
           </button>
         </div>
       </div>

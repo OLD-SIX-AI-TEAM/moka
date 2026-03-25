@@ -1,6 +1,7 @@
 /** @jsxImportSource react */
 import { Dots } from "../common/Icons";
 import { AIStyleRenderer } from "../AIStyleRenderer";
+import "./PreviewPanel.css";
 
 export function PreviewPanel({
   mode,

@@ -164,9 +164,27 @@ export function extractJSON(text) {
   // 移除 markdown 代码块标记
   let cleaned = text.replace(/```json\s*|```\s*/gi, '').trim();
 
-  // 尝试找到 JSON 对象的开始和结束位置
-  const startIdx = cleaned.indexOf('{');
-  const endIdx = cleaned.lastIndexOf('}');
+  // 移除思考过程（如 DeepSeek 的 "Thinking Process:"）
+  // 匹配 "Thinking Process:" 开头，直到遇到 "{" 或 "[" 之前的内容
+  const thinkingPattern = /Thinking Process:.*?([\{\[])/si;
+  if (thinkingPattern.test(cleaned)) {
+    // 保留捕获组中的 JSON 开始字符
+    cleaned = cleaned.replace(thinkingPattern, "$1").trim();
+  }
+
+  // 尝试找到 JSON 对象或数组的开始和结束位置
+  let startIdx = cleaned.indexOf('{');
+  let endIdx = cleaned.lastIndexOf('}');
+  
+  // 检查是否有数组
+  const arrayStartIdx = cleaned.indexOf('[');
+  const arrayEndIdx = cleaned.lastIndexOf(']');
+  
+  // 如果数组存在且更靠前，使用数组
+  if (arrayStartIdx !== -1 && (startIdx === -1 || arrayStartIdx < startIdx)) {
+    startIdx = arrayStartIdx;
+    endIdx = arrayEndIdx;
+  }
 
   if (startIdx === -1 || endIdx === -1 || startIdx >= endIdx) {
     throw new Error('No valid JSON object found in response');

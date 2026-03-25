@@ -48,11 +48,18 @@ export const ContentPanel = forwardRef(function ContentPanel({
     try {
       const response = await fetch('/api/usage');
       if (response.ok) {
-        const data = await response.json();
-        setUsage(data);
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          setUsage(data);
+        } else {
+          // 本地开发环境可能返回 HTML，静默处理
+          console.log('使用次数 API 返回非 JSON 数据，可能是本地开发环境');
+        }
       }
     } catch (e) {
-      console.error('获取使用次数失败:', e);
+      // 本地开发环境可能会出现此错误，静默处理
+      console.log('获取使用次数失败:', e.message);
     }
   };
 

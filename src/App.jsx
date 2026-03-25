@@ -1,4 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+
+// 环境判断：本地开发使用流式，部署端使用非流式
+const USE_STREAM_MODE = process.env.NODE_ENV === 'development';
 import { useHtml2Canvas, snapElement } from "./hooks/useHtml2Canvas";
 import { snapElementToImage } from "./hooks/useHtmlToImage";
 import { useDragReorder } from "./hooks/useDragReorder";
@@ -22,7 +25,7 @@ import {
   FoodCover, FoodContent, FoodEnd, TravelCover, TravelContent, TravelEnd,
   FashionCover, FashionContent, FashionEnd, MomCover, MomContent, MomEnd
 } from "./components/templates/split";
-import { createLLMClient, SYSTEM_PROMPTS, extractJSON, getEnvLLMConfig, isEnvConfigValid, saveLLMConfig } from "./services/llm";
+import { createLLMClient, SYSTEM_PROMPTS, extractJSON, getEnvLLMConfig, isEnvConfigValid, saveLLMConfig, clearLLMConfig } from "./services/llm";
 import { LLMConfigModal } from "./components/common/LLMConfigModal";
 import { TopBar } from "./components/layout/TopBar";
 import { ThemePanel } from "./components/layout/ThemePanel";
@@ -88,6 +91,7 @@ function App() {
   const [error, setError] = useState("");
   const [exporting, setExporting] = useState(false);
   const [expMsg, setExpMsg] = useState("");
+  const [streamContent, setStreamContent] = useState("");
 
   // AI设计状态
   const [aiReferenceImage, setAiReferenceImage] = useState(null);
@@ -381,13 +385,57 @@ function App() {
     setShowLLMConfig(false);
   }, []);
 
+  // 处理LLM配置删除
+  const handleLLMConfigDelete = useCallback(async () => {
+    clearLLMConfig();
+    // 重新获取配置（将使用环境变量配置）
+    const updatedConfig = getEnvLLMConfig();
+    setLlmConfig(updatedConfig);
+  }, []);
+
   // 尝试从流式内容中解析部分JSON
   const tryParsePartialJSON = useCallback((text) => {
     try {
       const startIdx = text.indexOf('{');
-      const endIdx = text.lastIndexOf('}');
       
       if (startIdx === -1) return null;
+      
+      // 智能查找 JSON 结束位置：找到与起始 { 匹配的 }
+      let braceCount = 0;
+      let inString = false;
+      let escaped = false;
+      let endIdx = -1;
+      
+      for (let i = startIdx; i < text.length; i++) {
+        const char = text[i];
+        
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        
+        if (char === '\\') {
+          escaped = true;
+          continue;
+        }
+        
+        if (char === '"' && !escaped) {
+          inString = !inString;
+          continue;
+        }
+        
+        if (!inString) {
+          if (char === '{') {
+            braceCount++;
+          } else if (char === '}') {
+            braceCount--;
+            if (braceCount === 0) {
+              endIdx = i;
+              break;
+            }
+          }
+        }
+      }
       
       let jsonText = text.substring(startIdx, endIdx !== -1 ? endIdx + 1 : undefined);
       
@@ -470,30 +518,58 @@ function App() {
         messages = [{ role: 'user', content: `请根据以下文案内容生成设计方案：\n\n${input}` }];
       }
 
-      const response = await client.chat({
-        system: isSplitMode ? AI_DESIGN_PROMPT_SPLIT : AI_DESIGN_PROMPT_SINGLE,
-        messages,
-        maxTokens: MAX_TOKENS.single * 2,
-        stream: true,
-        onStream: (delta, full) => {
-          // 尝试解析部分JSON并实时更新预览
-          const partialData = tryParsePartialJSON(full);
-          if (partialData) {
-            if (isSplitMode) {
-              if (partialData.slides && partialData.styleConfig) {
-                setAiSplitDesign(partialData);
-                setSlides(partialData.slides);
-              }
-            } else {
-              if (partialData.styleConfig && partialData.content) {
-                setAiSingleDesign(partialData);
-              }
-            }
+      let response;
+      let data;
+      let retryCount = 0;
+      const maxRetries = 2;
+      
+      while (retryCount <= maxRetries) {
+        try {
+          if (USE_STREAM_MODE) {
+            // 本地开发使用流式模式
+            response = await client.chat({
+              system: isSplitMode ? AI_DESIGN_PROMPT_SPLIT : AI_DESIGN_PROMPT_SINGLE,
+              messages,
+              maxTokens: MAX_TOKENS.single * 2,
+              stream: true,
+              onStream: (delta, full) => {
+                // 尝试解析部分JSON并实时更新预览
+                const partialData = tryParsePartialJSON(full);
+                if (partialData) {
+                  if (isSplitMode) {
+                    if (partialData.slides && partialData.styleConfig) {
+                      setAiSplitDesign(partialData);
+                      setSlides(partialData.slides);
+                    }
+                  } else {
+                    if (partialData.styleConfig && partialData.content) {
+                      setAiSingleDesign(partialData);
+                    }
+                  }
+                }
+              },
+            });
+            data = extractJSON(response.content);
+          } else {
+            // 部署端使用非流式模式
+            response = await client.chat({
+              system: isSplitMode ? AI_DESIGN_PROMPT_SPLIT : AI_DESIGN_PROMPT_SINGLE,
+              messages,
+              maxTokens: MAX_TOKENS.single * 2,
+              stream: false,
+            });
+            data = extractJSON(response.content);
           }
-        },
-      });
-
-      const data = extractJSON(response.content);
+          break;
+        } catch (parseError) {
+          if (retryCount < maxRetries) {
+            console.warn(`[extractJSON] Parse failed, retrying (${retryCount + 1}/${maxRetries})...`);
+            retryCount++;
+          } else {
+            throw parseError;
+          }
+        }
+      }
 
       if (isSplitMode) {
         if (!data.slides || !data.styleConfig) throw new Error('AI返回的数据格式不正确');
@@ -538,6 +614,7 @@ function App() {
     setSingleData(null);
     setSlides(null);
     setSlideIdx(0);
+    setStreamContent("");
 
     try {
       const client = createLLMClient({
@@ -548,21 +625,105 @@ function App() {
       });
 
       if (mode === "single") {
-        const response = await client.chat({
-          system: SYSTEM_PROMPTS.singleXHS,
-          messages: [{ role: "user", content: input }],
-          maxTokens: MAX_TOKENS.single,
-        });
-        const data = extractJSON(response.content);
+        let response;
+        let data;
+        let retryCount = 0;
+        const maxRetries = 2;
+        
+        while (retryCount <= maxRetries) {
+          try {
+            if (USE_STREAM_MODE) {
+              // 本地开发使用流式模式
+              response = await client.chat({
+                system: SYSTEM_PROMPTS.singleXHS,
+                messages: [{ role: "user", content: input }],
+                maxTokens: MAX_TOKENS.single,
+                stream: true,
+                onStream: (delta, full) => {
+                  setStreamContent(full);
+                  // 尝试解析部分JSON并实时更新预览
+                  const partialData = tryParsePartialJSON(full);
+                  if (partialData) {
+                    setSingleData(partialData);
+                  }
+                },
+              });
+              data = extractJSON(response.content);
+            } else {
+              // 部署端使用非流式模式
+              response = await client.chat({
+                system: SYSTEM_PROMPTS.singleXHS,
+                messages: [{ role: "user", content: input }],
+                maxTokens: MAX_TOKENS.single,
+                stream: false,
+              });
+              data = extractJSON(response.content);
+            }
+            break;
+          } catch (parseError) {
+            if (retryCount < maxRetries) {
+              console.warn(`[extractJSON] Parse failed, retrying (${retryCount + 1}/${maxRetries})...`);
+              retryCount++;
+            } else {
+              throw parseError;
+            }
+          }
+        }
+        
         setSingleData(data);
       } else {
         const systemPrompt = platform === "xhs" ? SYSTEM_PROMPTS.splitXHS : SYSTEM_PROMPTS.splitWechat;
-        const response = await client.chat({
-          system: systemPrompt,
-          messages: [{ role: "user", content: input }],
-          maxTokens: MAX_TOKENS.split,
-        });
-        const data = extractJSON(response.content);
+        let response;
+        let data;
+        let retryCount = 0;
+        const maxRetries = 2;
+        
+        while (retryCount <= maxRetries) {
+          try {
+            if (USE_STREAM_MODE) {
+              // 本地开发使用流式模式
+              response = await client.chat({
+                system: systemPrompt,
+                messages: [{ role: "user", content: input }],
+                maxTokens: MAX_TOKENS.split,
+                stream: true,
+                onStream: (delta, full) => {
+                  setStreamContent(full);
+                  // 尝试解析部分JSON并实时更新预览
+                  const partialData = tryParsePartialJSON(full);
+                  if (partialData && partialData.slides) {
+                    setSlides(partialData.slides);
+                    if (slideRefs.current.length !== partialData.slides.length) {
+                      slideRefs.current = new Array(partialData.slides.length).fill(null);
+                    }
+                  }
+                },
+              });
+              data = extractJSON(response.content);
+            } else {
+              // 部署端使用非流式模式
+              response = await client.chat({
+                system: systemPrompt,
+                messages: [{ role: "user", content: input }],
+                maxTokens: MAX_TOKENS.split,
+                stream: false,
+              });
+              data = extractJSON(response.content);
+            }
+            break;
+          } catch (parseError) {
+            if (retryCount < maxRetries) {
+              console.warn(`[extractJSON] Parse failed, retrying (${retryCount + 1}/${maxRetries})...`);
+              retryCount++;
+            } else {
+              throw parseError;
+            }
+          }
+        }
+        
+        if (!data.slides) {
+          throw new Error('AI返回的数据格式不正确，缺少 slides 字段');
+        }
         setSlides(data.slides);
         slideRefs.current = new Array(data.slides.length).fill(null);
       }
@@ -574,7 +735,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [input, mode, platform, tpl, splitStyle, llmConfig, envConfigValid, generateAIDesign]);
+  }, [input, mode, platform, tpl, splitStyle, llmConfig, envConfigValid, generateAIDesign, tryParsePartialJSON]);
 
   // 导出功能
   const exportSingle = useCallback(async (quality = "hd") => {
@@ -700,6 +861,7 @@ function App() {
     const emojiEditor = makeSplitEmojiEditor(i);
     const props = { s, a, total, idx: i, ed };
 
+    if (!s) return null;
     if (s.type === "cover") return <Cover {...props} emojiEditor={emojiEditor} key={i} />;
     if (s.type === "content") return <Content {...props} key={i} />;
     return <End {...props} emojiEditor={emojiEditor} key={i} />;
@@ -755,6 +917,8 @@ function App() {
           onExportSingle={exportSingle}
           onExportSlide={exportSlide}
           onExportAll={exportAll}
+          streamContent={streamContent}
+          aiReferenceImage={aiReferenceImage}
         />
         
         {/* 第三列：平台、文案和生成 */}
@@ -778,7 +942,9 @@ function App() {
         isOpen={showLLMConfig}
         onClose={() => setShowLLMConfig(false)}
         onSave={handleLLMConfigSave}
+        onDelete={handleLLMConfigDelete}
         initialConfig={llmConfig}
+        hasConfig={llmConfig?.hasEncryptedKey}
       />
     </div>
   );

@@ -1,0 +1,281 @@
+/* PreviewPanel 组件样式 */
+
+/* 生成中覆盖层 */
+.generating-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 10;
+  border-radius: inherit;
+  animation: fadeIn 0.3s ease;
+}
+
+[data-theme="dark"] .generating-overlay {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.generating-icon {
+  font-size: 32px;
+  animation: pulse 1.5s infinite;
+}
+
+.generating-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* 卡片预览生成中状态 */
+.card-preview.ai.generating {
+  position: relative;
+}
+
+/* 分页预览生成中状态 */
+.split-preview.generating .slide-viewer {
+  position: relative;
+}
+
+.split-preview.generating .slide-content {
+  filter: blur(2px);
+  transition: filter 0.3s ease;
+}
+
+/* 禁用分页导航按钮 */
+.split-preview.generating .nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* 缩略图在生成中时的样式 */
+.split-preview.generating .thumb-item {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.split-preview.generating .thumb-item.active {
+  opacity: 1;
+}
+
+/* 动画定义 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+/* ========== 响应式适配 ========== */
+
+/* 平板横屏（1024px以下） */
+@media screen and (max-width: 1024px) {
+  .split-preview {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .slide-nav {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .slide-thumbnails {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .thumb-item {
+    flex-shrink: 0;
+  }
+
+  .thumb-preview {
+    width: 48px;
+    height: 64px;
+  }
+
+  .thumb-content {
+    transform: scale(0.128) !important;
+  }
+
+  .thumb-label {
+    font-size: 9px;
+    padding: 2px 4px;
+  }
+
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .slide-counter {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+}
+
+/* 平板竖屏（768px以下） */
+@media screen and (max-width: 768px) {
+  .preview-panel {
+    min-height: 50vh;
+  }
+
+  .preview-content {
+    padding: 12px;
+  }
+
+  .split-preview {
+    gap: 12px;
+  }
+
+  .slide-viewer {
+    transform: scale(0.9);
+  }
+
+  .slide-thumbnails {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .thumb-preview {
+    width: 40px;
+    height: 53px;
+  }
+
+  .thumb-content {
+    transform: scale(0.107) !important;
+  }
+
+  .nav-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .empty-state,
+  .loading-state {
+    padding: 24px;
+  }
+
+  .empty-icon,
+  .loading-icon {
+    font-size: 48px;
+  }
+
+  .empty-text,
+  .loading-text {
+    font-size: 14px;
+  }
+}
+
+/* 手机（480px以下） */
+@media screen and (max-width: 480px) {
+  .preview-panel {
+    min-height: 45vh;
+  }
+
+  .preview-content {
+    padding: 8px;
+  }
+
+  .split-preview {
+    gap: 8px;
+  }
+
+  .slide-viewer {
+    transform: scale(0.75);
+  }
+
+  .slide-thumbnails {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .thumb-preview {
+    width: 36px;
+    height: 48px;
+  }
+
+  .thumb-content {
+    transform: scale(0.096) !important;
+  }
+
+  .thumb-label {
+    font-size: 8px;
+  }
+
+  .nav-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .slide-counter {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .exp-msg {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .empty-state,
+  .loading-state {
+    padding: 16px;
+  }
+
+  .empty-icon,
+  .loading-icon {
+    font-size: 36px;
+  }
+
+  .empty-text,
+  .loading-text {
+    font-size: 13px;
+  }
+}
+
+/* 超小屏幕（360px以下） */
+@media screen and (max-width: 360px) {
+  .slide-viewer {
+    transform: scale(0.65);
+  }
+
+  .thumb-preview {
+    width: 32px;
+    height: 43px;
+  }
+
+  .thumb-content {
+    transform: scale(0.085) !important;
+  }
+}

@@ -5,19 +5,21 @@ import { LLM_PROVIDERS } from "../../services/llm";
  * LLM配置弹窗组件
  * 用于在没有配置时弹出让用户输入LLM信息
  */
-export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
+export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfig, hasConfig }) {
   const [config, setConfig] = useState(() => {
     const provider = initialConfig?.provider || "aliyun";
     const providerConfig = LLM_PROVIDERS[provider];
     return {
       provider: provider,
       baseUrl: initialConfig?.baseUrl || providerConfig?.defaultBaseUrl || "",
-      apiKey: "",
+      apiKey: initialConfig?.apiKey || "",
       model: initialConfig?.model || providerConfig?.defaultModel || "",
     };
   });
   const [errors, setErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
 
 
@@ -68,6 +70,19 @@ export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
     }
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete();
+      setShowDeleteConfirm(false);
+      onClose();
+    } catch (error) {
+      console.error('删除配置失败:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -96,12 +111,15 @@ export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
       }}
     >
       <div
+        className="llm-config-modal-content"
         style={{
           backgroundColor: "#fff",
           borderRadius: "16px",
           padding: "28px",
           width: "100%",
           maxWidth: "420px",
+          maxHeight: "90vh",
+          overflow: "auto",
           boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
           animation: "slideIn 0.2s ease-out",
         }}
@@ -294,6 +312,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
             </button>
             <button
               type="submit"
+              disabled={isSaving}
               style={{
                 flex: 1,
                 padding: "12px",
@@ -303,12 +322,93 @@ export function LLMConfigModal({ isOpen, onClose, onSave, initialConfig }) {
                 color: "#fff",
                 fontSize: "14px",
                 fontWeight: 700,
-                cursor: "pointer",
+                cursor: isSaving ? "not-allowed" : "pointer",
+                opacity: isSaving ? 0.7 : 1,
               }}
             >
-              保存配置
+              {isSaving ? "保存中..." : "保存配置"}
             </button>
           </div>
+
+          {/* 删除配置按钮 - 仅在有配置时显示 */}
+          {hasConfig && (
+            <div style={{ marginTop: "16px", borderTop: "1px solid #e0e0e0", paddingTop: "16px" }}>
+              {!showDeleteConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    border: "1px solid #e05a4b",
+                    backgroundColor: "#fff",
+                    color: "#e05a4b",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  🗑️ 删除当前配置
+                </button>
+              ) : (
+                <div style={{
+                  backgroundColor: "#fff5f5",
+                  borderRadius: "8px",
+                  padding: "12px",
+                  border: "1px solid #ffcdd2",
+                }}>
+                  <p style={{
+                    margin: "0 0 12px 0",
+                    fontSize: "13px",
+                    color: "#c62828",
+                    textAlign: "center",
+                  }}>
+                    确定要删除当前配置吗？删除后将使用默认配置。
+                  </p>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      style={{
+                        flex: 1,
+                        padding: "8px 12px",
+                        borderRadius: "6px",
+                        border: "1px solid #e0e0e0",
+                        backgroundColor: "#fff",
+                        color: "#666",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      style={{
+                        flex: 1,
+                        padding: "8px 12px",
+                        borderRadius: "6px",
+                        border: "none",
+                        backgroundColor: "#e05a4b",
+                        color: "#fff",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        cursor: isDeleting ? "not-allowed" : "pointer",
+                        opacity: isDeleting ? 0.7 : 1,
+                      }}
+                    >
+                      {isDeleting ? "删除中..." : "确认删除"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </form>
       </div>
 
