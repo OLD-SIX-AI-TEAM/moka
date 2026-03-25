@@ -1,9 +1,9 @@
 /** @jsxImportSource react */
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Dots } from "../common/Icons";
 import { LLM_PROVIDERS } from "../../services/llm";
 
-export function ContentPanel({
+export const ContentPanel = forwardRef(function ContentPanel({
   mode,
   platform,
   setPlatform,
@@ -15,7 +15,7 @@ export function ContentPanel({
   palette,
   llmConfig,
   onOpenLLMConfig,
-}) {
+}, ref) {
   // 获取显示的 provider 名称
   const getProviderName = () => {
     const provider = llmConfig?.provider || "aliyun";
@@ -44,20 +44,26 @@ export function ContentPanel({
   });
 
   // 获取使用次数
-  useEffect(() => {
-    const fetchUsage = async () => {
-      try {
-        const response = await fetch('/api/usage');
-        if (response.ok) {
-          const data = await response.json();
-          setUsage(data);
-        }
-      } catch (e) {
-        console.error('获取使用次数失败:', e);
+  const fetchUsage = async () => {
+    try {
+      const response = await fetch('/api/usage');
+      if (response.ok) {
+        const data = await response.json();
+        setUsage(data);
       }
-    };
+    } catch (e) {
+      console.error('获取使用次数失败:', e);
+    }
+  };
+
+  useEffect(() => {
     fetchUsage();
   }, []);
+
+  // 暴露方法给父组件
+  useImperativeHandle(ref, () => ({
+    refreshUsage: fetchUsage,
+  }));
 
   return (
     <div className="content-panel">
@@ -253,4 +259,4 @@ export function ContentPanel({
       </div>
     </div>
   );
-}
+});

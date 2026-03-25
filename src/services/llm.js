@@ -551,6 +551,10 @@ export function extractJSON(text) {
     .replace(/(['"])(\w+)\1\s*:/g, '"$2":')
     .replace(/:\s*'([^']*)'/g, ':"$1"');
 
+  // 第二步半：将中文引号（\u201C \u201D）替换为英文引号（"）
+  // \u201C 是左双引号，\u201D 是右双引号
+  cleaned = cleaned.replace(/[\u201C\u201D]/g, '"');
+
   // 第三步：修复尾部逗号（包括对象和数组中的尾部逗号）
   cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
   
