@@ -1,8 +1,0 @@
-name = "imarticle-llm-proxy"
-main = "llm-proxy.js"
-compatibility_date = "2024-01-01"
-
-[vars]
-# 在 Cloudflare Dashboard 中设置这些环境变量
-# ANTHROPIC_API_KEY = "your-anthropic-api-key"
-# OPENAI_API_KEY = "your-openai-api-key"

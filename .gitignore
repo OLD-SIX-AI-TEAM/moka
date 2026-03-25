@@ -33,3 +33,8 @@ dist-ssr
 .dev.vars*
 !.dev.vars.example
 !.env.example
+
+# RSA Keys
+*.pem
+private_key*
+public_key*
