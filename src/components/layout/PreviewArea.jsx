@@ -2,6 +2,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Dots } from "../common/Icons";
 import { AIStyleRenderer } from "../AIStyleRenderer";
+import { useLanguage } from "../../hooks/useLanguage";
 
 export function PreviewArea({
   mode,
@@ -11,7 +12,6 @@ export function PreviewArea({
   slideIdx,
   loading,
   cardRef,
-  CardRenderer,
   singleEd,
   sectionDrag,
   aiSingleEd,
@@ -28,8 +28,8 @@ export function PreviewArea({
   onExportSlide,
   onExportAll,
   streamContent,
-  aiReferenceImage,
 }) {
+  const { t } = useLanguage();
   const hasContent = mode === "single"
     ? (cardData || aiSingleDesign)
     : slides;
@@ -106,7 +106,7 @@ export function PreviewArea({
   return (
     <div className="preview-column">
       <div className="preview-header">
-        <span className="preview-title">预览</span>
+        <span className="preview-title">{t('preview')}</span>
         
         {mode === "single" && aspectRatio !== null && (
           <span className="aspect-ratio-badge">
@@ -117,8 +117,8 @@ export function PreviewArea({
         <div className="preview-actions">
           {expMsg && (
             <span style={{ 
-              fontSize: '13px', 
-              color: expMsg.startsWith("✓") ? '#4a7c59' : 'var(--text-muted)',
+              fontSize: '12px', 
+              color: expMsg.startsWith("✓") ? 'var(--theme-primary)' : 'var(--text-muted)',
               fontWeight: 500
             }}>
               {expMsg}
@@ -132,14 +132,14 @@ export function PreviewArea({
                 onClick={() => onExportSingle("hd")}
                 disabled={exporting || !h2cOk}
               >
-                高清
+                {t('hd')}
               </button>
               <button
                 className="export-btn primary"
                 onClick={() => onExportSingle("ultra")}
                 disabled={exporting || !h2cOk}
               >
-                超清 4K
+                {t('ultra')}
               </button>
             </>
           )}
@@ -151,14 +151,14 @@ export function PreviewArea({
                 onClick={() => onExportSlide(slideIdx, "hd")}
                 disabled={exporting || !h2cOk}
               >
-                当前页
+                {t('current')}
               </button>
               <button
                 className="export-btn primary"
                 onClick={onExportAll}
                 disabled={exporting || !h2cOk}
               >
-                导出全部
+                {t('exportAll')}
               </button>
             </>
           )}
@@ -173,18 +173,29 @@ export function PreviewArea({
                 <pre>{streamContent}</pre>
               </div>
             )}
-            <span className="loading-icon">✨</span>
-            <span className="loading-text">AI 正在生成排版...</span>
+            <div className="loading-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--theme-primary)" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <span className="loading-text">{t('generating')}</span>
           </div>
         )}
         
         {!loading && !hasContent && (
           <div className="empty-content">
-            <span className="empty-icon">{mode === "single" ? "🖼️" : "📑"}</span>
+            <div className="empty-icon">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
             <p className="empty-title">
-              {mode === "single" ? "整页排版预览" : "分页卡片预览"}
+              {mode === "single" ? t('singlePagePreview') : t('multiPagePreview')}
             </p>
-            <p className="empty-desc">在右侧输入文案并点击生成</p>
+            <p className="empty-desc">{t('emptyDesc')}</p>
           </div>
         )}
         
@@ -192,7 +203,7 @@ export function PreviewArea({
         {!loading && mode === "single" && hasContent && (
           <div className="single-view-container">
             <div className="template-hint">
-              <span>左侧切换模板和配色 ←</span>
+              <span>← {t('switchTemplate')}</span>
             </div>
             {cardData && (
               <div className="card-container" style={{ width: cardWidth }}>
@@ -206,13 +217,13 @@ export function PreviewArea({
                 <div
                   className="resize-handle"
                   onMouseDown={handleDragStart}
-                  title="拖拽调整宽度"
+                  title={t('dragToResize')}
                 />
                 <div className="resize-hint">
-                  <span>↔ 拖拽调整宽度</span>
+                  <span>{t('dragToResize')} ↔</span>
                 </div>
                 <div className="edit-hint">
-                  <span>← 点击文字可编辑</span>
+                  <span>← {t('clickToEdit')} </span>
                 </div>
               </div>
             )}
@@ -229,10 +240,10 @@ export function PreviewArea({
                 <div
                   className="resize-handle"
                   onMouseDown={handleDragStart}
-                  title="拖拽调整宽度"
+                  title={t('dragToResize')}
                 />
                 <div className="resize-hint">
-                  <span>↔ 拖拽调整宽度</span>
+                  <span>{t('dragToResize')} ↔</span>
                 </div>
               </div>
             )}
@@ -248,6 +259,7 @@ export function PreviewArea({
             makeSlideEd={makeSlideEd}
             onSlideChange={onSlideChange}
             slideRefs={slideRefs}
+            t={t}
           />
         )}
       </div>
@@ -261,16 +273,17 @@ function SplitView({
   renderSlide,
   makeSlideEd,
   onSlideChange,
-  slideRefs
+  slideRefs,
+  t
 }) {
   return (
     <div className="split-view">
       <div className="slide-container-wrapper">
         <div className="template-hint">
-          <span>左侧切换模板和配色 ←</span>
+          <span>← {t('switchTemplate')}</span>
         </div>
         <div className="edit-hint">
-          <span>点击文字可编辑 ←</span>
+          <span>{t('clickToEdit')} →</span>
         </div>
         <div className="slide-container">
           {renderSlide(slides[slideIdx], slideIdx, slides.length, makeSlideEd(slideIdx))}
@@ -283,7 +296,9 @@ function SplitView({
           onClick={() => onSlideChange(Math.max(0, slideIdx - 1))}
           disabled={slideIdx === 0}
         >
-          ‹
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
         </button>
         
         <div className="slide-indicator">
@@ -297,7 +312,9 @@ function SplitView({
           onClick={() => onSlideChange(Math.min(slides.length - 1, slideIdx + 1))}
           disabled={slideIdx === slides.length - 1}
         >
-          ›
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
         </button>
 
         <div className="slide-thumbs">

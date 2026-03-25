@@ -1,9 +1,10 @@
 /** @jsxImportSource react */
+import { useLanguage } from '../../hooks/useLanguage';
+
 export function ThemePanel({ 
   palId, 
   setPalId, 
   palettes, 
-  palette,
   mode,
   splitStyle,
   setSplitStyle,
@@ -12,20 +13,32 @@ export function ThemePanel({
   splitStyles,
   templates,
 }) {
+  const { t } = useLanguage();
+
+  const getTemplateName = (item) => {
+    const key = 'template' + item.id.charAt(0).toUpperCase() + item.id.slice(1);
+    return t(key);
+  };
+
+  const getPaletteLabel = (item) => {
+    const key = 'palette' + item.id.charAt(0).toUpperCase() + item.id.slice(1);
+    return t(key);
+  };
+
   return (
     <div className="theme-panel">
       <div className="panel-section style-section">
-        <h3 className="section-title">{mode === "single" ? "🗂 模板" : "🖼 风格"}</h3>
+        <h3 className="section-title">{mode === "single" ? t('template') : t('style')}</h3>
         <div className="style-grid-small">
           {mode === "single" 
-            ? templates.map((t) => (
+            ? templates.map((tplItem) => (
                 <button
-                  key={t.id}
-                  className={`style-card ${tpl === t.id ? "active" : ""}`}
-                  onClick={() => setTpl(t.id)}
+                  key={tplItem.id}
+                  className={`style-card ${tpl === tplItem.id ? "active" : ""}`}
+                  onClick={() => setTpl(tplItem.id)}
                 >
-                  <span className="style-icon">{t.icon}</span>
-                  <span className="style-name">{t.name}</span>
+                  <span className="style-icon">{tplItem.icon}</span>
+                  <span className="style-name">{getTemplateName(tplItem)}</span>
                 </button>
               ))
             : splitStyles.map((s) => (
@@ -35,7 +48,7 @@ export function ThemePanel({
                   onClick={() => setSplitStyle(s.id)}
                 >
                   <span className="style-icon">{s.icon}</span>
-                  <span className="style-name">{s.name}</span>
+                  <span className="style-name">{getTemplateName(s)}</span>
                 </button>
               ))
           }
@@ -43,7 +56,7 @@ export function ThemePanel({
       </div>
 
       <div className="panel-section palette-section">
-        <h3 className="section-title">🎯 配色</h3>
+        <h3 className="section-title">{t('palette')}</h3>
         <div className="palette-grid-vertical">
           {palettes.map((p) => (
             <button
@@ -56,7 +69,7 @@ export function ThemePanel({
                 style={{ background: p.a }}
               ></div>
               <div className="palette-info">
-                <span className="palette-name">{p.label}</span>
+                <span className="palette-name">{getPaletteLabel(p)}</span>
                 <span className="palette-dot" style={{ background: p.a }}></span>
               </div>
             </button>

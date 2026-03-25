@@ -1,0 +1,175 @@
+// 中文翻译
+export const zh = {
+  // 顶部栏
+  brand: '墨卡 Moka',
+  singleMode: '单页',
+  multiMode: '多页',
+  lightMode: '亮色主题',
+  darkMode: '暗色主题',
+  
+  // 左侧面板
+  template: '模板',
+  style: '风格',
+  palette: '配色',
+  content: '内容',
+  settings: '设置',
+  generateSingle: '生成整页排版',
+  generateSplit: '生成分页卡片',
+  generating: '生成中...',
+  selectTemplate: '选择模板',
+  cardStyle: '卡片风格',
+  aiReferenceImage: 'AI 参考图（可选）',
+  aiReferenceImageWith: 'AI将参考此图风格',
+  aiReferenceImageWithout: '不上传则AI自由发挥',
+  
+  // 平台
+  xiaohongshu: '小红书',
+  xiaohongshuTag: '情绪化',
+  wechat: '微信推文',
+  wechatTag: '专业',
+  platform: '发布平台',
+  xiaohongshuDesc: '情绪化 · 口语风',
+  wechatDesc: '专业 · 权威感',
+  
+  // 中间预览区
+  preview: '预览',
+  hd: '高清',
+  ultra: '超清 4K',
+  current: '当前页',
+  exportAll: '导出全部',
+  generating: '生成中...',
+  singlePagePreview: '单页预览',
+  multiPagePreview: '多页预览',
+  emptyDesc: '在右侧输入文案并点击生成',
+  switchTemplate: '切换模板',
+  dragToResize: '拖拽调整宽度',
+  clickToEdit: '点击文字可编辑',
+  
+  // LLM配置弹窗
+  llmConfigTitle: '配置 LLM',
+  llmConfigSubtitle: '未检测到LLM配置，请填写以下信息以继续使用AI生成功能',
+  providerType: '提供商类型',
+  baseUrlLabel: 'Base URL',
+  baseUrlOptional: '可选，默认',
+  apiKey: 'API Key',
+  apiKeyPlaceholder: '请输入您的API Key',
+  apiKeyRequired: '请输入API Key',
+  modelLabel: '模型',
+  modelOptional: '可选，默认',
+  save: '保存配置',
+  saving: '保存中...',
+  cancel: '取消',
+  delete: '删除当前配置',
+  deleteConfirm: '确定要删除当前配置吗？删除后将使用默认配置。',
+  confirmDelete: '确认删除',
+  deleting: '删除中...',
+  saveFailed: '保存失败，请重试',
+  noApiKey: '还没有 API Key？',
+  goToProvider: '前往开通 →',
+  aliyunProviderName: '阿里云百炼',
+  
+  // 提供商名称
+  openai: 'OpenAI',
+  anthropic: 'Anthropic',
+  
+  // 错误提示
+  generateFailed: '生成失败',
+  exportFailed: '导出失败',
+  saved: '已保存',
+  
+  // 文案输入placeholder
+  contentPlaceholderSingle: '输入你的文案内容，AI会帮你智能排版...',
+  contentPlaceholderMulti: '输入你的文案内容，AI会帮你智能分页排版...',
+
+  // 生成按钮
+  generateLayout: '生成排版图',
+  generateCards: '生成分页卡片',
+
+  // 使用提示
+  tipsTitle: '使用提示',
+  tipEdit: '点击左侧预览区的文字可直接编辑',
+  tipReorder: '分页模式下可拖拽底部缩略图调整顺序',
+  tipHdExport: '导出高清图适合社交媒体发布',
+  tipUltraExport: '导出超清 4K 图适合打印',
+
+  // AI配置
+  aiConfig: 'AI配置',
+  edit: '编辑',
+  freeTrial: '免费体验',
+  leftToday: '今日剩余',
+  configureApiKey: '建议配置自己的 API Key，获得更稳定的服务',
+  configure: '去配置',
+  apiKeyConfigured: '已配置 API Key，无限次使用',
+
+  // 语言切换
+  language: '语言',
+  chinese: '中文',
+  english: 'English',
+  
+  // 模板名称
+  templateClean: '极简线',
+  templateEditorial: '杂志风',
+  templateCreamy: '奶油风',
+  templateRetro: '复古风',
+  templateForest: '森系风',
+  templateIns: 'INS风',
+  templateJapanese: '日系风',
+  templateKorean: '韩系风',
+  templatePure: '极简风',
+  templatePop: '波普风',
+  templateArtistic: '文艺风',
+  templateVivid: '撞色块',
+  templateDark: '暗夜风',
+  templatePaper: '手账风',
+  templateGradient: '渐变风',
+  templateLuxury: '轻奢风',
+  templateBusiness: '商务风',
+  templateTech: '科技风',
+  templateEdu: '教育风',
+  templateMedical: '医疗风',
+  templateFinance: '财经风',
+  templateLaw: '法律风',
+  templateFood: '美食风',
+  templateTravel: '旅游风',
+  templateFashion: '时尚风',
+  templateMom: '母婴风',
+  templateNotecard: '便签风',
+  templateMinimal: '极简线',
+  templateStamp: '手账风',
+  templateBold: '撞色块',
+  templateNewspaper: '报纸风',
+  templateFilm: '胶片风',
+  templateLabel: '标签风',
+  templateAiDesign: 'AI设计',
+  templateAi: 'AI设计',
+
+  // 配色名称
+  paletteCoral: '珊瑚',
+  paletteSage: '抹茶',
+  paletteInk: '水墨',
+  paletteAmber: '琥珀',
+  palettePlum: '梅子',
+  paletteSlate: '青石',
+  paletteRust: '铁锈',
+  palettePine: '松针',
+  paletteSunset: '晚霞',
+  palettePeach: '蜜桃',
+  paletteOcean: '海洋',
+  paletteLavender: '薰衣草',
+  paletteMint: '薄荷',
+  paletteMidnight: '午夜',
+  paletteWine: '红酒',
+  paletteForest: '森林',
+  paletteCoffee: '咖啡',
+  paletteCharcoal: '炭灰',
+  paletteTerracotta: '陶土',
+  paletteGold: '金色',
+  paletteRose: '玫瑰',
+
+  // LLM配置标签
+  provider: '提供商',
+  baseUrl: 'Base URL',
+  model: '模型',
+};
+
+export default zh;

@@ -1,27 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LLM_PROVIDERS } from "../../services/llm";
+import { useLanguage } from "../../hooks/useLanguage";
 
 /**
  * LLM配置弹窗组件
  * 用于在没有配置时弹出让用户输入LLM信息
  */
 export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfig, hasConfig }) {
-  const [config, setConfig] = useState(() => {
-    const provider = initialConfig?.provider || "aliyun";
-    const providerConfig = LLM_PROVIDERS[provider];
-    return {
-      provider: provider,
-      baseUrl: initialConfig?.baseUrl || providerConfig?.defaultBaseUrl || "",
-      apiKey: initialConfig?.apiKey || "",
-      model: initialConfig?.model || providerConfig?.defaultModel || "",
-    };
+  const { t } = useLanguage();
+  const [config, setConfig] = useState({
+    provider: "aliyun",
+    baseUrl: "",
+    apiKey: "",
+    model: "",
   });
   const [errors, setErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-
+  // 当弹窗打开时，从 initialConfig 加载配置
+  useEffect(() => {
+    if (isOpen) {
+      const provider = initialConfig?.provider || "aliyun";
+      const providerConfig = LLM_PROVIDERS[provider];
+      setConfig({
+        provider: provider,
+        baseUrl: initialConfig?.baseUrl || providerConfig?.defaultBaseUrl || "",
+        // 如果有配置但 apiKey 为空（加密存储），显示占位符
+        apiKey: initialConfig?.apiKey || (hasConfig ? "••••••••••••••••" : ""),
+        model: initialConfig?.model || providerConfig?.defaultModel || "",
+      });
+    }
+  }, [isOpen, initialConfig, hasConfig]);
 
   const handleChange = (field, value) => {
     setConfig((prev) => ({ ...prev, [field]: value }));
@@ -43,7 +54,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
   const validate = () => {
     const newErrors = {};
     if (!config.apiKey.trim()) {
-      newErrors.apiKey = "请输入API Key";
+      newErrors.apiKey = t('apiKeyRequired');
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -63,7 +74,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
         onClose();
       } catch (error) {
         console.error('保存配置失败:', error);
-        setErrors({ apiKey: '保存失败，请重试' });
+        setErrors({ apiKey: t('saveFailed') });
       } finally {
         setIsSaving(false);
       }
@@ -126,10 +137,10 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
       >
         <div style={{ marginBottom: "20px" }}>
           <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: "#333" }}>
-            🔧 配置 LLM
+            🔧 {t('llmConfigTitle')}
           </h2>
           {/* <p style={{ margin: "8px 0 0 0", fontSize: "13px", color: "#666", lineHeight: 1.5 }}>
-            未检测到LLM配置，请填写以下信息以继续使用AI生成功能
+            {t('llmConfigSubtitle')}
           </p> */}
         </div>
 
@@ -145,7 +156,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                 marginBottom: "6px",
               }}
             >
-              提供商类型
+              {t('providerType')}
             </label>
             <div style={{ display: "flex", gap: "8px" }}>
               {Object.entries(LLM_PROVIDERS).map(([key, provider]) => (
@@ -166,7 +177,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                     transition: "all 0.2s",
                   }}
                 >
-                  {provider.name}
+                  {t(key)}
                 </button>
               ))}
             </div>
@@ -183,9 +194,9 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                 marginBottom: "6px",
               }}
             >
-              Base URL
+              {t('baseUrlLabel')}
               <span style={{ fontWeight: 400, color: "#999", marginLeft: "4px" }}>
-                (可选，默认: {currentProvider.defaultBaseUrl})
+                ({t('baseUrlOptional')}: {currentProvider.defaultBaseUrl})
               </span>
             </label>
             <input
@@ -216,13 +227,13 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                 marginBottom: "6px",
               }}
             >
-              API Key <span style={{ color: "var(--theme-primary)" }}>*</span>
+              {t('apiKey')} <span style={{ color: "var(--theme-primary)" }}>*</span>
             </label>
             <input
               type="password"
               value={config.apiKey}
               onChange={(e) => handleChange("apiKey", e.target.value)}
-              placeholder="请输入您的API Key"
+              placeholder={t('apiKeyPlaceholder')}
               style={{
                 width: "100%",
                 padding: "10px 12px",
@@ -240,7 +251,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
             )}
             {config.provider === 'aliyun' && (
               <div style={{ marginTop: "8px", fontSize: "12px" }}>
-                <span style={{ color: "#666" }}>还没有 API Key？</span>
+                <span style={{ color: "#666" }}>{t('noApiKey')}</span>
                 <a
                   href="https://bailian.console.aliyun.com/cn-beijing?tab=model#/api-key"
                   target="_blank"
@@ -252,7 +263,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                     marginLeft: "4px",
                   }}
                 >
-                  前往阿里云百炼开通 →
+                  {t('goToProvider')}
                 </a>
               </div>
             )}
@@ -269,9 +280,9 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                 marginBottom: "6px",
               }}
             >
-              模型
+              {t('modelLabel')}
               <span style={{ fontWeight: 400, color: "#999", marginLeft: "4px" }}>
-                (可选，默认: {currentProvider.defaultModel})
+                ({t('modelOptional')}: {currentProvider.defaultModel})
               </span>
             </label>
             <input
@@ -308,7 +319,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                 cursor: "pointer",
               }}
             >
-              取消
+              {t('cancel')}
             </button>
             <button
               type="submit"
@@ -326,7 +337,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                 opacity: isSaving ? 0.7 : 1,
               }}
             >
-              {isSaving ? "保存中..." : "保存配置"}
+              {isSaving ? t('saving') : t('save')}
             </button>
           </div>
 
@@ -350,7 +361,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                     transition: "all 0.2s",
                   }}
                 >
-                  🗑️ 删除当前配置
+                  🗑️ {t('delete')}
                 </button>
               ) : (
                 <div style={{
@@ -365,7 +376,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                     color: "#c62828",
                     textAlign: "center",
                   }}>
-                    确定要删除当前配置吗？删除后将使用默认配置。
+                    {t('deleteConfirm')}
                   </p>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <button
@@ -383,7 +394,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                         cursor: "pointer",
                       }}
                     >
-                      取消
+                      {t('cancel')}
                     </button>
                     <button
                       type="button"
@@ -402,7 +413,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
                         opacity: isDeleting ? 0.7 : 1,
                       }}
                     >
-                      {isDeleting ? "删除中..." : "确认删除"}
+                      {isDeleting ? t('deleting') : t('confirmDelete')}
                     </button>
                   </div>
                 </div>

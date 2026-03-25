@@ -6,6 +6,7 @@ import { useHtml2Canvas, snapElement } from "./hooks/useHtml2Canvas";
 import { snapElementToImage } from "./hooks/useHtmlToImage";
 import { useDragReorder } from "./hooks/useDragReorder";
 import { useTheme } from "./hooks/useTheme";
+import { useLanguage } from "./hooks/useLanguage";
 import {
   Editorial, Notecard, Minimal, Stamp, BoldCard, Dark, Newspaper, Film, LabelCard,
   Creamy, Retro, Forest, Ins, Japanese, Korean, Pure, Pop, Artistic, Luxury,
@@ -112,6 +113,7 @@ function App() {
   const h2cOk = useHtml2Canvas();
   const palette = PALETTES.find((p) => p.id === palId) || PALETTES[0];
   const { theme, isLight, toggleTheme } = useTheme();
+  const { language } = useLanguage();
 
   // 当配色方案变化时，更新CSS变量使UI跟随变化
   useEffect(() => {
@@ -624,18 +626,22 @@ function App() {
         model: llmConfig.model || undefined,
       });
 
+      // 根据语言选择prompt
+      const isEnglish = language === 'en';
+
       if (mode === "single") {
         let response;
         let data;
         let retryCount = 0;
         const maxRetries = 2;
+        const systemPrompt = isEnglish ? SYSTEM_PROMPTS.singleXHS_EN : SYSTEM_PROMPTS.singleXHS;
         
         while (retryCount <= maxRetries) {
           try {
             if (USE_STREAM_MODE) {
               // 本地开发使用流式模式
               response = await client.chat({
-                system: SYSTEM_PROMPTS.singleXHS,
+                system: systemPrompt,
                 messages: [{ role: "user", content: input }],
                 maxTokens: MAX_TOKENS.single,
                 stream: true,
@@ -652,7 +658,7 @@ function App() {
             } else {
               // 部署端使用非流式模式
               response = await client.chat({
-                system: SYSTEM_PROMPTS.singleXHS,
+                system: systemPrompt,
                 messages: [{ role: "user", content: input }],
                 maxTokens: MAX_TOKENS.single,
                 stream: false,
@@ -672,7 +678,12 @@ function App() {
         
         setSingleData(data);
       } else {
-        const systemPrompt = platform === "xhs" ? SYSTEM_PROMPTS.splitXHS : SYSTEM_PROMPTS.splitWechat;
+        let systemPrompt;
+        if (platform === "xhs") {
+          systemPrompt = isEnglish ? SYSTEM_PROMPTS.splitXHS_EN : SYSTEM_PROMPTS.splitXHS;
+        } else {
+          systemPrompt = isEnglish ? SYSTEM_PROMPTS.splitWechat_EN : SYSTEM_PROMPTS.splitWechat;
+        }
         let response;
         let data;
         let retryCount = 0;
@@ -735,7 +746,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [input, mode, platform, tpl, splitStyle, llmConfig, envConfigValid, generateAIDesign, tryParsePartialJSON]);
+  }, [input, mode, platform, tpl, splitStyle, llmConfig, envConfigValid, generateAIDesign, tryParsePartialJSON, language]);
 
   // 导出功能
   const exportSingle = useCallback(async (quality = "hd") => {
