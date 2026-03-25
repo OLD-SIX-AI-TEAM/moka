@@ -211,7 +211,7 @@ async function handleLLM(request, env) {
 
   try {
     const body = await request.json();
-    const { provider = 'anthropic', messages, system, max_tokens = 4000, model, tools, enable_search, encryptedApiKey } = body;
+    const { provider = 'anthropic', messages, system, max_tokens = 4000, model, tools, enable_search, encryptedApiKey, stream = false } = body;
     
     // 限制 max_tokens
     const limitedMaxTokens = Math.min(max_tokens, USAGE_LIMITS.maxTokensPerRequest);
@@ -221,7 +221,7 @@ async function handleLLM(request, env) {
     if (encryptedApiKey && env.RSA_PRIVATE_KEY) {
       try {
         userApiKey = await decryptWithPrivateKey(encryptedApiKey, env.RSA_PRIVATE_KEY);
-        console.log('[LLM Proxy] Provider:', provider, 'Model:', model, 'Enable Search:', enable_search, 'UseUserKey: true (decrypted)');
+        console.log('[LLM Proxy] Provider:', provider, 'Model:', model, 'Enable Search:', enable_search, 'UseUserKey: true (decrypted)', 'Stream:', stream);
       } catch (e) {
         console.error('[LLM Proxy] 解密失败:', e);
         return new Response(JSON.stringify({ error: 'API Key 解密失败，请重新配置' }), {
@@ -230,7 +230,7 @@ async function handleLLM(request, env) {
         });
       }
     } else {
-      console.log('[LLM Proxy] Provider:', provider, 'Model:', model, 'Enable Search:', enable_search, 'UseUserKey: false');
+      console.log('[LLM Proxy] Provider:', provider, 'Model:', model, 'Enable Search:', enable_search, 'UseUserKey: false', 'Stream:', stream);
     }
 
     // 如果没有用户 API Key，检查使用限制
@@ -251,11 +251,11 @@ async function handleLLM(request, env) {
 
     let result;
     if (provider === 'anthropic') {
-      result = await callAnthropic(env, messages, system, limitedMaxTokens, model, tools, corsHeaders, userApiKey);
+      result = await callAnthropic(env, messages, system, limitedMaxTokens, model, tools, corsHeaders, userApiKey, stream);
     } else if (provider === 'openai') {
-      result = await callOpenAI(env, messages, system, limitedMaxTokens, model, tools, corsHeaders, userApiKey);
+      result = await callOpenAI(env, messages, system, limitedMaxTokens, model, tools, corsHeaders, userApiKey, stream);
     } else if (provider === 'aliyun') {
-      result = await callAliyun(env, messages, system, limitedMaxTokens, model, enable_search, corsHeaders, userApiKey);
+      result = await callAliyun(env, messages, system, limitedMaxTokens, model, enable_search, corsHeaders, userApiKey, stream);
     } else {
       return new Response(JSON.stringify({ error: 'Unsupported provider' }), {
         status: 400,

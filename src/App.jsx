@@ -102,6 +102,7 @@ function App() {
   // Refs
   const cardRef = useRef(null);
   const slideRefs = useRef([]);
+  const contentPanelRef = useRef(null);
 
   // Hooks
   const h2cOk = useHtml2Canvas();
@@ -391,7 +392,7 @@ function App() {
       const client = createLLMClient({
         provider: llmConfig.provider,
         baseUrl: llmConfig.baseUrl || undefined,
-        apiKey: llmConfig.apiKey,
+        encryptedApiKey: llmConfig.encryptedApiKey,
         model: llmConfig.model || undefined,
       });
 
@@ -415,7 +416,7 @@ function App() {
       });
 
       const data = extractJSON(response.content);
-      
+
       if (isSplitMode) {
         if (!data.slides || !data.styleConfig) throw new Error('AI返回的数据格式不正确');
         if (data.slides.length === 0) throw new Error('AI生成的幻灯片为空');
@@ -429,6 +430,9 @@ function App() {
         if (!data.content.sections || data.content.sections.length === 0) throw new Error('AI生成的内容为空');
         setAiSingleDesign(data);
       }
+
+      // 刷新使用次数
+      contentPanelRef.current?.refreshUsage();
     } catch (err) {
       setError(`AI设计生成失败: ${err.message}`);
     } finally {
@@ -461,7 +465,7 @@ function App() {
       const client = createLLMClient({
         provider: llmConfig.provider,
         baseUrl: llmConfig.baseUrl || undefined,
-        apiKey: llmConfig.apiKey,
+        encryptedApiKey: llmConfig.encryptedApiKey,
         model: llmConfig.model || undefined,
       });
 
@@ -484,6 +488,9 @@ function App() {
         setSlides(data.slides);
         slideRefs.current = new Array(data.slides.length).fill(null);
       }
+
+      // 刷新使用次数
+      contentPanelRef.current?.refreshUsage();
     } catch (err) {
       setError(`生成失败: ${err.message}`);
     } finally {
@@ -674,6 +681,7 @@ function App() {
         
         {/* 第三列：平台、文案和生成 */}
         <ContentPanel
+          ref={contentPanelRef}
           mode={mode}
           platform={platform}
           setPlatform={setPlatform}
