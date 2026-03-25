@@ -86,7 +86,7 @@ export function TopBar({ mode, setMode, toggleTheme, isLight }) {
         </button>
         
         <a
-          href="https://github.com/anomalyco/opencode"
+          href="https://github.com/OLD-SIX-AI-TEAM/moka"
           target="_blank"
           rel="noopener noreferrer"
           className="github-btn"
