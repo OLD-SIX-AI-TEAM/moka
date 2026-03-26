@@ -288,16 +288,35 @@ export function createLLMClient(config) {
 
       console.log('[LLM Client] Request URL:', url);
       console.log('[LLM Client] Request body encryptedApiKey:', !!this.encryptedApiKey);
+      console.log('[LLM Client] Request body encryptedApiKey length:', this.encryptedApiKey?.length);
+      console.log('[LLM Client] isLocalDev:', isLocalDev);
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
+      let response;
+      try {
+        response = await fetch(url, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body),
+        });
+      } catch (fetchError) {
+        console.error('[LLM Client] Fetch error:', fetchError);
+        throw new Error(`网络请求失败: ${fetchError.message}`);
+      }
+
+      console.log('[LLM Client] Response status:', response.status);
+      console.log('[LLM Client] Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`OpenAI API 错误: ${error}`);
+        const errorText = await response.text();
+        console.error('[LLM Client] Error response text:', errorText);
+        let errorMessage = `OpenAI API 错误 (${response.status})`;
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorJson.message || errorText;
+        } catch (e) {
+          errorMessage = errorText || `HTTP ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
       // 处理流式响应

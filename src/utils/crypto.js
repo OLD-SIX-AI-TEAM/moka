@@ -25,18 +25,22 @@ export async function getServerPublicKey() {
 
   try {
     const response = await fetch('/api/public-key');
+    console.log('[Crypto] Public key response status:', response.status);
     if (!response.ok) {
-      throw new Error(`获取公钥失败: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.error('[Crypto] Failed to get public key:', errorData);
+      throw new Error(errorData.message || `获取公钥失败: ${response.status}`);
     }
     const data = await response.json();
+    console.log('[Crypto] Public key received:', !!data.publicKey);
     if (!data.publicKey) {
       throw new Error('服务器未配置公钥');
     }
     cachedServerPublicKey = data.publicKey;
     return cachedServerPublicKey;
   } catch (error) {
-    console.error('获取服务器公钥失败:', error);
-    throw new Error('无法获取加密公钥，请稍后重试');
+    console.error('[Crypto] 获取服务器公钥失败:', error);
+    throw new Error('无法获取加密公钥: ' + error.message);
   }
 }
 
