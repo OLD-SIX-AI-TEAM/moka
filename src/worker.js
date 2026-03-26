@@ -281,11 +281,11 @@ async function handleLLM(request, env) {
 
     let result;
     if (provider === 'anthropic') {
-      result = await callAnthropic(env, messages, system, limitedMaxTokens, model, tools, corsHeaders, userApiKey, stream);
+      result = await callAnthropic(env, messages, system, limitedMaxTokens, model, tools, corsHeaders, userApiKey, stream, body.baseUrl);
     } else if (provider === 'openai') {
-      result = await callOpenAI(env, messages, system, limitedMaxTokens, model, tools, corsHeaders, userApiKey, stream);
+      result = await callOpenAI(env, messages, system, limitedMaxTokens, model, tools, corsHeaders, userApiKey, stream, body.baseUrl);
     } else if (provider === 'aliyun') {
-      result = await callAliyun(env, messages, system, limitedMaxTokens, model, enable_search, corsHeaders, userApiKey, stream);
+      result = await callAliyun(env, messages, system, limitedMaxTokens, model, enable_search, corsHeaders, userApiKey, stream, body.baseUrl);
     } else {
       return new Response(JSON.stringify({ error: 'Unsupported provider' }), {
         status: 400,
@@ -311,7 +311,7 @@ async function handleLLM(request, env) {
   }
 }
 
-async function callAnthropic(env, messages, system, max_tokens, model, tools, corsHeaders, userApiKey, stream = false) {
+async function callAnthropic(env, messages, system, max_tokens, model, tools, corsHeaders, userApiKey, stream = false, customBaseUrl = null) {
   const apiKey = userApiKey || env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured' }), {
@@ -329,7 +329,12 @@ async function callAnthropic(env, messages, system, max_tokens, model, tools, co
     ...(tools && { tools }),
   };
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const baseUrl = customBaseUrl || 'https://api.anthropic.com/v1';
+  const apiUrl = `${baseUrl.replace(/\/$/, '')}/messages`;
+
+  console.log('[Anthropic Proxy] Calling:', apiUrl, 'Model:', model || 'claude-sonnet-4-20250514');
+
+  const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -361,7 +366,7 @@ async function callAnthropic(env, messages, system, max_tokens, model, tools, co
   });
 }
 
-async function callAliyun(env, messages, system, max_tokens, model, enable_search, corsHeaders, userApiKey, stream = false) {
+async function callAliyun(env, messages, system, max_tokens, model, enable_search, corsHeaders, userApiKey, stream = false, customBaseUrl = null) {
   const apiKey = userApiKey || env.DASHSCOPE_API_KEY;
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'DASHSCOPE_API_KEY not configured' }), {
@@ -385,7 +390,12 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
 
   console.log('[Aliyun Proxy] Request:', { model: requestBody.model, stream, messageCount: openaiMessages.length });
 
-  const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+  const baseUrl = customBaseUrl || 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+  const apiUrl = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
+
+  console.log('[Aliyun Proxy] Calling:', apiUrl);
+
+  const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -418,7 +428,7 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
   }
 
   const data = await response.json();
-  
+
   console.log('[Aliyun Proxy] Response model:', data.model);
 
   return new Response(JSON.stringify(data), {
@@ -430,7 +440,7 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
   });
 }
 
-async function callOpenAI(env, messages, system, max_tokens, model, tools, corsHeaders, userApiKey, stream = false) {
+async function callOpenAI(env, messages, system, max_tokens, model, tools, corsHeaders, userApiKey, stream = false, customBaseUrl = null) {
   const apiKey = userApiKey || env.OPENAI_API_KEY;
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'OPENAI_API_KEY not configured' }), {
@@ -452,7 +462,12 @@ async function callOpenAI(env, messages, system, max_tokens, model, tools, corsH
     ...(tools && { tools }),
   };
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const baseUrl = customBaseUrl || 'https://api.openai.com/v1';
+  const apiUrl = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
+
+  console.log('[OpenAI Proxy] Calling:', apiUrl, 'Model:', model || 'gpt-4o-mini');
+
+  const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

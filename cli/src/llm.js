@@ -6,27 +6,34 @@ const PROVIDER_CONFIGS = {
     defaultBaseUrl: 'https://api.anthropic.com/v1',
     defaultModel: 'claude-sonnet-4-20250514',
     endpoint: '/messages',
+    customBaseUrl: true,
+    customModel: true,
   },
   openai: {
     name: 'OpenAI',
     defaultBaseUrl: 'https://api.openai.com/v1',
     defaultModel: 'gpt-4o-mini',
     endpoint: '/chat/completions',
+    customBaseUrl: true,
+    customModel: true,
   },
   aliyun: {
     name: '阿里云百炼',
     defaultBaseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     defaultModel: 'qwen-plus',
     endpoint: '/chat/completions',
+    customBaseUrl: true,
+    customModel: true,
   },
 };
 
 export class LLMClient {
-  constructor(provider = 'anthropic', model = null) {
+  constructor(provider = 'anthropic', model = null, baseUrl = null) {
     this.provider = provider;
     this.config = PROVIDER_CONFIGS[provider];
     this.apiKey = configManager.validateProvider(provider);
     this.model = model || this.config.defaultModel;
+    this.customBaseUrl = baseUrl;
   }
 
   async chat({ system, messages, maxTokens = 4000, enableSearch = true }) {
@@ -41,8 +48,10 @@ export class LLMClient {
   }
 
   async _callAnthropic({ system, messages, maxTokens }) {
-    const url = `${this.config.defaultBaseUrl}${this.config.endpoint}`;
-    
+    // 使用自定义 baseUrl（如果有）否则使用默认的
+    const baseUrl = this.customBaseUrl || this.config.defaultBaseUrl;
+    const url = `${baseUrl.replace(/\/$/, '')}${this.config.endpoint}`;
+
     const body = {
       model: this.model,
       max_tokens: maxTokens,
@@ -70,7 +79,7 @@ export class LLMClient {
 
     const data = await response.json();
     const content = data.content?.map(c => c.text || '').join('') || '';
-    
+
     return {
       content,
       usage: data.usage,
@@ -79,8 +88,10 @@ export class LLMClient {
   }
 
   async _callOpenAI({ system, messages, maxTokens }) {
-    const url = `${this.config.defaultBaseUrl}${this.config.endpoint}`;
-    
+    // 使用自定义 baseUrl（如果有）否则使用默认的
+    const baseUrl = this.customBaseUrl || this.config.defaultBaseUrl;
+    const url = `${baseUrl.replace(/\/$/, '')}${this.config.endpoint}`;
+
     const openaiMessages = system
       ? [{ role: 'system', content: system }, ...messages]
       : messages;
@@ -108,7 +119,7 @@ export class LLMClient {
 
     const data = await response.json();
     const content = data.choices[0]?.message?.content || '';
-    
+
     return {
       content,
       usage: data.usage,
@@ -117,8 +128,10 @@ export class LLMClient {
   }
 
   async _callAliyun({ system, messages, maxTokens, enableSearch }) {
-    const url = `${this.config.defaultBaseUrl}${this.config.endpoint}`;
-    
+    // 使用自定义 baseUrl（如果有）否则使用默认的
+    const baseUrl = this.customBaseUrl || this.config.defaultBaseUrl;
+    const url = `${baseUrl.replace(/\/$/, '')}${this.config.endpoint}`;
+
     const openaiMessages = system
       ? [{ role: 'system', content: system }, ...messages]
       : messages;
@@ -147,7 +160,7 @@ export class LLMClient {
 
     const data = await response.json();
     const content = data.choices[0]?.message?.content || '';
-    
+
     return {
       content,
       usage: data.usage,

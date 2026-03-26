@@ -17,6 +17,7 @@ export async function generateCard(options) {
     mode = 'single',
     provider = 'anthropic',
     model,
+    baseUrl,
     width = '800',
     quality = 'hd',
   } = options;
@@ -41,9 +42,16 @@ export async function generateCard(options) {
 
   // 步骤1: 调用AI生成设计
   const spinner = ora('正在生成设计方案...').start();
-  
+
   try {
-    const client = new LLMClient(provider, model);
+    // 获取 baseUrl（从命令行参数或配置文件）
+    let finalBaseUrl = baseUrl;
+    if (!finalBaseUrl) {
+      const { configManager } = await import('./config.js');
+      finalBaseUrl = configManager.getProviderBaseUrl(provider);
+    }
+
+    const client = new LLMClient(provider, model, finalBaseUrl);
     const prompt = mode === 'single' ? AI_DESIGN_PROMPT_SINGLE : AI_DESIGN_PROMPT_SPLIT;
     
     const response = await client.chat({

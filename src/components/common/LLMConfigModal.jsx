@@ -56,6 +56,13 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
     if (!config.apiKey.trim()) {
       newErrors.apiKey = t('apiKeyRequired');
     }
+    // 所有提供商都需要自定义 baseUrl 和 model
+    if (!config.baseUrl.trim()) {
+      newErrors.baseUrl = t('baseUrlRequired');
+    }
+    if (!config.model.trim()) {
+      newErrors.model = t('modelRequired');
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -67,9 +74,9 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
       try {
         await onSave({
           provider: config.provider,
-          baseUrl: config.baseUrl.trim() || undefined,
+          baseUrl: config.baseUrl.trim(),
           apiKey: config.apiKey.trim(),
-          model: config.model.trim() || undefined,
+          model: config.model.trim(),
         });
         onClose();
       } catch (error) {
@@ -195,25 +202,30 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
               }}
             >
               {t('baseUrlLabel')}
-              <span style={{ fontWeight: 400, color: "#999", marginLeft: "4px" }}>
-                ({t('baseUrlOptional')}: {currentProvider.defaultBaseUrl})
+              <span style={{ fontWeight: 400, color: "#e05a4b", marginLeft: "4px" }}>
+                ({t('baseUrlRequired')})
               </span>
             </label>
             <input
               type="text"
               value={config.baseUrl}
               onChange={(e) => handleChange("baseUrl", e.target.value)}
-              placeholder={`${currentProvider.defaultBaseUrl}`}
+              placeholder={t('baseUrlPlaceholder')}
               style={{
                 width: "100%",
                 padding: "10px 12px",
                 borderRadius: "8px",
-                border: "1px solid #e0e0e0",
+                border: `1px solid ${errors.baseUrl ? "#e05a4b" : "#e0e0e0"}`,
                 fontSize: "13px",
                 outline: "none",
                 boxSizing: "border-box",
               }}
             />
+            {errors.baseUrl && (
+              <span style={{ fontSize: "11px", color: "#e05a4b", marginTop: "4px", display: "block" }}>
+                {errors.baseUrl}
+              </span>
+            )}
           </div>
 
           {/* API Key */}
@@ -281,25 +293,30 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
               }}
             >
               {t('modelLabel')}
-              <span style={{ fontWeight: 400, color: "#999", marginLeft: "4px" }}>
-                ({t('modelOptional')}: {currentProvider.defaultModel})
+              <span style={{ fontWeight: 400, color: "#e05a4b", marginLeft: "4px" }}>
+                ({t('modelRequired')})
               </span>
             </label>
             <input
               type="text"
               value={config.model}
               onChange={(e) => handleChange("model", e.target.value)}
-              placeholder={`${currentProvider.defaultModel}`}
+              placeholder={t('modelPlaceholder')}
               style={{
                 width: "100%",
                 padding: "10px 12px",
                 borderRadius: "8px",
-                border: "1px solid #e0e0e0",
+                border: `1px solid ${errors.model ? "#e05a4b" : "#e0e0e0"}`,
                 fontSize: "13px",
                 outline: "none",
                 boxSizing: "border-box",
               }}
             />
+            {errors.model && (
+              <span style={{ fontSize: "11px", color: "#e05a4b", marginTop: "4px", display: "block" }}>
+                {errors.model}
+              </span>
+            )}
           </div>
 
           {/* 按钮 */}

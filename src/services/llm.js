@@ -117,18 +117,24 @@ export const LLM_PROVIDERS = {
     defaultBaseUrl: "https://api.openai.com/v1",
     defaultModel: "gpt-4o-mini",
     requireAuth: true,
+    customBaseUrl: true,
+    customModel: true,
   },
   anthropic: {
     name: "Anthropic",
     defaultBaseUrl: "https://api.anthropic.com/v1",
     defaultModel: "claude-sonnet-4-20250514",
     requireAuth: true,
+    customBaseUrl: true,
+    customModel: true,
   },
   aliyun: {
     name: "阿里云百炼",
     defaultBaseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     defaultModel: "qwen3.5-plus",
     requireAuth: true,
+    customBaseUrl: true,
+    customModel: true,
   },
 };
 
@@ -221,12 +227,14 @@ export function createLLMClient(config) {
 
     /**
      * 调用 OpenAI API
-     * 使用 Pages Function 代理避免 CORS 问题
+     * 本地开发直接调用，生产环境使用 Pages Function 代理避免 CORS 问题
      */
     async _callOpenAI({ system, messages, maxTokens, webSearch, stream, onStream }) {
-      // 检测是否在 Cloudflare Pages 环境
+      // 检测环境
       const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
         window.location.hostname.includes('workers.dev');
+      const isLocalDev = window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1';
 
       let url;
       let headers;
@@ -237,22 +245,48 @@ export function createLLMClient(config) {
       // 暂时禁用，等待进一步测试
       const tools = undefined;
 
-      // 使用 Pages Function 代理
-      url = PAGES_PROXY_URL;
-      headers = {
-        'Content-Type': 'application/json',
-      };
-      body = {
-        provider: 'openai',
-        model: this.model,
-        messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-        max_tokens: maxTokens,
-        temperature: 0.7,
-        stream,
-        ...(tools && { tools }),
-        ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
-      };
+      // 本地开发直接调用 API
+      if (isLocalDev) {
+        // 本地开发时从 localStorage 获取解密的 API Key
+        const apiKey = await getDecryptedApiKey('openai');
+        if (!apiKey) {
+          throw new Error('请先配置 LLM API Key');
+        }
 
+        const baseUrl = this.baseUrl || 'https://api.openai.com/v1';
+        url = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
+        headers = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        };
+        body = {
+          model: this.model,
+          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+          max_tokens: maxTokens,
+          temperature: 0.7,
+          stream,
+          ...(tools && { tools }),
+        };
+      } else {
+        // 使用 Pages Function 代理
+        url = PAGES_PROXY_URL;
+        headers = {
+          'Content-Type': 'application/json',
+        };
+        body = {
+          provider: 'openai',
+          model: this.model,
+          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+          max_tokens: maxTokens,
+          temperature: 0.7,
+          stream,
+          ...(tools && { tools }),
+          ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
+          ...(this.baseUrl && { baseUrl: this.baseUrl }), // 传入自定义 baseUrl
+        };
+      }
+
+      console.log('[LLM Client] Request URL:', url);
       console.log('[LLM Client] Request body encryptedApiKey:', !!this.encryptedApiKey);
 
       const response = await fetch(url, {
@@ -504,12 +538,14 @@ export function createLLMClient(config) {
 
     /**
      * 调用 Anthropic API
-     * 使用 Pages Function 代理避免 CORS 问题
+     * 本地开发直接调用，生产环境使用 Pages Function 代理避免 CORS 问题
      */
     async _callAnthropic({ system, messages, maxTokens, webSearch, stream, onStream }) {
-      // 检测是否在 Cloudflare Pages 环境
+      // 检测环境
       const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
         window.location.hostname.includes('workers.dev');
+      const isLocalDev = window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1';
 
       let url;
       let headers;
@@ -520,24 +556,55 @@ export function createLLMClient(config) {
       // 暂时禁用，等待进一步测试
       const tools = undefined;
 
-      // 使用 Pages Function 代理
-      url = PAGES_PROXY_URL;
-      headers = {
-        'Content-Type': 'application/json',
-      };
-      body = {
-        provider: 'anthropic',
-        model: this.model,
-        system,
-        messages: messages.map((m) => ({
-          role: m.role,
-          content: m.content,
-        })),
-        max_tokens: maxTokens,
-        stream,
-        ...(tools && { tools }),
-        ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
-      };
+      // 本地开发直接调用 API
+      if (isLocalDev) {
+        // 本地开发时从 localStorage 获取解密的 API Key
+        const apiKey = await getDecryptedApiKey('anthropic');
+        if (!apiKey) {
+          throw new Error('请先配置 LLM API Key');
+        }
+
+        const baseUrl = this.baseUrl || 'https://api.anthropic.com/v1';
+        url = `${baseUrl.replace(/\/$/, '')}/messages`;
+        headers = {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+        };
+        body = {
+          model: this.model,
+          system,
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+          max_tokens: maxTokens,
+          stream,
+          ...(tools && { tools }),
+        };
+      } else {
+        // 使用 Pages Function 代理
+        url = PAGES_PROXY_URL;
+        headers = {
+          'Content-Type': 'application/json',
+        };
+        body = {
+          provider: 'anthropic',
+          model: this.model,
+          system,
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+          max_tokens: maxTokens,
+          stream,
+          ...(tools && { tools }),
+          ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
+          ...(this.baseUrl && { baseUrl: this.baseUrl }), // 传入自定义 baseUrl
+        };
+      }
+
+      console.log('[LLM Client] Request URL:', url);
 
       const response = await fetch(url, {
         method: "POST",

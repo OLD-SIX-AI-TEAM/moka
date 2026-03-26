@@ -8,8 +8,11 @@ const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
 
 const DEFAULT_CONFIG = {
   ANTHROPIC_API_KEY: '',
+  ANTHROPIC_BASE_URL: '',
   OPENAI_API_KEY: '',
+  OPENAI_BASE_URL: '',
   DASHSCOPE_API_KEY: '',
+  DASHSCOPE_BASE_URL: '',
   DEFAULT_PROVIDER: 'anthropic',
   DEFAULT_MODEL: '',
 };
@@ -52,23 +55,26 @@ class ConfigManager {
     console.log(chalk.cyan('当前配置:'));
     console.log(chalk.gray('配置文件路径:'), CONFIG_FILE);
     console.log('');
-    
+
     const keys = [
       'ANTHROPIC_API_KEY',
-      'OPENAI_API_KEY', 
+      'ANTHROPIC_BASE_URL',
+      'OPENAI_API_KEY',
+      'OPENAI_BASE_URL',
       'DASHSCOPE_API_KEY',
+      'DASHSCOPE_BASE_URL',
       'DEFAULT_PROVIDER',
       'DEFAULT_MODEL'
     ];
-    
+
     for (const key of keys) {
       const value = this.get(key);
-      const displayValue = key.includes('KEY') && value 
+      const displayValue = key.includes('KEY') && value
         ? value.slice(0, 8) + '****' + value.slice(-4)
         : value || chalk.gray('(未设置)');
       console.log(`  ${key}: ${displayValue}`);
     }
-    
+
     console.log('');
     console.log(chalk.gray('提示: 可以通过环境变量或 moka config --<provider>-key <key> 设置API密钥'));
   }
@@ -95,6 +101,16 @@ class ConfigManager {
     }
 
     return apiKey;
+  }
+
+  getProviderBaseUrl(provider) {
+    const baseUrlMap = {
+      anthropic: 'ANTHROPIC_BASE_URL',
+      openai: 'OPENAI_BASE_URL',
+      aliyun: 'DASHSCOPE_BASE_URL',
+    };
+    const keyName = baseUrlMap[provider];
+    return keyName ? this.get(keyName) : null;
   }
 }
 

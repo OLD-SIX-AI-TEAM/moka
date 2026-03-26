@@ -51,11 +51,15 @@ export const zh = {
   providerType: '提供商类型',
   baseUrlLabel: 'Base URL',
   baseUrlOptional: '可选，默认',
+  baseUrlRequired: '必填',
+  baseUrlPlaceholder: '请输入API基础地址，如：https://api.example.com/v1',
   apiKey: 'API Key',
   apiKeyPlaceholder: '请输入您的API Key',
   apiKeyRequired: '请输入API Key',
   modelLabel: '模型',
   modelOptional: '可选，默认',
+  modelRequired: '必填',
+  modelPlaceholder: '请输入模型名称，如：gpt-4o-mini',
   save: '保存配置',
   saving: '保存中...',
   cancel: '取消',
@@ -67,7 +71,7 @@ export const zh = {
   noApiKey: '还没有 API Key？',
   goToProvider: '前往开通 →',
   aliyunProviderName: '阿里云百炼',
-  
+
   // 提供商名称
   openai: 'OpenAI',
   anthropic: 'Anthropic',
