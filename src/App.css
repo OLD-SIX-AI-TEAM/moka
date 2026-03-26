@@ -737,11 +737,21 @@ body {
 
 /* 加载状态 - 精致风格 */
 .loading-content {
-  text-align: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: var(--space-xl);
   color: var(--text-secondary);
+  box-sizing: border-box;
 }
 
 .loading-icon {
+  position: relative;
+  z-index: 1;
   margin-bottom: var(--space-lg);
   display: flex;
   align-items: center;
@@ -755,6 +765,8 @@ body {
 }
 
 .loading-text {
+  position: relative;
+  z-index: 1;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -797,10 +809,8 @@ body {
   word-break: break-all;
   font-family: 'JetBrains Mono', 'Monaco', 'Menlo', monospace;
   height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  overflow-y: auto;
+  scroll-behavior: smooth;
   text-align: left;
 }
 

@@ -110,6 +110,7 @@ export function EditableText({ v, on, style, dk = false, block = false, draggabl
     
     // 如果可拖拽且不在编辑状态，准备拖拽
     if (draggable && !isEditing && onStyleChange) {
+      e.preventDefault();
       dragStartPos.current = { x: e.clientX, y: e.clientY };
       dragStartMargin.current = {
         marginLeft: parseInt(style.marginLeft) || 0,
@@ -149,17 +150,8 @@ export function EditableText({ v, on, style, dk = false, block = false, draggabl
         
         // 如果没有拖拽且点击时间很短，认为是点击
         if (!hasDragged.current && clickDuration < CLICK_TIME_THRESHOLD) {
-          // 这是一个点击，不需要处理，让 onFocus 触发
-        } else if (isDragging) {
-          // 拖拽结束，应用最终位置
-          const deltaX = upEvent.clientX - dragStartPos.current.x;
-          const deltaY = upEvent.clientY - dragStartPos.current.y;
-          
-          onStyleChange({
-            ...styleRef.current,
-            marginLeft: `${dragStartMargin.current.marginLeft + deltaX}px`,
-            marginTop: `${dragStartMargin.current.marginTop + deltaY}px`,
-          });
+          // 这是一个点击，允许进入编辑模式
+          ref.current?.focus();
         }
         
         setIsDragging(false);

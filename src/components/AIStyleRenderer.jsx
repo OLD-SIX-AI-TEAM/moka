@@ -236,8 +236,11 @@ export function AIStyleRenderer({ design, editor, emojiEditor }) {
             color: styleConfig.header?.title?.color || '#1a1a1a',
             lineHeight: 1.3,
             margin: 0,
+            ...design?.titleStyle,
           }}
           block
+          draggable={!!editor?.updateTitleStyle}
+          onStyleChange={editor?.updateTitleStyle}
         />
       </div>
 
@@ -253,8 +256,11 @@ export function AIStyleRenderer({ design, editor, emojiEditor }) {
             lineHeight: 1.6,
             marginBottom: styleConfig.lead?.marginBottom || '20px',
             marginTop: 0,
+            ...design?.leadStyle,
           }}
           block
+          draggable={!!editor?.updateLeadStyle}
+          onStyleChange={editor?.updateLeadStyle}
         />
       )}
 
@@ -289,7 +295,10 @@ export function AIStyleRenderer({ design, editor, emojiEditor }) {
                     fontWeight: sectionStyle.heading?.fontWeight || 600,
                     color: sectionStyle.heading?.color || '#333',
                     margin: 0,
+                    ...section?.headingStyle,
                   }}
+                  draggable={!!editor?.updateSecHStyle}
+                  onStyleChange={editor?.updateSecHStyle?.(index)}
                 />
               </div>
 
@@ -302,8 +311,11 @@ export function AIStyleRenderer({ design, editor, emojiEditor }) {
                   color: sectionStyle.text?.color || '#555',
                   lineHeight: sectionStyle.text?.lineHeight || 1.7,
                   margin: 0,
+                  ...section?.textStyle,
                 }}
                 block
+                draggable={!!editor?.updateSecTStyle}
+                onStyleChange={editor?.updateSecTStyle?.(index)}
               />
             </div>
           );
@@ -323,8 +335,11 @@ export function AIStyleRenderer({ design, editor, emojiEditor }) {
             borderRadius: styleConfig.tip?.borderRadius || '8px',
             marginBottom: '20px',
             fontStyle: 'italic',
+            ...design?.tipStyle,
           }}
           block
+          draggable={!!editor?.updateTipStyle}
+          onStyleChange={editor?.updateTipStyle}
         />
       )}
 
@@ -343,7 +358,10 @@ export function AIStyleRenderer({ design, editor, emojiEditor }) {
                 padding: styleConfig.tags?.padding || '6px 12px',
                 borderRadius: styleConfig.tags?.borderRadius || '16px',
                 fontWeight: 500,
+                ...(design?.content?.tagsStyle?.[index] || {}),
               }}
+              draggable={!!editor?.updateTagStyle}
+              onStyleChange={editor?.updateTagStyle?.(index)}
             />
           ))}
         </div>
