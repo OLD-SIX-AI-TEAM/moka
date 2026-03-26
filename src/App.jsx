@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 
 // 环境判断：本地开发使用流式，部署端使用非流式
-const USE_STREAM_MODE = process.env.NODE_ENV === 'development';
+const USE_STREAM_MODE = import.meta.env.DEV;
 import { useHtml2Canvas, snapElement } from "./hooks/useHtml2Canvas";
 import { snapElementToImage } from "./hooks/useHtmlToImage";
 import { useDragReorder } from "./hooks/useDragReorder";
@@ -27,6 +27,9 @@ import {
   FashionCover, FashionContent, FashionEnd, MomCover, MomContent, MomEnd
 } from "./components/templates/split";
 import { createLLMClient, SYSTEM_PROMPTS, extractJSON, getEnvLLMConfig, isEnvConfigValid, saveLLMConfig, clearLLMConfig } from "./services/llm";
+import { AIStyleRenderer } from "./components/AIStyleRenderer";
+import { AISplitStyleRenderer } from "./components/AISplitStyleRenderer";
+import { checkBannedWords, getBannedWordWarning } from "./utils/bannedWords";
 import { LLMConfigModal } from "./components/common/LLMConfigModal";
 import { TopBar } from "./components/layout/TopBar";
 import { ThemePanel } from "./components/layout/ThemePanel";
@@ -272,6 +275,47 @@ function App() {
     });
   }, []);
 
+  // AI单页样式更新函数
+  const updateAiSingleStyle = useCallback((field, style) => {
+    setAiSingleDesign((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [field]: { ...(prev[field] || {}), ...style },
+      };
+    });
+  }, []);
+
+  const updateAiSingleSectionStyle = useCallback((index, field, style) => {
+    setAiSingleDesign((prev) => {
+      if (!prev) return prev;
+      const newSections = [...(prev.content.sections || [])];
+      if (!newSections[index]) return prev;
+      newSections[index] = {
+        ...newSections[index],
+        [field]: { ...(newSections[index][field] || {}), ...style },
+      };
+      return {
+        ...prev,
+        content: { ...prev.content, sections: newSections },
+      };
+    });
+  }, []);
+
+  const updateAiSingleTagStyle = useCallback((index, style) => {
+    setAiSingleDesign((prev) => {
+      if (!prev) return prev;
+      const newTags = [...(prev.content.tags || [])];
+      if (newTags[index]) {
+        newTags[index] = { ...(newTags[index] || {}), ...style };
+      }
+      return {
+        ...prev,
+        content: { ...prev.content, tags: newTags },
+      };
+    });
+  }, []);
+
   const aiSingleEd = aiSingleDesign
     ? {
         title: (v) => updateAiSingleContent("title", v),
@@ -280,6 +324,12 @@ function App() {
         secH: (i) => (v) => updateAiSingleSection(i, "heading", v),
         secT: (i) => (v) => updateAiSingleSection(i, "text", v),
         tag: (i) => (v) => updateAiSingleTag(i, v),
+        updateTitleStyle: (style) => updateAiSingleStyle("titleStyle", style),
+        updateLeadStyle: (style) => updateAiSingleStyle("leadStyle", style),
+        updateTipStyle: (style) => updateAiSingleStyle("tipStyle", style),
+        updateSecHStyle: (i) => (style) => updateAiSingleSectionStyle(i, "headingStyle", style),
+        updateSecTStyle: (i) => (style) => updateAiSingleSectionStyle(i, "textStyle", style),
+        updateTagStyle: (i) => (style) => updateAiSingleTagStyle(i, style),
       }
     : null;
 
@@ -498,6 +548,7 @@ function App() {
 
     setLoading(true);
     setError("");
+    setStreamContent("");
 
     try {
       const client = createLLMClient({
@@ -535,6 +586,7 @@ function App() {
               maxTokens: MAX_TOKENS.single * 2,
               stream: true,
               onStream: (delta, full) => {
+                setStreamContent(full);
                 // 尝试解析部分JSON并实时更新预览
                 const partialData = tryParsePartialJSON(full);
                 if (partialData) {
@@ -571,6 +623,16 @@ function App() {
             throw parseError;
           }
         }
+      }
+
+      // 违禁词检查
+      const textToCheck = JSON.stringify(data);
+      const bannedCheck = checkBannedWords(textToCheck);
+      if (bannedCheck.hasBanned) {
+        const warning = getBannedWordWarning(bannedCheck.found, language);
+        setError(warning);
+        setLoading(false);
+        return;
       }
 
       if (isSplitMode) {
@@ -676,6 +738,16 @@ function App() {
           }
         }
         
+        // 违禁词检查
+        const textToCheck = JSON.stringify(data);
+        const bannedCheck = checkBannedWords(textToCheck);
+        if (bannedCheck.hasBanned) {
+          const warning = getBannedWordWarning(bannedCheck.found, language);
+          setError(warning);
+          setLoading(false);
+          return;
+        }
+        
         setSingleData(data);
       } else {
         let systemPrompt;
@@ -735,6 +807,17 @@ function App() {
         if (!data.slides) {
           throw new Error('AI返回的数据格式不正确，缺少 slides 字段');
         }
+        
+        // 违禁词检查
+        const textToCheck = JSON.stringify(data);
+        const bannedCheck = checkBannedWords(textToCheck);
+        if (bannedCheck.hasBanned) {
+          const warning = getBannedWordWarning(bannedCheck.found, language);
+          setError(warning);
+          setLoading(false);
+          return;
+        }
+        
         setSlides(data.slides);
         slideRefs.current = new Array(data.slides.length).fill(null);
       }

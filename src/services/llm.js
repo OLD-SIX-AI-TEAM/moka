@@ -242,7 +242,12 @@ export function createLLMClient(config) {
      * @returns {Promise<Object>} 响应结果
      */
     async chat(params) {
-      const { system, messages, maxTokens = 1000, webSearch = true, stream = false, onStream } = params;
+      // 检测环境
+      const isLocalDev = typeof window !== 'undefined' && (
+        window.location.hostname === 'localhost' || 
+        window.location.hostname === '127.0.0.1'
+      );
+      const { system, messages, maxTokens = 1000, webSearch = true, stream = isLocalDev ? true : false, onStream } = params;
 
       if (this.provider === "openai") {
         return this._callOpenAI({ system, messages, maxTokens, webSearch, stream, onStream });
@@ -577,11 +582,15 @@ export function createLLMClient(config) {
 
               try {
                 const parsed = JSON.parse(data);
-                // 优先使用 content，忽略 reasoning_content（思考过程不应包含在最终内容中）
+                // OpenAI 格式: choices[0].delta.content
                 const deltaContent = parsed.choices?.[0]?.delta?.content;
-                if (deltaContent) {
-                  fullContent += deltaContent;
-                  onStream(deltaContent, fullContent);
+                // Anthropic 格式: delta.text 或 delta.type === 'text_delta'
+                const anthropicDeltaText = parsed.delta?.text;
+                
+                const content = deltaContent || anthropicDeltaText;
+                if (content) {
+                  fullContent += content;
+                  onStream(content, fullContent);
                 }
               } catch (e) {
                 // 忽略解析错误
@@ -645,6 +654,17 @@ export const SYSTEM_PROMPTS = {
 - 聚焦具体事实和细节，用事实说话
 - 使用具体的数字、时间、地点、人物名称
 
+【重要】内容安全要求（必须严格遵守）：
+- 绝对不能包含任何血腥、暴力、色情、低俗、淫秽内容
+- 不能包含任何引流信息（如微信号、QQ号、二维码、联系方式等）
+- 不能使用广告法违禁词（如"最"、"第一"、"唯一"、"100%"、"绝对"等极限词）
+- 不能包含医疗健康类违禁词（如"治愈"、"根治"、"特效药"等）
+- 不能包含金融投资类违禁词（如"稳赚"、"保本"、"零风险"等）
+- 不能包含封建迷信内容（如"算命"、"风水"、"八字"等）
+- 不能包含政治敏感内容
+- 不能包含假货、盗版、外挂等违规内容
+- 确保内容健康、积极、正能量，符合平台社区规范
+
 【重要】必须严格遵循以下字数限制：
 - emoji: 1个
 - category: 最多6个字
@@ -676,6 +696,17 @@ export const SYSTEM_PROMPTS = {
 - Avoid macro analysis (such as "reflects...trend", "demonstrates...spirit")
 - Focus on specific facts and details, let facts speak for themselves
 - Use specific numbers, times, locations, and names
+
+【Important】Content Safety Requirements (must strictly follow):
+- Absolutely no violent, bloody, sexually explicit, vulgar, or obscene content
+- No promotional or引流 information (such as WeChat IDs, QR codes, contact information, etc.)
+- No prohibited advertising words (such as "best", "first", "only", "100%", "guaranteed", etc.)
+- No medical/health prohibited claims (such as "cure", "heal", "miracle drug", etc.)
+- No financial/investment prohibited claims (such as "guaranteed profit", "risk-free", "high return", etc.)
+- No superstitious content (such as "fortune telling", "feng shui", "astrology", etc.)
+- No politically sensitive content
+- No counterfeit, pirated, or prohibited content
+- Ensure content is healthy, positive, and符合 community guidelines
 
 【Important】Strictly follow these word limits:
 - emoji: 1 character
@@ -709,6 +740,18 @@ Return ONLY JSON, no markdown, no explanations:
 - 避免宏观分析（如"体现了...精神"、"反映了...趋势"、"展现了...风貌"）
 - 聚焦具体事实和细节，用事实说话
 - 使用具体的数字、时间、地点、人物名称
+
+【重要】内容安全要求（必须严格遵守）：
+- 绝对不能包含任何血腥、暴力、色情、低俗、淫秽内容
+- 不能包含任何引流信息（如微信号、QQ号、二维码、联系方式等）
+- 不能使用广告法违禁词（如"最"、"第一"、"唯一"、"100%"、"绝对"等极限词）
+- 不能包含医疗健康类违禁词（如"治愈"、"根治"、"特效药"等）
+- 不能包含金融投资类违禁词（如"稳赚"、"保本"、"零风险"等）
+- 不能包含封建迷信内容（如"算命"、"风水"、"八字"等）
+- 不能包含政治敏感内容
+- 不能包含假货、盗版、外挂等违规内容
+- 确保内容健康、积极、正能量，符合平台社区规范
+
 【重要字数限制】
 - cover: title最多30字，subtitle最多50字
 - content: heading最多16字(带emoji)，text最多100字，extra最多40字
@@ -733,6 +776,18 @@ Return ONLY JSON, no markdown, no explanations:
 - Avoid macro analysis
 - Focus on specific facts and details
 - Use specific numbers, times, locations, and names
+
+【Important】Content Safety Requirements (must strictly follow):
+- Absolutely no violent, bloody, sexually explicit, vulgar, or obscene content
+- No promotional or引流 information (such as WeChat IDs, QR codes, contact information, etc.)
+- No prohibited advertising words (such as "best", "first", "only", "100%", "guaranteed", etc.)
+- No medical/health prohibited claims (such as "cure", "heal", "miracle drug", etc.)
+- No financial/investment prohibited claims (such as "guaranteed profit", "risk-free", "high return", etc.)
+- No superstitious content (such as "fortune telling", "feng shui", "astrology", etc.)
+- No politically sensitive content
+- No counterfeit, pirated, or prohibited content
+- Ensure content is healthy, positive, and符合 community guidelines
+
 【Important Word Limits】
 - cover: title max 15 words, subtitle max 25 words
 - content: heading max 8 words (with emoji), text max 60 words, extra max 25 words
@@ -757,6 +812,18 @@ Return ONLY JSON, no markdown:
 - 避免宏观分析（如"体现了...精神"、"反映了...趋势"、"展现了...风貌"）
 - 聚焦具体事实和细节，用事实说话
 - 使用具体的数字、时间、地点、人物名称
+
+【重要】内容安全要求（必须严格遵守）：
+- 绝对不能包含任何血腥、暴力、色情、低俗、淫秽内容
+- 不能包含任何引流信息（如微信号、QQ号、二维码、联系方式等）
+- 不能使用广告法违禁词（如"最"、"第一"、"唯一"、"100%"、"绝对"等极限词）
+- 不能包含医疗健康类违禁词（如"治愈"、"根治"、"特效药"等）
+- 不能包含金融投资类违禁词（如"稳赚"、"保本"、"零风险"等）
+- 不能包含封建迷信内容（如"算命"、"风水"、"八字"等）
+- 不能包含政治敏感内容
+- 不能包含假货、盗版、外挂等违规内容
+- 确保内容健康、积极、正能量，符合平台社区规范
+
 【重要字数限制】
 - cover: title最多30字，subtitle最多50字
 - content: heading最多16字(无emoji)，text最多100字，extra最多40字
@@ -781,6 +848,18 @@ Return ONLY JSON, no markdown:
 - Avoid macro analysis
 - Focus on specific facts and details
 - Use specific numbers, times, locations, and names
+
+【Important】Content Safety Requirements (must strictly follow):
+- Absolutely no violent, bloody, sexually explicit, vulgar, or obscene content
+- No promotional or引流 information (such as WeChat IDs, QR codes, contact information, etc.)
+- No prohibited advertising words (such as "best", "first", "only", "100%", "guaranteed", etc.)
+- No medical/health prohibited claims (such as "cure", "heal", "miracle drug", etc.)
+- No financial/investment prohibited claims (such as "guaranteed profit", "risk-free", "high return", etc.)
+- No superstitious content (such as "fortune telling", "feng shui", "astrology", etc.)
+- No politically sensitive content
+- No counterfeit, pirated, or prohibited content
+- Ensure content is healthy, positive, and符合 community guidelines
+
 【Important Word Limits】
 - cover: title max 15 words, subtitle max 25 words
 - content: heading max 8 words (no emoji), text max 60 words, extra max 25 words

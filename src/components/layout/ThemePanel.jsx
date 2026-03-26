@@ -70,7 +70,6 @@ export function ThemePanel({
               ></div>
               <div className="palette-info">
                 <span className="palette-name">{getPaletteLabel(p)}</span>
-                <span className="palette-dot" style={{ background: p.a }}></span>
               </div>
             </button>
           ))}

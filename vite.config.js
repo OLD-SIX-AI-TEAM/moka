@@ -55,13 +55,10 @@ export default defineConfig({
 
                 if (provider === 'anthropic') {
                   // 使用 Anthropic 原生格式
-                  // 火山引擎需要同时设置 x-api-key、Authorization 和 anthropic-version
-                  const isVolces = baseUrl.includes('volces.com') || baseUrl.includes('ark.cn-beijing');
-                  targetUrl = isVolces ? baseUrl.replace(/\/$/, '') : `${baseUrl.replace(/\/$/, '')}/messages`;
+                  targetUrl = `${baseUrl.replace(/\/$/, '')}/messages`;
                   headers = {
                     'Content-Type': 'application/json',
                     'x-api-key': apiKey,
-                    // 'Authorization': `Bearer ${apiKey}`,
                     'anthropic-version': '2023-06-01',
                   };
                   requestBody = {
@@ -72,6 +69,7 @@ export default defineConfig({
                     stream: stream || false,
                   };
                 } else if (provider === 'openai' || provider === 'aliyun') {
+                  // OpenAI 格式
                   targetUrl = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
                   headers = {
                     'Content-Type': 'application/json',
@@ -109,8 +107,23 @@ export default defineConfig({
                 res.setHeader('Content-Type', 'application/json');
                 res.setHeader('Access-Control-Allow-Origin', '*');
 
-                const responseData = await response.text();
-                res.end(responseData);
+                // 处理流式响应
+                if (stream && response.ok) {
+                  res.setHeader('Content-Type', 'text/event-stream');
+                  res.setHeader('Cache-Control', 'no-cache');
+                  res.setHeader('Connection', 'keep-alive');
+                  
+                  const reader = response.body.getReader();
+                  while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    res.write(value);
+                  }
+                  res.end();
+                } else {
+                  const responseData = await response.text();
+                  res.end(responseData);
+                }
               } catch (error) {
                 console.error('[Local Proxy] Error:', error);
                 res.statusCode = 500;

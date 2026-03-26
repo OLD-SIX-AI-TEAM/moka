@@ -5,6 +5,7 @@ import ora from 'ora';
 import { LLMClient, extractJSON } from './llm.js';
 import { AI_DESIGN_PROMPT_SINGLE, AI_DESIGN_PROMPT_SPLIT } from './prompts.js';
 import { renderToImage } from './renderer.js';
+import { checkBannedWords, getBannedWordWarning } from './bannedWords.js';
 
 /**
  * 生成图文卡片
@@ -67,6 +68,15 @@ export async function generateCard(options) {
     spinner.text = '正在解析设计数据...';
     
     const designData = extractJSON(response.content);
+    
+    // 违禁词检查
+    const textToCheck = JSON.stringify(designData);
+    const bannedCheck = checkBannedWords(textToCheck);
+    if (bannedCheck.hasBanned) {
+      const warning = getBannedWordWarning(bannedCheck.found);
+      spinner.fail('内容包含违禁词');
+      throw new Error(warning);
+    }
     
     // 验证数据结构
     if (mode === 'single') {
