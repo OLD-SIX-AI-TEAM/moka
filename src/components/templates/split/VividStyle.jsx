@@ -79,7 +79,7 @@ export function VividEnd({ s, a, ed, emojiEditor }) {
         <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 28, fontWeight: 900, color: "#000", marginBottom: 12, lineHeight: 1.2, textTransform: "uppercase", ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
         <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "#333", marginBottom: 28, lineHeight: 1.6, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>
-          {s.tags.map((t, i) => <span key={i} style={{ padding: "8px 16px", background: i % 2 === 0 ? a : "#000", color: "#fff", fontSize: 12, fontWeight: 700 }}><EditableTag text={t} c="#fff" on={ed?.tag?.(i)} /></span>)}
+          {(s.tags || []).map((t, i) => <span key={i} style={{ padding: "8px 16px", background: i % 2 === 0 ? a : "#000", color: "#fff", fontSize: 12, fontWeight: 700 }}><EditableTag text={t} c="#fff" on={ed?.tag?.(i)} /></span>)}
         </div>
         <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
           {[...Array(5)].map((_, i) => <div key={i} style={{ width: 8, height: 8, background: i % 2 === 0 ? a : "#000", transform: "rotate(45deg)" }} />)}
