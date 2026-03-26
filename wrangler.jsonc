@@ -19,5 +19,8 @@
 			"binding": "USAGE_KV",
 			"id": "32c104e1339b42309dd9ecd84ab10856"
 		}
-	]
+	],
+	"vars": {
+		"_comment": "RSA 密钥对用于加密/解密用户 API Key，必须通过 wrangler secret 设置 RSA_PRIVATE_KEY"
+	}
 }

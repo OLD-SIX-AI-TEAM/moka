@@ -9,7 +9,10 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "generate-keys": "node scripts/generate-keys.js",
+    "generate-keys:show": "node scripts/generate-keys.js --show-private",
+    "generate-keys:save": "node scripts/generate-keys.js --save"
   },
   "dependencies": {
     "html-to-image": "^1.11.13",

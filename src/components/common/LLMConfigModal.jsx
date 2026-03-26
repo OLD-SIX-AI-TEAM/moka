@@ -102,9 +102,10 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
   };
 
   const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    // 点击遮罩不关闭弹窗
+    // if (e.target === e.currentTarget) {
+    //   onClose();
+    // }
   };
 
   if (!isOpen) return null;
