@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { LLM_PROVIDERS } from "../../services/llm";
+import { LLM_PROVIDERS, testLLMConfig } from "../../services/llm";
 import { useLanguage } from "../../hooks/useLanguage";
 
 /**
@@ -18,6 +18,7 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [testSuccess, setTestSuccess] = useState(false);
 
   // 当弹窗打开时，从 initialConfig 加载配置
   useEffect(() => {
@@ -31,6 +32,8 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
         apiKey: initialConfig?.apiKey || (hasConfig ? "••••••••••••••••" : ""),
         model: initialConfig?.model || providerConfig?.defaultModel || "",
       });
+      setTestSuccess(false);
+      setErrors({});
     }
   }, [isOpen, initialConfig, hasConfig]);
 
@@ -71,14 +74,30 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
     e.preventDefault();
     if (validate()) {
       setIsSaving(true);
+      setTestSuccess(false);
       try {
-        await onSave({
+        const configToSave = {
           provider: config.provider,
           baseUrl: config.baseUrl.trim(),
           apiKey: config.apiKey.trim(),
           model: config.model.trim(),
-        });
-        onClose();
+        };
+
+        // 检测 API Key 是否是占位符（已加密的配置）
+        const isPlaceholder = configToSave.apiKey === "••••••••••••••••";
+
+        if (!isPlaceholder) {
+          // 新的 API Key，先检测再保存
+          const testResult = await testLLMConfig(configToSave);
+          if (!testResult.success) {
+            setErrors({ apiKey: testResult.message });
+            setIsSaving(false);
+            return;
+          }
+        }
+
+        await onSave(configToSave);
+        setTestSuccess(true);
       } catch (error) {
         console.error('保存配置失败:', error);
         setErrors({ apiKey: t('saveFailed') });
@@ -86,6 +105,11 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
         setIsSaving(false);
       }
     }
+  };
+
+  const handleConfirmSuccess = () => {
+    setTestSuccess(false);
+    onClose();
   };
 
   const handleDelete = async () => {
@@ -321,43 +345,79 @@ export function LLMConfigModal({ isOpen, onClose, onSave, onDelete, initialConfi
           </div>
 
           {/* 按钮 */}
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                flex: 1,
-                padding: "12px",
-                borderRadius: "10px",
-                border: "1px solid #e0e0e0",
-                backgroundColor: "#fff",
-                color: "#666",
+          {testSuccess ? (
+            <div style={{
+              backgroundColor: "#f0f7f2",
+              borderRadius: "10px",
+              padding: "16px",
+              border: "1px solid #4a7c59",
+              textAlign: "center",
+            }}>
+              <p style={{
+                margin: "0 0 12px 0",
                 fontSize: "14px",
+                color: "#4a7c59",
                 fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              {t('cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving}
-              style={{
-                flex: 1,
-                padding: "12px",
-                borderRadius: "10px",
-                border: "none",
-                backgroundColor: "#4a7c59",
-                color: "#fff",
-                fontSize: "14px",
-                fontWeight: 700,
-                cursor: isSaving ? "not-allowed" : "pointer",
-                opacity: isSaving ? 0.7 : 1,
-              }}
-            >
-              {isSaving ? t('saving') : t('save')}
-            </button>
-          </div>
+              }}>
+                ✅ {t('configSuccess')}
+              </p>
+              <button
+                type="button"
+                onClick={handleConfirmSuccess}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  borderRadius: "10px",
+                  border: "none",
+                  backgroundColor: "#4a7c59",
+                  color: "#fff",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {t('confirm')}
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: "10px",
+                  border: "1px solid #e0e0e0",
+                  backgroundColor: "#fff",
+                  color: "#666",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                {t('cancel')}
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: "10px",
+                  border: "none",
+                  backgroundColor: "#4a7c59",
+                  color: "#fff",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  cursor: isSaving ? "not-allowed" : "pointer",
+                  opacity: isSaving ? 0.7 : 1,
+                }}
+              >
+                {isSaving ? t('testing') : t('testAndSave')}
+              </button>
+            </div>
+          )}
 
           {/* 删除配置按钮 - 仅在有配置时显示 */}
           {hasConfig && (

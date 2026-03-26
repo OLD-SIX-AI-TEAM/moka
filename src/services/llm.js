@@ -205,6 +205,111 @@ export function isEnvConfigValid() {
 }
 
 /**
+ * 测试 LLM 配置是否可用
+ * @param {Object} config - 配置对象
+ * @param {string} config.provider - 提供商
+ * @param {string} config.baseUrl - API 基础 URL
+ * @param {string} config.apiKey - API 密钥（明文）
+ * @param {string} config.model - 模型 ID
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function testLLMConfig(config) {
+  const { provider = "aliyun", baseUrl, apiKey, model } = config;
+  const providerConfig = LLM_PROVIDERS[provider];
+
+  if (!providerConfig) {
+    return { success: false, message: `不支持的提供商: ${provider}` };
+  }
+
+  const finalBaseUrl = baseUrl || providerConfig.defaultBaseUrl;
+  const finalModel = model || providerConfig.defaultModel;
+
+  const isLocalDev = typeof window !== 'undefined' && (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  );
+
+  // 构建测试请求体
+  const testMessages = [{ role: "user", content: "Hi" }];
+  let body;
+
+  if (provider === 'openai' || provider === 'aliyun') {
+    body = {
+      provider,
+      model: finalModel,
+      messages: testMessages,
+      max_tokens: 10,
+      stream: false,
+      ...(finalBaseUrl && { baseUrl: finalBaseUrl }),
+      ...(isLocalDev ? { apiKey } : {}),
+    };
+  } else if (provider === 'anthropic') {
+    body = {
+      provider,
+      model: finalModel,
+      system: "You are a helpful assistant.",
+      messages: testMessages,
+      max_tokens: 10,
+      stream: false,
+      ...(finalBaseUrl && { baseUrl: finalBaseUrl }),
+      ...(isLocalDev ? { apiKey } : {}),
+    };
+  }
+
+  try {
+    const response = await fetch(PAGES_PROXY_URL, {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { error: errorText };
+      }
+
+      // 解析具体错误原因
+      if (response.status === 401 || response.status === 403) {
+        return { success: false, message: 'API Key 无效，请检查后重试' };
+      }
+      if (response.status === 404) {
+        return { success: false, message: 'API 地址无效，请检查 Base URL' };
+      }
+      if (response.status === 400 && errorData.error?.includes?.('model')) {
+        return { success: false, message: '模型名称无效，请检查后重试' };
+      }
+
+      const errorMsg = errorData.error || errorData.message || `检测失败 (${response.status})`;
+      return { success: false, message: errorMsg };
+    }
+
+    const data = await response.json();
+    // 检查是否有有效响应
+    if (provider === 'anthropic') {
+      if (!data.content && !data.choices) {
+        return { success: false, message: 'API 响应格式异常' };
+      }
+    } else {
+      if (!data.choices?.[0]?.message?.content && !data.choices?.[0]?.message?.reasoning_content) {
+        return { success: false, message: 'API 响应格式异常' };
+      }
+    }
+
+    return { success: true, message: '配置检测通过' };
+  } catch (error) {
+    console.error('[LLM Test] 检测失败:', error);
+    if (error.message?.includes?.('fetch') || error.message?.includes?.('network')) {
+      return { success: false, message: '网络连接失败，请检查网络或 Base URL' };
+    }
+    return { success: false, message: error.message || '配置检测失败' };
+  }
+}
+
+/**
  * 创建 LLM 客户端
  * @param {Object} config - 配置对象
  * @param {string} config.provider - 提供商: 'openai' | 'anthropic' | 'aliyun'
@@ -664,6 +769,7 @@ export const SYSTEM_PROMPTS = {
 - 不能包含政治敏感内容
 - 不能包含假货、盗版、外挂等违规内容
 - 确保内容健康、积极、正能量，符合平台社区规范
+- **绝对禁止使用以下词汇**："违禁词"、"评论区"、"违规"、"审核"、"敏感词"等平台相关术语
 
 【重要】必须严格遵循以下字数限制：
 - emoji: 1个
@@ -707,6 +813,7 @@ export const SYSTEM_PROMPTS = {
 - No politically sensitive content
 - No counterfeit, pirated, or prohibited content
 - Ensure content is healthy, positive, and符合 community guidelines
+- **Absolutely forbidden words**: "prohibited words", "comment section", "violation", "review", "sensitive words" and other platform-related terms
 
 【Important】Strictly follow these word limits:
 - emoji: 1 character
@@ -751,6 +858,7 @@ Return ONLY JSON, no markdown, no explanations:
 - 不能包含政治敏感内容
 - 不能包含假货、盗版、外挂等违规内容
 - 确保内容健康、积极、正能量，符合平台社区规范
+- **绝对禁止使用以下词汇**："违禁词"、"评论区"、"违规"、"审核"、"敏感词"等平台相关术语
 
 【重要字数限制】
 - cover: title最多30字，subtitle最多50字
@@ -787,6 +895,7 @@ Return ONLY JSON, no markdown, no explanations:
 - No politically sensitive content
 - No counterfeit, pirated, or prohibited content
 - Ensure content is healthy, positive, and符合 community guidelines
+- **Absolutely forbidden words**: "prohibited words", "comment section", "violation", "review", "sensitive words" and other platform-related terms
 
 【Important Word Limits】
 - cover: title max 15 words, subtitle max 25 words
@@ -823,6 +932,7 @@ Return ONLY JSON, no markdown:
 - 不能包含政治敏感内容
 - 不能包含假货、盗版、外挂等违规内容
 - 确保内容健康、积极、正能量，符合平台社区规范
+- **绝对禁止使用以下词汇**："违禁词"、"评论区"、"违规"、"审核"、"敏感词"等平台相关术语
 
 【重要字数限制】
 - cover: title最多30字，subtitle最多50字
@@ -859,6 +969,7 @@ Return ONLY JSON, no markdown:
 - No politically sensitive content
 - No counterfeit, pirated, or prohibited content
 - Ensure content is healthy, positive, and符合 community guidelines
+- **Absolutely forbidden words**: "prohibited words", "comment section", "violation", "review", "sensitive words" and other platform-related terms
 
 【Important Word Limits】
 - cover: title max 15 words, subtitle max 25 words
