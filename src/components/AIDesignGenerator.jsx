@@ -516,7 +516,12 @@ export function AIDesignGenerator({ input, onDesignChange, onError, onLoadingCha
       saveToHistory(data);
     } catch (err) {
       console.error('生成设计失败:', err);
-      onError?.(`生成失败: ${err.message}`);
+      // 检查是否是密钥轮换错误
+      if (err.code === 'KEY_ROTATION' || err.shouldReconfigure) {
+        onError?.('API Key 已失效，请重新配置');
+      } else {
+        onError?.(`生成失败: ${err.message}`);
+      }
     } finally {
       setLoading(false);
       onLoadingChange?.(false);

@@ -217,7 +217,29 @@ ${publicKeyPem}
 }
 
 // 主程序
-if (import.meta.url === `file://${process.argv[1]}`) {
+function isMainModule() {
+  // 跨平台兼容的路径比较
+  const currentUrl = import.meta.url;
+  const argvPath = process.argv[1];
+
+  // 将 file:// URL 转换为路径
+  const currentPath = currentUrl.startsWith('file://')
+    ? currentUrl.slice(7)  // 移除 file:// 前缀
+    : currentUrl;
+
+  // 统一使用正斜杠进行比较，处理 Windows 反斜杠差异
+  const normalizePath = (p) => p.replace(/\\/g, '/').replace(/^\//, '');
+
+  const normalizedCurrent = normalizePath(currentPath);
+  const normalizedArgv = normalizePath(argvPath);
+
+  // 检查路径是否匹配（支持相对路径和绝对路径）
+  return normalizedCurrent === normalizedArgv ||
+         normalizedCurrent.endsWith(normalizedArgv) ||
+         normalizedArgv.endsWith(normalizedCurrent);
+}
+
+if (isMainModule()) {
   log('╔════════════════════════════════════════╗', 'cyan');
   log('║     RSA 密钥对生成工具（安全版）       ║', 'cyan');
   log('╚════════════════════════════════════════╝', 'cyan');

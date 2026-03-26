@@ -7,6 +7,15 @@
 let cachedServerPublicKey = null;
 
 /**
+ * 清除缓存的公钥
+ * 用于密钥轮换后重新获取
+ */
+export function clearCachedPublicKey() {
+  cachedServerPublicKey = null;
+
+}
+
+/**
  * 从服务器获取 RSA 公钥
  * @returns {Promise<string>} - Base64 编码的公钥
  */
@@ -19,20 +28,17 @@ export async function getServerPublicKey() {
   const isLocalDev = window.location.hostname === 'localhost' || 
     window.location.hostname === '127.0.0.1';
   if (isLocalDev) {
-    console.log('[Crypto] 本地开发模式，使用明文存储');
+
     return null;
   }
 
   try {
     const response = await fetch('/api/public-key');
-    console.log('[Crypto] Public key response status:', response.status);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('[Crypto] Failed to get public key:', errorData);
       throw new Error(errorData.message || `获取公钥失败: ${response.status}`);
     }
     const data = await response.json();
-    console.log('[Crypto] Public key received:', !!data.publicKey);
     if (!data.publicKey) {
       throw new Error('服务器未配置公钥');
     }
@@ -132,7 +138,7 @@ export async function storeEncryptedApiKey(apiKey, provider) {
     window.location.hostname === '127.0.0.1';
   
   if (isLocalDev) {
-    console.log('[Crypto] 本地开发模式，明文存储 API Key');
+
     localStorage.setItem(`llm_config_${provider}`, apiKey);
     return;
   }
@@ -179,14 +185,14 @@ export async function getDecryptedApiKey(provider) {
     window.location.hostname === '127.0.0.1';
   
   if (isLocalDev) {
-    console.log('[Crypto] 本地开发模式，直接返回明文 API Key');
+
     return encryptedKey;
   }
 
   // 生产环境：检查是否是明文存储（兼容旧数据）
   // 如果长度小于 100，可能是明文存储的 key
   if (encryptedKey.length < 100) {
-    console.log('[Crypto] 检测到明文存储的 API Key');
+    
     return encryptedKey;
   }
 
@@ -197,7 +203,7 @@ export async function getDecryptedApiKey(provider) {
     const stored = localStorage.getItem(RSA_KEY_PAIR_KEY);
     if (stored) {
       const { privateKey } = JSON.parse(stored);
-      console.log('[Crypto] 使用本地私钥解密（旧版本兼容）');
+
       return await decryptWithPrivateKey(encryptedKey, privateKey);
     }
   } catch (error) {

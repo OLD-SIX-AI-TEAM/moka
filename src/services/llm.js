@@ -3,7 +3,7 @@
  * 支持 OpenAI、Anthropic 和阿里云百炼三种 API 格式
  */
 
-import { storeEncryptedApiKey, getEncryptedApiKey, hasEncryptedApiKey, getDecryptedApiKey } from "../utils/crypto";
+import { storeEncryptedApiKey, getEncryptedApiKey, hasEncryptedApiKey, getDecryptedApiKey, clearCachedPublicKey } from "../utils/crypto";
 
 const STORAGE_KEY = "moka_llm_config";
 
@@ -43,7 +43,7 @@ export async function saveLLMConfig(config) {
     
     // 存储其他配置（不包含明文 apiKey）
     localStorage.setItem(STORAGE_KEY, JSON.stringify(restConfig));
-    console.log("[LLM Config] 配置已保存到 localStorage（API Key 已加密）");
+
     return true;
   } catch (e) {
     console.error("[LLM Config] 保存配置失败:", e);
@@ -59,12 +59,46 @@ export function clearLLMConfig() {
     Object.keys(LLM_PROVIDERS).forEach(provider => {
       localStorage.removeItem(`llm_config_${provider}`);
     });
-    console.log("[LLM Config] 配置已从 localStorage 清除");
+    // 清除缓存的公钥
+    localStorage.removeItem('moka_rsa_keypair');
+    // 清除内存中缓存的公钥
+    clearCachedPublicKey();
+  
     return true;
   } catch (e) {
     console.error("[LLM Config] 清除配置失败:", e);
     return false;
   }
+}
+
+// 处理 API 错误响应
+async function handleAPIError(response) {
+  const errorText = await response.text();
+  console.error('[LLM Client] Error response:', errorText);
+
+  let errorData;
+  try {
+    errorData = JSON.parse(errorText);
+  } catch {
+    errorData = { error: errorText };
+  }
+
+  // 检查是否是解密失败错误
+  if (errorData.code === 'DECRYPT_FAILED' || errorData.shouldClearConfig) {
+    console.warn('[LLM Client] 检测到密钥解密失败，自动清除配置');
+    clearLLMConfig();
+
+    // 抛出一个更友好的错误
+    const error = new Error('API Key 已失效，请重新配置');
+    error.code = 'KEY_ROTATION';
+    error.shouldReconfigure = true;
+    error.originalError = errorData.error;
+    throw error;
+  }
+
+  // 其他错误
+  const errorMessage = errorData.error || errorData.message || `API 错误 (${response.status})`;
+  throw new Error(errorMessage);
 }
 
 // 检查是否配置了加密的 API Key
@@ -94,7 +128,7 @@ function getMergedConfig() {
   }
   
   // 否则使用环境变量配置
-  console.log("[LLM Config] 使用环境变量配置");
+
   return {
     ...ENV_CONFIG,
     encryptedApiKey: null,
@@ -104,11 +138,7 @@ function getMergedConfig() {
 
 const MERGED_CONFIG = getMergedConfig();
 
-// 调试日志：输出当前配置
-console.log("[LLM Config] Provider:", MERGED_CONFIG.provider);
-console.log("[LLM Config] Base URL:", MERGED_CONFIG.baseUrl || "(使用默认值)");
-console.log("[LLM Config] Model:", MERGED_CONFIG.model || "(使用默认值)");
-console.log("[LLM Config] Source:", getStorageConfig()?.apiKey ? "localStorage" : "env");
+
 
 // LLM 提供商配置
 export const LLM_PROVIDERS = {
@@ -227,69 +257,33 @@ export function createLLMClient(config) {
 
     /**
      * 调用 OpenAI API
-     * 本地开发直接调用，生产环境使用 Pages Function 代理避免 CORS 问题
+     * 统一使用代理避免 CORS 问题：本地走 vite 代理，生产走 Cloudflare Worker
      */
     async _callOpenAI({ system, messages, maxTokens, webSearch, stream, onStream }) {
-      // 检测环境
-      const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
-        window.location.hostname.includes('workers.dev');
       const isLocalDev = window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1';
 
-      let url;
-      let headers;
-      let body;
+      // 统一使用代理
+      const url = PAGES_PROXY_URL;
+      const headers = {
+        'Content-Type': 'application/json',
+      };
 
-      // 构建 tools 参数（如果启用 web 搜索）
-      // 注意：OpenAI 的 web_search_preview 工具需要特定模型和配置
-      // 暂时禁用，等待进一步测试
-      const tools = undefined;
+      // 本地开发获取明文 API Key，生产环境使用加密 key
+      const apiKey = isLocalDev ? await getDecryptedApiKey('openai') : null;
 
-      // 本地开发直接调用 API
-      if (isLocalDev) {
-        // 本地开发时从 localStorage 获取解密的 API Key
-        const apiKey = await getDecryptedApiKey('openai');
-        if (!apiKey) {
-          throw new Error('请先配置 LLM API Key');
-        }
+      const body = {
+        provider: 'openai',
+        model: this.model,
+        messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+        max_tokens: maxTokens,
+        temperature: 0.7,
+        stream,
+        ...(this.baseUrl && { baseUrl: this.baseUrl }),
+        ...(isLocalDev && apiKey ? { apiKey } : { encryptedApiKey: this.encryptedApiKey }),
+      };
 
-        const baseUrl = this.baseUrl || 'https://api.openai.com/v1';
-        url = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
-        headers = {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        };
-        body = {
-          model: this.model,
-          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-          max_tokens: maxTokens,
-          temperature: 0.7,
-          stream,
-          ...(tools && { tools }),
-        };
-      } else {
-        // 使用 Pages Function 代理
-        url = PAGES_PROXY_URL;
-        headers = {
-          'Content-Type': 'application/json',
-        };
-        body = {
-          provider: 'openai',
-          model: this.model,
-          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-          max_tokens: maxTokens,
-          temperature: 0.7,
-          stream,
-          ...(tools && { tools }),
-          ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
-          ...(this.baseUrl && { baseUrl: this.baseUrl }), // 传入自定义 baseUrl
-        };
-      }
 
-      console.log('[LLM Client] Request URL:', url);
-      console.log('[LLM Client] Request body encryptedApiKey:', !!this.encryptedApiKey);
-      console.log('[LLM Client] Request body encryptedApiKey length:', this.encryptedApiKey?.length);
-      console.log('[LLM Client] isLocalDev:', isLocalDev);
 
       let response;
       try {
@@ -303,20 +297,10 @@ export function createLLMClient(config) {
         throw new Error(`网络请求失败: ${fetchError.message}`);
       }
 
-      console.log('[LLM Client] Response status:', response.status);
-      console.log('[LLM Client] Response headers:', Object.fromEntries(response.headers.entries()));
+
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[LLM Client] Error response text:', errorText);
-        let errorMessage = `OpenAI API 错误 (${response.status})`;
-        try {
-          const errorJson = JSON.parse(errorText);
-          errorMessage = errorJson.error || errorJson.message || errorText;
-        } catch (e) {
-          errorMessage = errorText || `HTTP ${response.status}`;
-        }
-        throw new Error(errorMessage);
+        await handleAPIError(response);
       }
 
       // 处理流式响应
@@ -410,77 +394,42 @@ export function createLLMClient(config) {
      * 使用 enable_search 参数启用网络搜索
      */
     async _callAliyun({ system, messages, maxTokens, webSearch, stream, onStream }) {
-      // 检测环境
-      const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
-        window.location.hostname.includes('workers.dev');
       const isLocalDev = window.location.hostname === 'localhost' || 
         window.location.hostname === '127.0.0.1';
 
-      let url;
-      let headers;
-      let body;
+      // 统一使用代理
+      const url = PAGES_PROXY_URL;
+      const headers = {
+        'Content-Type': 'application/json',
+      };
 
-      // 本地开发直接调用阿里云 API
-      if (isLocalDev) {
-        // 本地开发时从 localStorage 获取解密的 API Key
-        const apiKey = await getDecryptedApiKey('aliyun');
-        if (!apiKey) {
-          throw new Error('请先配置 LLM API Key');
-        }
+      // 本地开发获取明文 API Key，生产环境使用加密 key
+      const apiKey = isLocalDev ? await getDecryptedApiKey('aliyun') : null;
 
-        url = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
-        headers = {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        };
-        body = {
-          model: this.model,
-          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-          max_tokens: maxTokens,
-          temperature: 0.7,
-          enable_search: webSearch,
-          stream,
-        };
-      } else {
-        // 使用 Pages Function 代理
-        url = PAGES_PROXY_URL;
-        headers = {
-          'Content-Type': 'application/json',
-        };
-        body = {
-          provider: 'aliyun',
-          model: this.model,
-          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-          max_tokens: maxTokens,
-          temperature: 0.7,
-          enable_search: webSearch,
-          stream,
-          ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }),
-        };
-      }
+      const body = {
+        provider: 'aliyun',
+        model: this.model,
+        messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+        max_tokens: maxTokens,
+        temperature: 0.7,
+        enable_search: webSearch,
+        stream,
+        ...(this.baseUrl && { baseUrl: this.baseUrl }),
+        ...(isLocalDev && apiKey ? { apiKey } : { encryptedApiKey: this.encryptedApiKey }),
+      };
 
+      console.log('[Anthropic Debug] 开始发送请求...');
       const response = await fetch(url, {
         method: "POST",
         headers,
         body: JSON.stringify(body),
       });
+      console.log('[Anthropic Debug] 响应状态:', response.status, response.statusText);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('[LLM Client] Error response:', errorText);
-        let errorMessage = `阿里云百炼 API 错误 (${response.status})`;
-        try {
-          const errorJson = JSON.parse(errorText);
-          if (errorJson.error) {
-            errorMessage = `阿里云百炼 API 错误: ${errorJson.error}`;
-            if (errorJson.details) {
-              errorMessage += ` - ${errorJson.details}`;
-            }
-          }
-        } catch (e) {
-          errorMessage = `阿里云百炼 API 错误: ${errorText}`;
-        }
-        throw new Error(errorMessage);
+        console.error('[Anthropic Debug] 错误响应:', errorText);
+        await handleAPIError(response);
       }
 
       // 处理流式响应
@@ -557,12 +506,10 @@ export function createLLMClient(config) {
 
     /**
      * 调用 Anthropic API
-     * 本地开发直接调用，生产环境使用 Pages Function 代理避免 CORS 问题
+     * 统一使用代理避免 CORS 问题：本地走 vite 代理，生产走 Cloudflare Worker
      */
     async _callAnthropic({ system, messages, maxTokens, webSearch, stream, onStream }) {
       // 检测环境
-      const isCloudflarePages = window.location.hostname.includes('pages.dev') ||
-        window.location.hostname.includes('workers.dev');
       const isLocalDev = window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1';
 
@@ -571,59 +518,34 @@ export function createLLMClient(config) {
       let body;
 
       // 构建 tools 参数（如果启用 web 搜索）
-      // 注意：Anthropic 的 web_search 工具需要特定模型和配置
-      // 暂时禁用，等待进一步测试
       const tools = undefined;
 
-      // 本地开发直接调用 API
-      if (isLocalDev) {
-        // 本地开发时从 localStorage 获取解密的 API Key
-        const apiKey = await getDecryptedApiKey('anthropic');
-        if (!apiKey) {
-          throw new Error('请先配置 LLM API Key');
-        }
+      // 统一使用代理
+      url = PAGES_PROXY_URL;
+      headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      // 本地开发获取明文 API Key，生产环境使用加密 key
+      const apiKey = isLocalDev ? await getDecryptedApiKey('anthropic') : null;
+      
+      body = {
+        provider: 'anthropic',
+        model: this.model,
+        system,
+        messages: messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        max_tokens: maxTokens,
+        stream,
+        ...(tools && { tools }),
+        ...(this.baseUrl && { baseUrl: this.baseUrl }),
+        // 本地开发传递明文 key，生产环境传递加密 key
+        ...(isLocalDev && apiKey ? { apiKey } : { encryptedApiKey: this.encryptedApiKey }),
+      };
 
-        const baseUrl = this.baseUrl || 'https://api.anthropic.com/v1';
-        url = `${baseUrl.replace(/\/$/, '')}/messages`;
-        headers = {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        };
-        body = {
-          model: this.model,
-          system,
-          messages: messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          max_tokens: maxTokens,
-          stream,
-          ...(tools && { tools }),
-        };
-      } else {
-        // 使用 Pages Function 代理
-        url = PAGES_PROXY_URL;
-        headers = {
-          'Content-Type': 'application/json',
-        };
-        body = {
-          provider: 'anthropic',
-          model: this.model,
-          system,
-          messages: messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          max_tokens: maxTokens,
-          stream,
-          ...(tools && { tools }),
-          ...(this.encryptedApiKey && { encryptedApiKey: this.encryptedApiKey }), // 传入加密的 API Key
-          ...(this.baseUrl && { baseUrl: this.baseUrl }), // 传入自定义 baseUrl
-        };
-      }
-
-      console.log('[LLM Client] Request URL:', url);
+  
 
       const response = await fetch(url, {
         method: "POST",
@@ -632,8 +554,7 @@ export function createLLMClient(config) {
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`Anthropic API 错误: ${error}`);
+        await handleAPIError(response);
       }
 
       // 处理流式响应
@@ -889,7 +810,7 @@ export function extractJSON(text) {
   }
 
   // 调试日志
-  console.log('[extractJSON] Raw text:', text.substring(0, 500) + (text.length > 500 ? '...' : ''));
+
 
   // 移除 markdown 代码块标记
   let cleaned = text.replace(/```json\s*|```\s*/gi, "").trim();
@@ -1012,7 +933,7 @@ export function extractJSON(text) {
     }
     
     if (maxValidEnd !== -1) {
-      console.log('[extractJSON] Found valid JSON ending at position:', maxValidEnd);
+
       endIdx = maxValidEnd;
     } else {
       console.error('[extractJSON] No matching closing brace found in:', cleaned.substring(0, 500));
@@ -1114,7 +1035,7 @@ export function extractJSON(text) {
   }
 
   // 尝试解析
-  console.log('[extractJSON] Attempting to parse cleaned JSON (first 500 chars):', cleaned.substring(0, 500));
+
   try {
     return JSON.parse(cleaned);
   } catch (parseError) {
