@@ -13,13 +13,13 @@ export function TopBar({ mode, setMode, toggleTheme, isLight, loading, exporting
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28">
               <defs>
                 <linearGradient id="mokaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#A78BFA"/>
-                  <stop offset="100%" stop-color="#7C3AED"/>
+                  <stop offset="0%" stopColor="#A78BFA"/>
+                  <stop offset="100%" stopColor="#7C3AED"/>
                 </linearGradient>
               </defs>
               <path d="M16 2C16 2 8 12 8 18C8 22.4183 11.5817 26 16 26C20.4183 26 24 22.4183 24 18C24 12 16 2 16 2Z" fill="url(#mokaGrad)"/>
               <ellipse cx="13" cy="16" rx="3" ry="5" fill="white" opacity="0.25"/>
-              <path d="M10 28L10 22L13 25L16 22L19 25L22 22L22 28" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/>
+              <path d="M10 28L10 22L13 25L16 22L19 25L22 22L22 28" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.9"/>
               <circle cx="16" cy="28" r="1.5" fill="#A78BFA"/>
             </svg>
           </div>

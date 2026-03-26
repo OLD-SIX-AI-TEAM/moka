@@ -27,21 +27,14 @@ const securityHeaders = {
  */
 async function decryptWithPrivateKey(encryptedBase64, privateKeyPem) {
   try {
-    console.log('[Decrypt] Starting decryption, encrypted length:', encryptedBase64?.length);
-    console.log('[Decrypt] Private key exists:', !!privateKeyPem);
-    console.log('[Decrypt] Private key length:', privateKeyPem?.length);
-    
     // 清理私钥格式
     const privateKeyBase64 = privateKeyPem
       .replace(/-----BEGIN PRIVATE KEY-----/g, '')
       .replace(/-----END PRIVATE KEY-----/g, '')
       .replace(/\s/g, '');
     
-    console.log('[Decrypt] Cleaned private key length:', privateKeyBase64?.length);
-    
     // 将 Base64 转换为 Uint8Array
     const privateKeyBytes = Uint8Array.from(atob(privateKeyBase64), c => c.charCodeAt(0));
-    console.log('[Decrypt] Private key bytes length:', privateKeyBytes?.length);
     
     // 导入私钥
     const privateKey = await crypto.subtle.importKey(
@@ -54,11 +47,9 @@ async function decryptWithPrivateKey(encryptedBase64, privateKeyPem) {
       false,
       ['decrypt']
     );
-    console.log('[Decrypt] Private key imported successfully');
     
     // 将加密的 Base64 转换为 Uint8Array
     const encryptedBytes = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
-    console.log('[Decrypt] Encrypted bytes length:', encryptedBytes?.length);
     
     // 解密
     const decrypted = await crypto.subtle.decrypt(
@@ -70,13 +61,9 @@ async function decryptWithPrivateKey(encryptedBase64, privateKeyPem) {
     );
     
     // 转换为字符串
-    const result = new TextDecoder().decode(decrypted);
-    console.log('[Decrypt] Decryption successful, result length:', result?.length);
-    return result;
+    return new TextDecoder().decode(decrypted);
   } catch (error) {
-    console.error('[Decrypt] 解密失败:', error);
-    console.error('[Decrypt] Error name:', error?.name);
-    console.error('[Decrypt] Error message:', error?.message);
+    console.error('[Decrypt] 解密失败:', error?.message);
     throw new Error('API Key 解密失败: ' + error?.message);
   }
 }
@@ -137,30 +124,20 @@ async function recordUsage(env, tokens = 1) {
   const dailyKey = `usage:daily:${today}`;
   const monthlyKey = `usage:monthly:${thisMonth}`;
 
-  console.log('[recordUsage] Checking USAGE_KV:', !!env.USAGE_KV);
-
   if (env.USAGE_KV) {
     // 使用 Cloudflare KV
     const dailyCount = parseInt(await env.USAGE_KV.get(dailyKey) || '0');
     const monthlyCount = parseInt(await env.USAGE_KV.get(monthlyKey) || '0');
 
-    console.log('[recordUsage] Current KV counts - daily:', dailyCount, 'monthly:', monthlyCount);
-
     await env.USAGE_KV.put(dailyKey, String(dailyCount + 1), { expirationTtl: 86400 * 2 });
     await env.USAGE_KV.put(monthlyKey, String(monthlyCount + 1), { expirationTtl: 86400 * 35 });
-
-    console.log('[recordUsage] Updated KV counts - daily:', dailyCount + 1, 'monthly:', monthlyCount + 1);
   } else {
     // 使用本地内存存储
     const dailyCount = parseInt(localUsageStore.get(dailyKey) || '0');
     const monthlyCount = parseInt(localUsageStore.get(monthlyKey) || '0');
 
-    console.log('[recordUsage] Current local counts - daily:', dailyCount, 'monthly:', monthlyCount);
-
     localUsageStore.set(dailyKey, String(dailyCount + 1));
     localUsageStore.set(monthlyKey, String(monthlyCount + 1));
-
-    console.log('[recordUsage] Updated local counts - daily:', dailyCount + 1, 'monthly:', monthlyCount + 1);
   }
 }
 
@@ -208,7 +185,6 @@ export default {
     // 获取 RSA 公钥（用于前端加密）
     if (path === '/api/public-key') {
       const publicKey = env.RSA_PUBLIC_KEY;
-      console.log('[Public Key] Request received, key exists:', !!publicKey);
       if (!publicKey) {
         console.error('[Public Key] RSA_PUBLIC_KEY not configured in environment');
         return new Response(JSON.stringify({ 
@@ -266,26 +242,23 @@ async function handleLLM(request, env) {
 
     // 解密用户提供的 API Key
     let userApiKey = null;
-    console.log('[LLM Proxy] Checking encryptedApiKey:', !!encryptedApiKey, 'RSA_PRIVATE_KEY exists:', !!env.RSA_PRIVATE_KEY);
     if (encryptedApiKey && env.RSA_PRIVATE_KEY) {
       try {
-        console.log('[LLM Proxy] Attempting to decrypt API key...');
         userApiKey = await decryptWithPrivateKey(encryptedApiKey, env.RSA_PRIVATE_KEY);
-        console.log('[LLM Proxy] Provider:', provider, 'Model:', model, 'Enable Search:', enable_search, 'UseUserKey: true (decrypted)', 'Stream:', stream);
-        console.log('[LLM Proxy] Decrypted API Key length:', userApiKey?.length);
-        console.log('[LLM Proxy] Decrypted API Key prefix:', userApiKey?.substring(0, 10) + '...');
       } catch (e) {
         console.error('[LLM Proxy] 解密失败:', e);
-        return new Response(JSON.stringify({ error: 'API Key 解密失败，请重新配置: ' + e.message }), {
+        return new Response(JSON.stringify({
+          error: 'API Key 解密失败，请重新配置',
+          message: e.message,
+          code: 'DECRYPT_FAILED',
+          shouldClearConfig: true,
+        }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-    } else {
-      console.log('[LLM Proxy] Provider:', provider, 'Model:', model, 'Enable Search:', enable_search, 'UseUserKey: false', 'Stream:', stream);
-      if (encryptedApiKey && !env.RSA_PRIVATE_KEY) {
-        console.error('[LLM Proxy] 有加密API Key但服务器未配置 RSA_PRIVATE_KEY');
-      }
+    } else if (encryptedApiKey && !env.RSA_PRIVATE_KEY) {
+      console.error('[LLM Proxy] 有加密API Key但服务器未配置 RSA_PRIVATE_KEY');
     }
 
     // 如果没有用户 API Key，检查使用限制
@@ -320,10 +293,7 @@ async function handleLLM(request, env) {
     
     // 如果没有使用用户 API Key，记录使用量
     if (!userApiKey) {
-      console.log('[LLM Proxy] Recording usage, USAGE_KV exists:', !!env.USAGE_KV);
       await recordUsage(env);
-    } else {
-      console.log('[LLM Proxy] Using user API key, skipping usage record');
     }
 
     return result;
@@ -356,8 +326,6 @@ async function callAnthropic(env, messages, system, max_tokens, model, tools, co
 
   const baseUrl = customBaseUrl || 'https://api.anthropic.com/v1';
   const apiUrl = `${baseUrl.replace(/\/$/, '')}/messages`;
-
-  console.log('[Anthropic Proxy] Calling:', apiUrl, 'Model:', model || 'claude-sonnet-4-20250514');
 
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -413,12 +381,8 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
     ...(enable_search !== undefined && { enable_search }),
   };
 
-  console.log('[Aliyun Proxy] Request:', { model: requestBody.model, stream, messageCount: openaiMessages.length });
-
   const baseUrl = customBaseUrl || 'https://dashscope.aliyuncs.com/compatible-mode/v1';
   const apiUrl = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
-
-  console.log('[Aliyun Proxy] Calling:', apiUrl);
 
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -428,8 +392,6 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
     },
     body: JSON.stringify(requestBody),
   });
-
-  console.log('[Aliyun Proxy] Response status:', response.status);
 
   // 如果响应不成功，返回错误信息
   if (!response.ok) {
@@ -453,8 +415,6 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
   }
 
   const data = await response.json();
-
-  console.log('[Aliyun Proxy] Response model:', data.model);
 
   return new Response(JSON.stringify(data), {
     status: response.status,
@@ -490,10 +450,6 @@ async function callOpenAI(env, messages, system, max_tokens, model, tools, corsH
   const baseUrl = customBaseUrl || 'https://api.openai.com/v1';
   const apiUrl = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
 
-  console.log('[OpenAI Proxy] Calling:', apiUrl, 'Model:', model || 'gpt-4o-mini');
-  console.log('[OpenAI Proxy] API Key exists:', !!apiKey, 'Length:', apiKey?.length);
-  console.log('[OpenAI Proxy] API Key prefix:', apiKey?.substring(0, 10) + '...');
-
   let response;
   try {
     response = await fetch(apiUrl, {
@@ -512,8 +468,7 @@ async function callOpenAI(env, messages, system, max_tokens, model, tools, corsH
     });
   }
 
-  console.log('[OpenAI Proxy] Response status:', response.status);
-  console.log('[OpenAI Proxy] Response headers:', Object.fromEntries(response.headers.entries()));
+
 
   // 如果是流式响应，直接透传
   if (stream) {
@@ -528,7 +483,6 @@ async function callOpenAI(env, messages, system, max_tokens, model, tools, corsH
 
   // 获取响应文本
   const responseText = await response.text();
-  console.log('[OpenAI Proxy] Response text preview:', responseText?.substring(0, 200));
 
   // 尝试解析为 JSON
   let data;
@@ -536,11 +490,10 @@ async function callOpenAI(env, messages, system, max_tokens, model, tools, corsH
     data = JSON.parse(responseText);
   } catch (parseError) {
     console.error('[OpenAI Proxy] Failed to parse response as JSON:', parseError);
-    console.error('[OpenAI Proxy] Raw response:', responseText);
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: 'Invalid JSON response from API',
       details: responseText?.substring(0, 500),
-      status: response.status 
+      status: response.status
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
