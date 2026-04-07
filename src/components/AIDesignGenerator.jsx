@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { createLLMClient, extractJSON, getEnvLLMConfig, isEnvConfigValid } from '../services/llm';
 
 // 环境判断：本地开发使用流式，部署端使用非流式
-const USE_STREAM_MODE = process.env.NODE_ENV === 'development';
+const USE_STREAM_MODE = import.meta.env.DEV;
 
 import { ReferenceImageUploader } from './ReferenceImageUploader';
 import { VersionHistory } from './VersionHistory';

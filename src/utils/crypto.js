@@ -3,6 +3,8 @@
  * 使用 RSA 加密存储 API Key
  */
 
+import { isLocalDevEnv } from './env.js';
+
 // 缓存从服务器获取的公钥
 let cachedServerPublicKey = null;
 
@@ -123,19 +125,6 @@ export async function decryptWithPrivateKey(encryptedBase64, privateKeyBase64) {
     console.error('解密失败:', error);
     throw new Error('API Key 解密失败');
   }
-}
-
-/**
- * 检测是否是本地开发环境（包括局域网 IP）
- * @returns {boolean}
- */
-function isLocalDevEnv() {
-  const hostname = window.location.hostname;
-  return hostname === 'localhost' ||
-         hostname === '127.0.0.1' ||
-         /^192\.168\.\d+\.\d+$/.test(hostname) ||
-         /^10\.\d+\.\d+\.\d+$/.test(hostname) ||
-         /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/.test(hostname);
 }
 
 /**

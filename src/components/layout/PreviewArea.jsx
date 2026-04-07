@@ -35,6 +35,17 @@ export function PreviewArea({
   const hasContent = mode === "single"
     ? (cardData || aiSingleDesign)
     : slides;
+  
+  // 流式内容自动滚动引用
+  const streamContentRef = useRef(null);
+
+  // 流式内容自动滚动到底部
+  useEffect(() => {
+    if (streamContentRef.current && streamContent) {
+      const element = streamContentRef.current;
+      element.scrollTop = element.scrollHeight;
+    }
+  }, [streamContent]);
 
   // 整页预览宽度拖拽
   const [cardWidth, setCardWidth] = useState(588);
@@ -172,7 +183,7 @@ export function PreviewArea({
           <div className="loading-content">
             {streamContent && (
               <div className="stream-content-overlay">
-                <pre>{streamContent}</pre>
+                <pre ref={streamContentRef}>{streamContent}</pre>
               </div>
             )}
             <div className="loading-icon">
