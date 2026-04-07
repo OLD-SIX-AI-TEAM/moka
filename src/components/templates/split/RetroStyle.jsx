@@ -79,7 +79,7 @@ export function RetroEnd({ s, a, ed }) {
           <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 13, color: "#666", marginBottom: 20, fontStyle: "italic", ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
           <div style={{ width: 60, height: 2, background: a, margin: "0 auto 16px" }} />
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 16 }}>
-            {s.tags.map((t, i) => <span key={i} style={{ padding: "4px 12px", border: `1px solid ${a}`, fontSize: 11, color: a, fontWeight: 600 }}><EditableTag text={t} c={a} on={ed?.tag?.(i)} /></span>)}
+            {s.tags.map((t, i) => <span key={i} style={{ padding: "4px 12px", border: `1px solid ${a}`, fontSize: 11, color: a, fontWeight: 600 }}><EditableTag text={t} c={a} on={ed?.tag?.(i)} noBorder /></span>)}
           </div>
           <div style={{ fontSize: 10, color: a, fontFamily: "Georgia, serif", letterSpacing: "2px" }}>THE END</div>
         </div>

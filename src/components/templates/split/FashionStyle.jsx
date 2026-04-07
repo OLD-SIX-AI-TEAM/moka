@@ -67,7 +67,7 @@ export function FashionEnd({ s, a, ed }) {
         <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 28, fontWeight: 900, color: "#fff", marginBottom: 12, lineHeight: 1.2, textTransform: "uppercase", letterSpacing: "1px", ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
         <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginBottom: 32, lineHeight: 1.6, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
-          {s.tags.map((t, i) => <span key={i} style={{ padding: "8px 20px", border: `1px solid ${a}`, fontSize: 11, color: a, letterSpacing: "2px", textTransform: "uppercase" }}><EditableTag text={t} c={a} on={ed?.tag?.(i)} /></span>)}
+          {s.tags.map((t, i) => <span key={i} style={{ padding: "8px 20px", border: `1px solid ${a}`, fontSize: 11, color: a, letterSpacing: "2px", textTransform: "uppercase" }}><EditableTag text={t} c={a} on={ed?.tag?.(i)} noBorder /></span>)}
         </div>
       </div>
     </div>

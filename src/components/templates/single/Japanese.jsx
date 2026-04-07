@@ -74,7 +74,7 @@ export function Japanese({ d, ed, drag }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 18 }}>
         {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ padding: "5px 12px", background: "#fff", border: `1px solid ${d.a}40`, borderRadius: 2, fontSize: 11, color: d.a }}>
-            <EditableTag text={t} c={d.a} on={ed?.tag?.(i)} />
+            <EditableTag text={t} c={d.a} on={ed?.tag?.(i)} noBorder />
           </span>
         ))}
       </div>
