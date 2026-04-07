@@ -1390,6 +1390,107 @@ body {
   background: var(--border-strong);
 }
 
+/* ========== 移动端标签栏 ========== */
+.mobile-tabs {
+  display: none;
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  height: 44px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-light);
+  z-index: 99;
+}
+
+/* ========== 内容面板内的单页/多页切换 ========== */
+.mobile-mode-section {
+  display: none;
+}
+
+.mobile-mode-switcher-inline {
+  display: flex;
+  gap: var(--space-sm);
+  background: var(--bg-secondary);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.mobile-mode-btn-inline {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.mobile-mode-btn-inline:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.mobile-mode-btn-inline.active {
+  background: var(--bg-panel);
+  color: var(--theme-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.mobile-mode-btn-inline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mobile-mode-icon {
+  font-size: 14px;
+}
+
+.mobile-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  border-bottom: 2px solid transparent;
+}
+
+.mobile-tab.active {
+  color: var(--theme-primary);
+  border-bottom-color: var(--theme-primary);
+  background: var(--theme-primary-light);
+}
+
+.mobile-tab svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ========== 移动端面板切换 ========== */
+.mobile-panel {
+  display: none;
+}
+
+.mobile-panel.active {
+  display: flex;
+}
+
 /* ========== 响应式适配 ========== */
 
 /* 大屏幕（1200px+）：默认三列布局 */
@@ -1573,11 +1674,12 @@ body {
   }
 
   .preview-header {
-    padding: var(--space-md);
+    padding: var(--space-xs) var(--space-sm);
+    min-height: 40px;
   }
 
   .preview-title {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .export-btn {
@@ -1615,68 +1717,220 @@ body {
     font-size: 14px;
   }
 
-  /* 预览区域缩放 */
-  .card-wrapper,
-  .slide-container,
-  .empty-content,
-  .loading-content {
-    width: 300px;
-    height: 400px;
-  }
-  
-  .preview-area {
-    padding: var(--space-md);
-  }
 }
 
-/* 手机横屏/大手机（640px以下） */
-@media screen and (max-width: 640px) {
+/* 手机横屏/大手机（768px以下）- 启用移动端布局 */
+@media screen and (max-width: 768px) {
+  /* 显示移动端标签栏 */
+  .mobile-tabs {
+    display: flex;
+  }
+
+  /* 调整主布局 */
+  .three-column-layout {
+    margin-top: 100px;
+    height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 面板默认隐藏，通过active类显示 */
+  .theme-panel,
+  .preview-column,
+  .content-panel {
+    display: none;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    order: unset;
+  }
+
+  .theme-panel.mobile-active,
+  .preview-column.mobile-active,
+  .content-panel.mobile-active {
+    display: flex;
+  }
+
+  /* 默认显示预览面板 */
+  .preview-column {
+    display: flex;
+  }
+
+  /* 风格面板样式优化 */
   .theme-panel {
     flex-direction: column;
-    max-height: none;
+    padding: var(--space-md);
+    gap: var(--space-md);
   }
 
   .theme-panel .panel-section {
     border-right: none;
     border-bottom: 1px solid var(--border-light);
-    max-height: 200px;
+    padding: var(--space-md);
+    max-height: none;
+    flex: 1;
   }
 
   .theme-panel .panel-section:last-child {
     border-bottom: none;
   }
 
-  .palette-grid-vertical {
-    flex-direction: column;
-  }
-
-  .palette-card {
-    flex: 1;
+  .theme-panel .panel-section.style-section,
+  .theme-panel .panel-section.palette-section {
+    max-height: none;
   }
 
   .style-grid-small {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  
-  .mini-grid {
     grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
   }
 
-  /* 预览区域进一步缩放 */
+  .style-card {
+    padding: var(--space-sm);
+  }
+
+  .style-name {
+    font-size: 11px;
+  }
+
+  .palette-grid-vertical {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+  }
+
+  .palette-card {
+    flex: none;
+    padding: var(--space-sm);
+  }
+
+  /* 内容面板优化 */
+  .content-panel {
+    padding: var(--space-md);
+    overflow-y: auto;
+  }
+
+  .content-panel .panel-section {
+    padding: var(--space-md) 0;
+  }
+
+  .content-panel .panel-section:first-child {
+    padding-top: 0;
+  }
+
+  .content-panel .panel-section:last-child {
+    padding-bottom: 0;
+  }
+
+  /* 移动端显示内容面板内的单页/多页切换 */
+  .mobile-mode-section {
+    display: block;
+  }
+
+  .content-input-large {
+    min-height: 150px;
+    font-size: 16px; /* 防止iOS缩放 */
+  }
+
+  /* 预览区域全屏 */
+  .preview-column {
+    min-height: auto;
+    flex: 1;
+  }
+
+  .preview-area {
+    padding: var(--space-xs);
+    align-items: center;
+  }
+
+  /* 卡片预览全屏适配 */
+  .single-view-container {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    padding: 0 var(--space-xs);
+  }
+
+  .card-container {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
   .card-wrapper,
   .slide-container,
   .empty-content,
   .loading-content {
-    width: 260px;
-    height: 347px;
+    width: 100% !important;
+    max-width: 100%;
+    height: auto !important;
+    aspect-ratio: 3/4;
+    max-height: calc(100vh - 180px);
+  }
+
+  /* 分页视图优化 */
+  .split-view {
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-xs);
+    width: 100%;
+  }
+
+  .slide-container-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .slide-sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    gap: var(--space-xs);
+  }
+
+  .slide-thumbs {
+    flex-direction: row;
+    max-height: none;
+    order: -1;
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* 隐藏提示文字 */
+  .template-hint,
+  .resize-hint,
+  .edit-hint {
+    display: none;
+  }
+
+  /* 导航箭头样式 */
+  .nav-arrow-up,
+  .nav-arrow-down {
+    transform: rotate(0deg);
+  }
+
+  /* GitHub按钮隐藏文字 */
+  .github-btn .star-text {
+    display: none;
   }
 }
 
-/* 手机竖屏（480px以下） */
-@media screen and (max-width: 480px) {
+/* 手机竖屏（640px以下） */
+@media screen and (max-width: 640px) {
   .top-bar {
     height: 48px;
     padding: 0 var(--space-sm);
+  }
+
+  .three-column-layout {
+    margin-top: 92px;
+    height: calc(100vh - 92px);
+  }
+
+  .mobile-tabs {
+    top: 48px;
+    height: 44px;
   }
 
   .mode-switcher {
@@ -1694,13 +1948,16 @@ body {
   }
 
   .theme-toggle-btn {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
   }
 
-  .three-column-layout {
-    margin-top: 48px;
-    height: calc(100vh - 48px);
+  .style-grid-small {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .palette-grid-vertical {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .mini-grid {
@@ -1733,8 +1990,57 @@ body {
   }
 
   .export-btn {
-    padding: 5px 8px;
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  /* 预览区域已在 768px 媒体查询中统一设置 */
+}
+
+/* 小手机（480px以下） */
+@media screen and (max-width: 480px) {
+  .top-bar-center {
+    display: none;
+  }
+
+  .lang-switcher {
+    margin-right: var(--space-xs);
+  }
+
+  .lang-btn {
+    padding: 3px 8px;
     font-size: 10px;
+  }
+
+  .style-grid-small {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .style-name {
+    font-size: 10px;
+  }
+
+  .palette-grid-vertical {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .palette-name {
+    font-size: 11px;
+  }
+
+  /* 预览区域已在 768px 媒体查询中统一设置 */
+
+  .empty-icon,
+  .loading-icon {
+    font-size: 48px;
+  }
+
+  .empty-title {
+    font-size: 16px;
+  }
+
+  .empty-desc {
+    font-size: 12px;
   }
 
   .llm-config-btn {
@@ -1764,47 +2070,23 @@ body {
     max-width: 100%;
     font-size: 10px;
   }
-
-  /* 预览区域进一步缩放 */
-  .card-wrapper,
-  .slide-container,
-  .empty-content,
-  .loading-content {
-    width: 240px;
-    height: 320px;
-  }
-
-  .empty-icon,
-  .loading-icon {
-    font-size: 48px;
-  }
-
-  .empty-title {
-    font-size: 16px;
-  }
-
-  .empty-desc {
-    font-size: 12px;
-  }
 }
 
 /* 超小屏幕（360px以下） */
 @media screen and (max-width: 360px) {
   .style-grid-small {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .palette-grid-vertical {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .mini-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .card-wrapper,
-  .slide-container,
-  .empty-content,
-  .loading-content {
-    width: 200px;
-    height: 267px;
-  }
+  /* 预览区域已在 768px 媒体查询中统一设置 */
 
   .mode-pill span:last-child {
     display: none;

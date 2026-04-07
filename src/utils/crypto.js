@@ -24,15 +24,14 @@ export async function getServerPublicKey() {
     return cachedServerPublicKey;
   }
 
-  // 本地开发时直接返回 null，使用明文存储
-  const isLocalDev = window.location.hostname === 'localhost' || 
-    window.location.hostname === '127.0.0.1';
-  if (isLocalDev) {
-
+  // 本地开发时直接返回 null，使用明文存储（包括局域网 IP）
+  if (isLocalDevEnv()) {
+    console.log('[Crypto] 本地开发环境，跳过获取公钥');
     return null;
   }
 
   try {
+    console.log('[Crypto] 从服务器获取公钥...');
     const response = await fetch('/api/public-key');
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -43,6 +42,7 @@ export async function getServerPublicKey() {
       throw new Error('服务器未配置公钥');
     }
     cachedServerPublicKey = data.publicKey;
+    console.log('[Crypto] 公钥获取成功');
     return cachedServerPublicKey;
   } catch (error) {
     console.error('[Crypto] 获取服务器公钥失败:', error);
@@ -126,6 +126,19 @@ export async function decryptWithPrivateKey(encryptedBase64, privateKeyBase64) {
 }
 
 /**
+ * 检测是否是本地开发环境（包括局域网 IP）
+ * @returns {boolean}
+ */
+function isLocalDevEnv() {
+  const hostname = window.location.hostname;
+  return hostname === 'localhost' ||
+         hostname === '127.0.0.1' ||
+         /^192\.168\.\d+\.\d+$/.test(hostname) ||
+         /^10\.\d+\.\d+\.\d+$/.test(hostname) ||
+         /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/.test(hostname);
+}
+
+/**
  * 存储加密的 API Key
  * 生产环境使用服务器公钥加密，本地开发使用明文存储
  * @param {string} apiKey - API Key
@@ -133,24 +146,26 @@ export async function decryptWithPrivateKey(encryptedBase64, privateKeyBase64) {
  * @returns {Promise<void>}
  */
 export async function storeEncryptedApiKey(apiKey, provider) {
-  // 本地开发时使用明文存储
-  const isLocalDev = window.location.hostname === 'localhost' || 
-    window.location.hostname === '127.0.0.1';
-  
-  if (isLocalDev) {
+  console.log('[Crypto] 存储 API Key，hostname:', window.location.hostname);
 
+  // 本地开发时使用明文存储（包括局域网 IP）
+  if (isLocalDevEnv()) {
+    console.log('[Crypto] 本地开发环境，使用明文存储');
     localStorage.setItem(`llm_config_${provider}`, apiKey);
     return;
   }
-  
+
   // 生产环境使用服务器公钥加密
+  console.log('[Crypto] 生产环境，获取服务器公钥...');
   const serverPublicKey = await getServerPublicKey();
   if (!serverPublicKey) {
-    throw new Error('无法获取加密公钥');
+    throw new Error('无法获取加密公钥，请检查服务器配置');
   }
-  
+
+  console.log('[Crypto] 加密 API Key...');
   const encrypted = await encryptWithPublicKey(apiKey, serverPublicKey);
   localStorage.setItem(`llm_config_${provider}`, encrypted);
+  console.log('[Crypto] API Key 加密存储成功');
 }
 
 /**
@@ -180,19 +195,16 @@ export async function getDecryptedApiKey(provider) {
   const encryptedKey = getEncryptedApiKey(provider);
   if (!encryptedKey) return null;
 
-  // 本地开发模式：直接使用明文
-  const isLocalDev = window.location.hostname === 'localhost' || 
-    window.location.hostname === '127.0.0.1';
-  
-  if (isLocalDev) {
-
+  // 本地开发模式：直接使用明文（包括局域网 IP）
+  if (isLocalDevEnv()) {
+    console.log('[Crypto] 本地开发环境，直接使用明文 API Key');
     return encryptedKey;
   }
 
   // 生产环境：检查是否是明文存储（兼容旧数据）
   // 如果长度小于 100，可能是明文存储的 key
   if (encryptedKey.length < 100) {
-    
+    console.log('[Crypto] 检测到明文存储的 API Key');
     return encryptedKey;
   }
 
@@ -203,7 +215,6 @@ export async function getDecryptedApiKey(provider) {
     const stored = localStorage.getItem(RSA_KEY_PAIR_KEY);
     if (stored) {
       const { privateKey } = JSON.parse(stored);
-
       return await decryptWithPrivateKey(encryptedKey, privateKey);
     }
   } catch (error) {

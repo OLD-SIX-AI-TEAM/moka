@@ -22,6 +22,9 @@ export const en = {
   aiReferenceImageWith: 'AI will reference this image style',
   aiReferenceImageWithout: 'AI will generate freely',
   
+  // Page mode
+  pageMode: 'Page Mode',
+
   // Platform
   xiaohongshu: 'Xiaohongshu',
   xiaohongshuTag: 'Emotional',
@@ -153,6 +156,11 @@ export const en = {
   paletteSlate: 'Slate',
   paletteRust: 'Rust',
   palettePine: 'Pine',
+
+  // Mobile tabs
+  styleTab: 'Style',
+  previewTab: 'Preview',
+  contentTab: 'Content',
 };
 
 export default en;
