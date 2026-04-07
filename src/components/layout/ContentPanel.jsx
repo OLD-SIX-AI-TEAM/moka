@@ -50,7 +50,7 @@ export const ContentPanel = forwardRef(function ContentPanel({
   const getModel = () => {
     if (llmConfig?.model) return llmConfig.model;
     const provider = llmConfig?.provider || "aliyun";
-    return LLM_PROVIDERS[provider]?.defaultModel || "qwen3.5-plus";
+    return LLM_PROVIDERS[provider]?.defaultModel || "qwen3.5-flash";
   };
 
   // 使用次数状态
