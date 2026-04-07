@@ -77,7 +77,7 @@ export function LawEnd({ s, a, ed }) {
         <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 24, fontWeight: 700, color: "#1a1510", marginBottom: 12, lineHeight: 1.3, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
         <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 13, color: "#5a4a3a", marginBottom: 28, lineHeight: 1.6, fontStyle: "italic", ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>
-          {s.tags.map((t, i) => <span key={i} style={{ padding: "6px 14px", background: "#fff", border: "1px solid #8b4513", fontSize: 11, color: "#8b4513" }}><EditableTag text={t} c="#8b4513" on={ed?.tag?.(i)} /></span>)}
+          {s.tags.map((t, i) => <span key={i} style={{ padding: "6px 14px", background: "#fff", border: "1px solid #8b4513", fontSize: 11, color: "#8b4513" }}><EditableTag text={t} c="#8b4513" on={ed?.tag?.(i)} noBorder /></span>)}
         </div>
         <div style={{ fontSize: 10, color: "#8b4513", letterSpacing: "2px" }}>— 本案仅供法律参考 —</div>
       </div>

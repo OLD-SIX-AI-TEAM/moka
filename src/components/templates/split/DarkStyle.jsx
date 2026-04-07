@@ -69,7 +69,7 @@ export function DarkEnd({ s, a, ed }) {
         <EditableText v={s.cta} on={ed?.cta} block dk style={{ fontSize: 26, fontWeight: 700, color: "#fff", marginBottom: 12, lineHeight: 1.3, textShadow: `0 0 30px ${a}40`, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
         <EditableText v={s.sub} on={ed?.sub} block dk style={{ fontSize: 13, color: "#666", marginBottom: 28, lineHeight: 1.6, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>
-          {s.tags.map((t, i) => <span key={i} style={{ padding: "6px 14px", border: `1px solid ${a}50`, fontSize: 11, color: a }}><EditableTag text={t} c={a} on={ed?.tag?.(i)} /></span>)}
+          {s.tags.map((t, i) => <span key={i} style={{ padding: "6px 14px", border: `1px solid ${a}50`, fontSize: 11, color: a }}><EditableTag text={t} c={a} on={ed?.tag?.(i)} noBorder /></span>)}
         </div>
         <div style={{ fontSize: 10, color: "#333", letterSpacing: "4px" }}>◇ ◇ ◇</div>
       </div>
