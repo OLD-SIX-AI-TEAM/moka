@@ -29,6 +29,7 @@ export function PreviewArea({
   onExportSlide,
   onExportAll,
   streamContent,
+  mobileActive,
 }) {
   const { t } = useLanguage();
   const hasContent = mode === "single"
@@ -105,7 +106,7 @@ export function PreviewArea({
   }, [cardWidth]);
 
   return (
-    <div className="preview-column">
+    <div className={`preview-column ${mobileActive ? 'mobile-active' : ''}`}>
       <div className="preview-header">
         <span className="preview-title">{t('preview')}</span>
         

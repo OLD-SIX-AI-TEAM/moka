@@ -1,10 +1,10 @@
 /** @jsxImportSource react */
 import { useLanguage } from '../../hooks/useLanguage';
 
-export function ThemePanel({ 
-  palId, 
-  setPalId, 
-  palettes, 
+export function ThemePanel({
+  palId,
+  setPalId,
+  palettes,
   mode,
   splitStyle,
   setSplitStyle,
@@ -12,6 +12,7 @@ export function ThemePanel({
   setTpl,
   splitStyles,
   templates,
+  mobileActive,
 }) {
   const { t } = useLanguage();
 
@@ -26,7 +27,7 @@ export function ThemePanel({
   };
 
   return (
-    <div className="theme-panel">
+    <div className={`theme-panel ${mobileActive ? 'mobile-active' : ''}`}>
       <div className="panel-section style-section">
         <h3 className="section-title">{mode === "single" ? t('template') : t('style')}</h3>
         <div className="style-grid-small">

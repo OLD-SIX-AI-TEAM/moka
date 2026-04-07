@@ -104,11 +104,32 @@ export default defineConfig({
                 });
 
                 console.log('[Local Proxy] 响应状态:', response.status, response.statusText);
+                console.log('[Local Proxy] 是否流式:', stream);
 
                 res.statusCode = response.status;
-                res.setHeader('Content-Type', 'application/json');
+                res.setHeader('Content-Type', response.headers.get('content-type') || 'application/json');
                 res.setHeader('Access-Control-Allow-Origin', '*');
 
+                // 流式响应：直接管道传输，不缓冲
+                if (stream) {
+                  console.log('[Local Proxy] 使用流式传输');
+                  const reader = response.body.getReader();
+                  
+                  try {
+                    while (true) {
+                      const { done, value } = await reader.read();
+                      if (done) break;
+                      res.write(value);
+                    }
+                    res.end();
+                  } catch (error) {
+                    console.error('[Local Proxy] 流式传输错误:', error);
+                    res.end();
+                  }
+                  return;
+                }
+
+                // 非流式响应：正常读取并返回
                 const responseData = await response.text();
                 res.end(responseData);
               } catch (error) {

@@ -6,6 +6,7 @@ import { useLanguage } from "../../hooks/useLanguage";
 
 export const ContentPanel = forwardRef(function ContentPanel({
   mode,
+  setMode,
   platform,
   setPlatform,
   input,
@@ -16,6 +17,7 @@ export const ContentPanel = forwardRef(function ContentPanel({
   palette,
   llmConfig,
   onOpenLLMConfig,
+  mobileActive,
 }, ref) {
   const { t } = useLanguage();
   const textareaRef = useRef(null);
@@ -84,7 +86,30 @@ export const ContentPanel = forwardRef(function ContentPanel({
   }));
 
   return (
-    <div className="content-panel">
+    <div className={`content-panel ${mobileActive ? 'mobile-active' : ''}`}>
+      {/* 移动端单页/多页切换 */}
+      <div className="panel-section mobile-mode-section">
+        <h3 className="section-title">{t('pageMode') || '页面模式'}</h3>
+        <div className="mobile-mode-switcher-inline">
+          <button
+            className={`mobile-mode-btn-inline ${mode === 'single' ? 'active' : ''}`}
+            onClick={() => !loading && setMode('single')}
+            disabled={loading}
+          >
+            <span className="mobile-mode-icon">📄</span>
+            <span>{t('singleMode')}</span>
+          </button>
+          <button
+            className={`mobile-mode-btn-inline ${mode === 'split' ? 'active' : ''}`}
+            onClick={() => !loading && setMode('split')}
+            disabled={loading}
+          >
+            <span className="mobile-mode-icon">📑</span>
+            <span>{t('multiMode')}</span>
+          </button>
+        </div>
+      </div>
+
       {/* 平台选择 - 仅在分页模式下显示 */}
       {mode === "split" && (
         <div className="panel-section">

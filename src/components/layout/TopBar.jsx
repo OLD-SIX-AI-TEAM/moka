@@ -1,8 +1,9 @@
 /** @jsxImportSource react */
 import { useLanguage } from '../../hooks/useLanguage';
 
-export function TopBar({ mode, setMode, toggleTheme, isLight, loading, exporting }) {
-  const { language, toggleLanguage, t } = useLanguage();
+export function TopBar({ mode, setMode, toggleTheme, isLight, loading, exporting, t: propT }) {
+  const { language, toggleLanguage, t: hookT } = useLanguage();
+  const t = propT || hookT;
   const isProcessing = loading || exporting;
 
   return (

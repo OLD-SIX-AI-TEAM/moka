@@ -4,6 +4,7 @@
  */
 
 import { storeEncryptedApiKey, getEncryptedApiKey, hasEncryptedApiKey, getDecryptedApiKey, clearCachedPublicKey } from "../utils/crypto";
+import { extractJSON } from "./json-extractor";
 
 const STORAGE_KEY = "moka_llm_config";
 
@@ -35,19 +36,22 @@ function getStorageConfig() {
 export async function saveLLMConfig(config) {
   try {
     const { apiKey, ...restConfig } = config;
-    
+
     // 加密存储 API Key
     if (apiKey) {
+      console.log('[LLM Config] 开始存储 API Key，provider:', config.provider || "aliyun");
       await storeEncryptedApiKey(apiKey, config.provider || "aliyun");
+      console.log('[LLM Config] API Key 存储成功');
     }
-    
+
     // 存储其他配置（不包含明文 apiKey）
     localStorage.setItem(STORAGE_KEY, JSON.stringify(restConfig));
+    console.log('[LLM Config] 配置保存成功:', restConfig);
 
     return true;
   } catch (e) {
     console.error("[LLM Config] 保存配置失败:", e);
-    return false;
+    throw e; // 抛出错误让调用者处理
   }
 }
 
@@ -110,14 +114,22 @@ export function hasUserApiKey(provider) {
 function getMergedConfig() {
   const storageConfig = getStorageConfig();
   const provider = storageConfig?.provider || ENV_CONFIG.provider;
-  
+
   // 检查是否有加密的 API Key
   const encryptedApiKey = getEncryptedApiKey(provider);
   const hasEncryptedKey = hasEncryptedApiKey(provider);
-  
+
+  console.log('[LLM Config] 读取配置:', {
+    provider,
+    hasStorageConfig: !!storageConfig,
+    hasEncryptedKey,
+    encryptedApiKeyLength: encryptedApiKey?.length || 0,
+    hostname: typeof window !== 'undefined' ? window.location.hostname : 'server'
+  });
+
   // 如果 localStorage 中有有效配置，优先使用
   if (storageConfig && hasEncryptedKey) {
-    // console.log("[LLM Config] 使用 localStorage 配置（API Key 已加密）");
+    console.log("[LLM Config] 使用 localStorage 配置（API Key 已存储）");
     return {
       provider: storageConfig.provider || ENV_CONFIG.provider,
       baseUrl: storageConfig.baseUrl || ENV_CONFIG.baseUrl,
@@ -126,9 +138,9 @@ function getMergedConfig() {
       model: storageConfig.model || ENV_CONFIG.model,
     };
   }
-  
-  // 否则使用环境变量配置
 
+  // 否则使用环境变量配置
+  console.log("[LLM Config] 使用环境变量配置");
   return {
     ...ENV_CONFIG,
     encryptedApiKey: null,
@@ -169,22 +181,33 @@ export const LLM_PROVIDERS = {
 };
 
 /**
+ * 检测是否是本地开发环境（包括局域网 IP）
+ * @returns {boolean}
+ */
+function isLocalDevEnv() {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname;
+  return hostname === 'localhost' ||
+         hostname === '127.0.0.1' ||
+         /^192\.168\.\d+\.\d+$/.test(hostname) ||
+         /^10\.\d+\.\d+\.\d+$/.test(hostname) ||
+         /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/.test(hostname);
+}
+
+/**
  * 获取 LLM 配置（优先从 localStorage，其次环境变量）
  * @returns {Object} 配置对象
  */
 export function getEnvLLMConfig() {
   const config = getMergedConfig();
-  
+
   // 检查是否是本地开发环境（明文存储）
-  const isLocalDev = typeof window !== 'undefined' && (
-    window.location.hostname === 'localhost' || 
-    window.location.hostname === '127.0.0.1'
-  );
-  
-  // 本地开发环境：encryptedApiKey 实际上是明文，所以也作为 apiKey 返回
+  const isLocalDev = isLocalDevEnv();
+
+  // 本地开发环境（包括局域网）：encryptedApiKey 实际上是明文，所以也作为 apiKey 返回
   // 生产环境：apiKey 为 undefined，因为无法在前端解密
   const apiKey = isLocalDev ? config.encryptedApiKey : undefined;
-  
+
   return {
     provider: config.provider,
     baseUrl: config.baseUrl || undefined,
@@ -260,8 +283,8 @@ export function createLLMClient(config) {
      * 统一使用代理避免 CORS 问题：本地走 vite 代理，生产走 Cloudflare Worker
      */
     async _callOpenAI({ system, messages, maxTokens, webSearch, stream, onStream }) {
-      const isLocalDev = window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1';
+      // 使用统一的本地开发环境检测（包含局域网 IP）
+      const isLocalDev = isLocalDevEnv();
 
       // 统一使用代理
       const url = PAGES_PROXY_URL;
@@ -394,8 +417,8 @@ export function createLLMClient(config) {
      * 使用 enable_search 参数启用网络搜索
      */
     async _callAliyun({ system, messages, maxTokens, webSearch, stream, onStream }) {
-      const isLocalDev = window.location.hostname === 'localhost' || 
-        window.location.hostname === '127.0.0.1';
+      // 使用统一的本地开发环境检测（包含局域网 IP）
+      const isLocalDev = isLocalDevEnv();
 
       // 统一使用代理
       const url = PAGES_PROXY_URL;
@@ -509,9 +532,8 @@ export function createLLMClient(config) {
      * 统一使用代理避免 CORS 问题：本地走 vite 代理，生产走 Cloudflare Worker
      */
     async _callAnthropic({ system, messages, maxTokens, webSearch, stream, onStream }) {
-      // 检测环境
-      const isLocalDev = window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1';
+      // 使用统一的本地开发环境检测（包含局域网 IP）
+      const isLocalDev = isLocalDevEnv();
 
       let url;
       let headers;
@@ -798,386 +820,5 @@ Return ONLY JSON, no markdown:
 }`,
 };
 
-/**
- * 从 LLM 响应中提取 JSON
- * @param {string} text - LLM 响应文本
- * @returns {Object} 解析后的 JSON
- */
-export function extractJSON(text) {
-  if (!text || typeof text !== 'string') {
-    console.error('[extractJSON] Invalid input:', text);
-    throw new Error('Invalid input: text is required');
-  }
-
-  // 调试日志
-
-
-  // 移除 markdown 代码块标记
-  let cleaned = text.replace(/```json\s*|```\s*/gi, "").trim();
-
-  // 移除思考过程（如 DeepSeek 的 "Thinking Process:"）
-  // 更健壮的方法：直接找到第一个 { 或 [，这应该是 JSON 的开始
-  // 因为思考过程中的文本不太可能包含 { 或 [
-  const firstBrace = cleaned.indexOf('{');
-  const firstBracket = cleaned.indexOf('[');
-  
-  let jsonStartIdx = -1;
-  if (firstBrace !== -1 && firstBracket !== -1) {
-    jsonStartIdx = Math.min(firstBrace, firstBracket);
-  } else if (firstBrace !== -1) {
-    jsonStartIdx = firstBrace;
-  } else if (firstBracket !== -1) {
-    jsonStartIdx = firstBracket;
-  }
-  
-  if (jsonStartIdx !== -1) {
-    cleaned = cleaned.substring(jsonStartIdx).trim();
-  }
-  
-  if (jsonStartIdx === -1) {
-    console.error('[extractJSON] No JSON object found in:', cleaned.substring(0, 500));
-    throw new Error('No valid JSON object found in response');
-  }
-
-  // 智能查找 JSON 结束位置：找到与起始 { 或 [ 匹配的 } 或 ]
-  let braceCount = 0;
-  let bracketCount = 0;
-  let inString = false;
-  let escaped = false;
-  let endIdx = -1;
-  const isArray = cleaned[0] === '[' || cleaned[0] === '{' ? cleaned[0] === '[' : cleaned.indexOf('[') === 0;
-  
-  for (let i = 0; i < cleaned.length; i++) {
-    const char = cleaned[i];
-    
-    if (escaped) {
-      escaped = false;
-      continue;
-    }
-    
-    if (char === '\\') {
-      escaped = true;
-      continue;
-    }
-    
-    if (char === '"' && !escaped) {
-      inString = !inString;
-      continue;
-    }
-    
-    if (!inString) {
-      if (char === '{') {
-        braceCount++;
-      } else if (char === '}') {
-        braceCount--;
-        if (!isArray && braceCount === 0) {
-          endIdx = i;
-          break;
-        }
-      } else if (char === '[') {
-        bracketCount++;
-      } else if (char === ']') {
-        bracketCount--;
-        if (isArray && bracketCount === 0) {
-          endIdx = i;
-          break;
-        }
-      }
-    }
-  }
-  
-  if (endIdx === -1) {
-    console.warn('[extractJSON] No matching closing brace found, attempting aggressive recovery...');
-    
-    // 尝试找到最长的平衡 JSON 结构
-    let maxValidEnd = -1;
-    let tempBraceCount = 0;
-    let tempBracketCount = 0;
-    let tempInString = false;
-    let tempEscaped = false;
-    
-    for (let i = 0; i < cleaned.length; i++) {
-      const char = cleaned[i];
-      
-      if (tempEscaped) {
-        tempEscaped = false;
-        continue;
-      }
-      
-      if (char === '\\') {
-        tempEscaped = true;
-        continue;
-      }
-      
-      if (char === '"' && !tempEscaped) {
-        tempInString = !tempInString;
-        continue;
-      }
-      
-      if (!tempInString) {
-        if (char === '{') tempBraceCount++;
-        else if (char === '}') {
-          tempBraceCount--;
-          if (tempBraceCount === 0 && tempBracketCount === 0) {
-            maxValidEnd = i;
-          }
-        }
-        else if (char === '[') tempBracketCount++;
-        else if (char === ']') {
-          tempBracketCount--;
-          if (tempBraceCount === 0 && tempBracketCount === 0) {
-            maxValidEnd = i;
-          }
-        }
-      }
-    }
-    
-    if (maxValidEnd !== -1) {
-
-      endIdx = maxValidEnd;
-    } else {
-      console.error('[extractJSON] No matching closing brace found in:', cleaned.substring(0, 500));
-      throw new Error('No valid JSON object found in response');
-    }
-  }
-
-  // 提取 JSON 部分
-  cleaned = cleaned.substring(0, endIdx + 1);
-
-  // 第零步：移除零宽字符和 BOM
-  cleaned = cleaned.replace(/[\u200B-\u200D\uFEFF]/g, '');
-  
-  // 第一步：转义字符串内的控制字符（换行、制表符等）
-  cleaned = escapeSpecialCharsInJSON(cleaned);
-
-  // 第二步：修复单引号键名和字符串值
-  cleaned = cleaned
-    .replace(/(['"])(\w+)\1\s*:/g, '"$2":')
-    .replace(/:\s*'([^']*)'/g, ':"$1"');
-
-  // 第二步半：将中文引号（\u201C \u201D）替换为英文引号（"）
-  // \u201C 是左双引号，\u201D 是右双引号
-  cleaned = cleaned.replace(/[\u201C\u201D]/g, '"');
-
-  // 第三步：修复尾部逗号（包括对象和数组中的尾部逗号）
-  cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
-  
-  // 第四步：修复属性值后面缺少逗号的情况（如 "key": "value" "key2":）
-  // 使用更精确的正则，只匹配 JSON 结构中的情况
-  cleaned = cleaned.replace(/("[^"]*")\s*(?=")/g, '$1,');
-  
-  // 第五步：修复未闭合的字符串（简单处理）
-  // 计算引号数量，如果是奇数，在末尾添加一个引号
-  const quoteMatches = cleaned.match(/"/g);
-  if (quoteMatches && quoteMatches.length % 2 !== 0) {
-    cleaned = cleaned + '"';
-  }
-  
-  // 第六步：修复缺少值的属性（如 "key": , 或 "key": }）
-  cleaned = cleaned.replace(/"(\w+)":\s*,/g, '"$1": null,');
-  cleaned = cleaned.replace(/"(\w+)":\s*([}\]])/g, '"$1": null $2');
-
-  // 第六步半：修复 sections 数组格式错误（如 "sections文案产出效率",）
-  // LLM 有时会把 sections 数组写成 "sections标题内容", "text": "..." 的错误格式
-  
-  // 首先处理 "sections内容", 后面直接跟属性的情况
-  if (/"sections[^":]+",/.test(cleaned)) {
-    // 提取 sections 后面的内容作为第一个 heading
-    cleaned = cleaned.replace(/"sections([^",]+)",\s*/g, '"sections": [{"heading": "$1"}, ');
-    
-    // 尝试修复后续的内容：如果有独立的 "text": 或 "heading": 属性，把它们归入 sections
-    // 找到 sections 数组开始的位置
-    const sectionsMatch = cleaned.match(/"sections":\s*\[/);
-    if (sectionsMatch) {
-      const sectionsStart = cleaned.indexOf(sectionsMatch[0]) + sectionsMatch[0].length;
-      let sectionsPart = cleaned.substring(sectionsStart);
-      
-      // 查找 sections 数组应该结束的位置（在 "tip" 或 "tags" 之前）
-      const endMatch = sectionsPart.match(/,\s*"(?:tip|tags)"/);
-      if (endMatch) {
-        const sectionsEnd = sectionsPart.indexOf(endMatch[0]);
-        let sectionsContent = sectionsPart.substring(0, sectionsEnd);
-        
-        // 尝试从混乱的内容中提取 heading 和 text 对
-        // 模式：可能包含多个独立的 "heading": "xxx" 或 "text": "xxx"
-        const items = [];
-        let currentItem = {};
-        
-        // 提取所有 heading 和 text
-        const headingMatches = [...sectionsContent.matchAll(/"heading"\s*:\s*"([^"]+)"/g)];
-        const textMatches = [...sectionsContent.matchAll(/"text"\s*:\s*"([^"]+)"/g)];
-        
-        // 匹配 heading 和 text
-        for (let i = 0; i < Math.max(headingMatches.length, textMatches.length); i++) {
-          const item = {};
-          if (headingMatches[i]) item.heading = headingMatches[i][1];
-          if (textMatches[i]) item.text = textMatches[i][1];
-          if (Object.keys(item).length > 0) {
-            items.push(item);
-          }
-        }
-        
-        // 如果有提取到内容，重建 sections 数组
-        if (items.length > 0) {
-          const newSections = JSON.stringify(items);
-          cleaned = cleaned.substring(0, sectionsStart) + newSections.substring(1, newSections.length - 1) + 
-                    sectionsPart.substring(sectionsEnd);
-        }
-      }
-    }
-  }
-  
-  // 修复数组结尾：确保 sections 数组正确闭合
-  if (cleaned.includes('"sections":') && !cleaned.includes('"sections": []') && !cleaned.includes('"sections":[')) {
-    // 尝试在 tip 或 tags 之前添加 ]
-    cleaned = cleaned.replace(/(,"tip":)/, ']$1');
-    cleaned = cleaned.replace(/(,"tags":)/, ']$1');
-  }
-
-  // 尝试解析
-
-  try {
-    return JSON.parse(cleaned);
-  } catch (parseError) {
-    // 第七步：激进清理 - 移除所有控制字符（跳过特殊字符转义，因为第一步已处理）
-    try {
-      cleaned = cleaned.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
-      return JSON.parse(cleaned);
-    } catch {
-      // 第八步：尝试使用正则提取可解析的 JSON 部分
-      try {
-        // 尝试提取最外层的大括号包裹的内容
-        const objectMatch = cleaned.match(/\{[\s\S]*\}/);
-        if (objectMatch) {
-          const extracted = objectMatch[0];
-          // 尝试平衡括号
-          let braceCount = 0;
-          let inString = false;
-          let escaped = false;
-          let lastValidEnd = -1;
-          
-          for (let i = 0; i < extracted.length; i++) {
-            const char = extracted[i];
-            
-            if (escaped) {
-              escaped = false;
-              continue;
-            }
-            
-            if (char === '\\') {
-              escaped = true;
-              continue;
-            }
-            
-            if (char === '"' && !escaped) {
-              inString = !inString;
-              continue;
-            }
-            
-            if (!inString) {
-              if (char === '{') {
-                braceCount++;
-              } else if (char === '}') {
-                braceCount--;
-                if (braceCount === 0) {
-                  lastValidEnd = i;
-                }
-              }
-            }
-          }
-          
-          if (lastValidEnd !== -1) {
-            const balancedJSON = extracted.substring(0, lastValidEnd + 1);
-            // 进一步清理：确保所有字符串正确闭合
-            let fixedJSON = balancedJSON;
-            
-            // 修复 sections 数组中的常见问题
-            // 查找并修复不完整的对象
-            fixedJSON = fixedJSON.replace(/\{\s*"heading"\s*:\s*"([^"]*)"\s*\}/g, '{"heading":"$1","text":""}');
-            fixedJSON = fixedJSON.replace(/\}\s*,\s*\{/g, '},{');
-            
-            // 修复数组结尾
-            if (fixedJSON.includes('"sections":[') && !fixedJSON.includes('"tip":')) {
-              fixedJSON = fixedJSON.replace(/(\])\s*$/, '$1,"tip":"","tags":[]');
-            }
-            
-            return JSON.parse(fixedJSON);
-          }
-        }
-      } catch {}
-      
-      // 第九步：尝试使用 Function 构造器作为最后的手段
-      try {
-        // 注意：这有一定的安全风险，但在受控环境中可以使用
-        const result = new Function('return ' + cleaned)();
-        if (result && typeof result === 'object') {
-          return result;
-        }
-      } catch {}
-      
-      console.error("[JSON Parse Error] Raw text:", text);
-      console.error("[JSON Parse Error] Cleaned text:", cleaned);
-      throw new Error(`JSON parse error: ${parseError.message}`);
-    }
-  }
-}
-
-/**
- * 转义 JSON 字符串中的特殊字符
- * @param {string} jsonStr - JSON 字符串
- * @returns {string} 处理后的字符串
- */
-function escapeSpecialCharsInJSON(jsonStr) {
-  let result = '';
-  let inString = false;
-  let escaped = false;
-
-  for (let i = 0; i < jsonStr.length; i++) {
-    const char = jsonStr[i];
-
-    if (escaped) {
-      result += char;
-      escaped = false;
-      continue;
-    }
-
-    if (char === '\\') {
-      result += char;
-      escaped = true;
-      continue;
-    }
-
-    if (char === '"') {
-      inString = !inString;
-      result += char;
-      continue;
-    }
-
-    if (inString) {
-      // 在字符串内部，转义特殊字符
-      switch (char) {
-        case '\n':
-          result += '\\n';
-          break;
-        case '\r':
-          result += '\\r';
-          break;
-        case '\t':
-          result += '\\t';
-          break;
-        case '\b':
-          result += '\\b';
-          break;
-        case '\f':
-          result += '\\f';
-          break;
-        default:
-          result += char;
-      }
-    } else {
-      result += char;
-    }
-  }
-
-  return result;
-}
+// extractJSON 函数已从 json-extractor.js 导入并重新导出
+export { extractJSON } from "./json-extractor";

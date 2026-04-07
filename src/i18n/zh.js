@@ -22,6 +22,9 @@ export const zh = {
   aiReferenceImageWith: 'AI将参考此图风格',
   aiReferenceImageWithout: '不上传则AI自由发挥',
   
+  // 页面模式
+  pageMode: '页面模式',
+
   // 平台
   xiaohongshu: '小红书',
   xiaohongshuTag: '情绪化',
@@ -174,6 +177,11 @@ export const zh = {
   provider: '提供商',
   baseUrl: 'Base URL',
   model: '模型',
+
+  // 移动端标签
+  styleTab: '风格',
+  previewTab: '预览',
+  contentTab: '内容',
 };
 
 export default zh;

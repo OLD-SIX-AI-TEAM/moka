@@ -79,7 +79,7 @@ const SPLIT_RENDERERS = {
 
 function App() {
   // 基础状态
-  const [mode, setMode] = useState("single");
+  const [mode, setMode] = useState("split");
   const [platform, setPlatform] = useState("xhs");
   const [splitStyle, setSplitStyle] = useState("vivid");
   const [input, setInput] = useState("");
@@ -93,6 +93,9 @@ function App() {
   const [exporting, setExporting] = useState(false);
   const [expMsg, setExpMsg] = useState("");
   const [streamContent, setStreamContent] = useState("");
+
+  // 移动端面板切换状态
+  const [mobilePanel, setMobilePanel] = useState("content"); // 'style', 'preview', 'content'
 
   // AI设计状态
   const [aiReferenceImage, setAiReferenceImage] = useState(null);
@@ -113,7 +116,7 @@ function App() {
   const h2cOk = useHtml2Canvas();
   const palette = PALETTES.find((p) => p.id === palId) || PALETTES[0];
   const { theme, isLight, toggleTheme } = useTheme();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   // 当配色方案变化时，更新CSS变量使UI跟随变化
   useEffect(() => {
@@ -380,11 +383,19 @@ function App() {
 
   // 处理LLM配置保存
   const handleLLMConfigSave = useCallback(async (config) => {
-    await saveLLMConfig(config);
-    // 重新获取配置（包含加密状态）
-    const updatedConfig = getEnvLLMConfig();
-    setLlmConfig(updatedConfig);
-    setShowLLMConfig(false);
+    try {
+      console.log('[App] 开始保存 LLM 配置...');
+      await saveLLMConfig(config);
+      console.log('[App] LLM 配置保存成功');
+      // 重新获取配置（包含加密状态）
+      const updatedConfig = getEnvLLMConfig();
+      setLlmConfig(updatedConfig);
+      setShowLLMConfig(false);
+    } catch (error) {
+      console.error('[App] 保存 LLM 配置失败:', error);
+      // 重新抛出错误让弹窗组件显示错误信息
+      throw error;
+    }
   }, []);
 
   // 处理LLM配置删除
@@ -498,6 +509,10 @@ function App() {
 
     setLoading(true);
     setError("");
+    // 移动端生成开始时自动跳转到预览tab
+    if (window.innerWidth <= 768) {
+      setMobilePanel('preview');
+    }
 
     try {
       const client = createLLMClient({
@@ -617,6 +632,10 @@ function App() {
     setSlides(null);
     setSlideIdx(0);
     setStreamContent("");
+    // 移动端生成开始时自动跳转到预览tab
+    if (window.innerWidth <= 768) {
+      setMobilePanel('preview');
+    }
 
     try {
       const client = createLLMClient({
@@ -885,8 +904,44 @@ function App() {
 
   return (
     <div className="app">
-      <TopBar mode={mode} setMode={setMode} theme={theme} toggleTheme={toggleTheme} isLight={isLight} loading={loading} exporting={exporting} />
+      <TopBar mode={mode} setMode={setMode} theme={theme} toggleTheme={toggleTheme} isLight={isLight} loading={loading} exporting={exporting} t={t} />
       
+      {/* 移动端标签栏 */}
+      <div className="mobile-tabs">
+        <button
+          className={`mobile-tab ${mobilePanel === 'style' ? 'active' : ''}`}
+          onClick={() => setMobilePanel('style')}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          {t('styleTab')}
+        </button>
+        <button
+          className={`mobile-tab ${mobilePanel === 'preview' ? 'active' : ''}`}
+          onClick={() => setMobilePanel('preview')}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18"/>
+          </svg>
+          {t('previewTab')}
+        </button>
+        <button
+          className={`mobile-tab ${mobilePanel === 'content' ? 'active' : ''}`}
+          onClick={() => setMobilePanel('content')}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          {t('contentTab')}
+        </button>
+      </div>
+
       <div className="three-column-layout">
         {/* 第一列：风格和配色 */}
         <ThemePanel
@@ -901,6 +956,7 @@ function App() {
           setTpl={setTpl}
           splitStyles={[...SPLIT_STYLES, AI_DESIGN_SPLIT_STYLE]}
           templates={[...TEMPLATES, AI_DESIGN_TEMPLATE]}
+          mobileActive={mobilePanel === 'style'}
         />
         
         {/* 第二列：预览区域 */}
@@ -930,12 +986,14 @@ function App() {
           onExportAll={exportAll}
           streamContent={streamContent}
           aiReferenceImage={aiReferenceImage}
+          mobileActive={mobilePanel === 'preview'}
         />
         
         {/* 第三列：平台、文案和生成 */}
         <ContentPanel
           ref={contentPanelRef}
           mode={mode}
+          setMode={setMode}
           platform={platform}
           setPlatform={setPlatform}
           input={input}
@@ -946,6 +1004,7 @@ function App() {
           palette={palette}
           llmConfig={llmConfig}
           onOpenLLMConfig={() => setShowLLMConfig(true)}
+          mobileActive={mobilePanel === 'content'}
         />
       </div>
 
