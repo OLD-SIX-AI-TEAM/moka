@@ -373,7 +373,7 @@ async function callAliyun(env, messages, system, max_tokens, model, enable_searc
     : messages;
 
   const requestBody = {
-    model: model || 'qwen3.5-flash',
+    model: model || 'qwen3.6-plus',
     max_tokens,
     messages: openaiMessages,
     temperature: 0.7,
