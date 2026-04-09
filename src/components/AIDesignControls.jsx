@@ -264,7 +264,9 @@ const AI_DESIGN_SPLIT_PROMPT = `你是专业的小红书视觉设计师和排版
 - 内容页heading最多16字（可带emoji），text最多100字，extra最多40字
 - 结尾页cta最多30字，sub最多40字
 - 标签5个
-- slides数组包含4-5个元素（1个cover + 2-3个content + 1个end）
+- slides数组默认包含4-6个元素（1个cover + 2-4个content + 1个end）
+- 如果用户明确要求生成N页，则严格按照用户要求的页数生成
+- 如果用户文案内容丰富，可以适当增加页数，但最多不超过10页
 
 【重要】只返回JSON，不要任何解释、注释或markdown标记。确保JSON格式完全正确。`;
 
