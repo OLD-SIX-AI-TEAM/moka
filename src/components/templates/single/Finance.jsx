@@ -61,7 +61,7 @@ export function Finance({ d, ed, drag }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 18, paddingTop: 16, borderTop: "1px solid #eee" }}>
         {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ padding: "4px 12px", background: "#fff8e1", border: "1px solid #ffd700", borderRadius: 4, fontSize: 11, color: "#1a1a2e" }}>
-            <EditableTag text={t} c="#1a1a2e" on={ed?.tag?.(i)} />
+            <EditableTag text={t} c="#1a1a2e" on={ed?.tag?.(i)} noBorder />
           </span>
         ))}
       </div>

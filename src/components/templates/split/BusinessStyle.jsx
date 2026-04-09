@@ -140,7 +140,7 @@ export function BusinessEnd({ s, a, ed }) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 32 }}>
           {s.tags.map((t, i) => (
             <span key={i} style={{ padding: "6px 14px", border: `1px solid ${a}60`, fontSize: 11, color: "#fff", letterSpacing: "1px" }}>
-              <EditableTag text={t} c="#fff" on={ed?.tag?.(i)} />
+              <EditableTag text={t} c="#fff" on={ed?.tag?.(i)} noBorder />
             </span>
           ))}
         </div>

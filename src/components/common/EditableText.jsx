@@ -221,9 +221,11 @@ export function EditableText({ v, on, style, dk = false, block = false, draggabl
     ...style,
     outline: "none",
     cursor: isDragging ? 'move' : (draggable && !isEditing ? 'grab' : 'text'),
-    whiteSpace: 'pre-wrap',
+    whiteSpace: style?.whiteSpace || 'pre-wrap',
     userSelect: isDragging ? 'none' : 'text',
     transition: isDragging ? 'none' : 'all 0.2s',
+    // 确保内容可见
+    display: style?.display || 'inline-block',
   };
 
   return (
@@ -255,41 +257,44 @@ export function EditableText({ v, on, style, dk = false, block = false, draggabl
  * @param {Function} props.on - 变更回调
  * @param {boolean} props.draggable - 是否可拖拽
  * @param {Function} props.onStyleChange - 样式变更回调
+ * @param {boolean} props.noBorder - 是否不显示边框（用于外层已有边框的情况）
  */
-export function EditableTag({ text, c, on, draggable = false, onStyleChange }) {
+export function EditableTag({ text, c, on, draggable = false, onStyleChange, noBorder = false }) {
+  // 处理文本，移除可能存在的 # 前缀，避免重复
+  const processedText = text?.startsWith('#') ? text.slice(1) : text;
+  
   if (!on) {
     return (
       <span
         style={{
           fontSize: 11,
           color: c,
-          border: `1px solid ${c}`,
+          border: noBorder ? 'none' : `1px solid ${c}`,
           borderRadius: 3,
           padding: "2px 7px",
           fontWeight: 700,
+          whiteSpace: 'nowrap',
         }}
       >
-        #{decodeHtmlEntities(text)}
+        #{decodeHtmlEntities(processedText)}
       </span>
     );
   }
 
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 2, whiteSpace: 'nowrap', border: noBorder ? 'none' : `1px solid ${c}`, borderRadius: 3, padding: "2px 6px" }}>
       <span style={{ fontSize: 11, color: c, fontWeight: 700 }}>#</span>
       <EditableText
-        v={text}
+        v={processedText}
         on={on}
         draggable={draggable}
         onStyleChange={onStyleChange}
         style={{
           fontSize: 11,
           color: c,
-          border: `1px solid ${c}`,
-          borderRadius: 3,
-          padding: "2px 6px",
           fontWeight: 700,
-          minWidth: 20,
+          minWidth: 'auto',
+          whiteSpace: 'nowrap',
         }}
       />
     </span>

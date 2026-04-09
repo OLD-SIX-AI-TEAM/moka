@@ -1,6 +1,25 @@
 import { toPng, toJpeg } from "html-to-image";
 
 /**
+ * 等待所有图片加载完成
+ * @param {HTMLElement} el
+ * @returns {Promise<void>}
+ */
+async function waitForImages(el) {
+  const images = el.querySelectorAll('img');
+  const promises = Array.from(images).map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise((resolve) => {
+      img.onload = resolve;
+      img.onerror = resolve;
+      // 超时处理
+      setTimeout(resolve, 1000);
+    });
+  });
+  await Promise.all(promises);
+}
+
+/**
  * 使用 html-to-image 捕获元素为图片
  * @param {HTMLElement} el - 要捕获的元素
  * @param {number} scale - 缩放比例 (2=高清, 4=超清)
@@ -44,13 +63,22 @@ export async function snapElementToImage(el, scale = 2, format = "png") {
   const borderRadius = computedStyle.borderRadius || prevStyles.borderRadius || "0px";
 
   try {
+    // 等待图片加载
+    await waitForImages(el);
+    
     // 强制重绘
     el.offsetHeight;
-
+    
     // 等待字体加载完成
     if (document.fonts) {
       await document.fonts.ready;
     }
+    
+    // 额外等待，确保所有异步渲染完成
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // 再次强制重绘
+    el.offsetHeight;
 
     // 获取展开后的实际尺寸
     const width = el.offsetWidth;

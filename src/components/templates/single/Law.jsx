@@ -61,7 +61,7 @@ export function Law({ d, ed, drag }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 18, justifyContent: "center" }}>
         {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ padding: "5px 12px", background: "#fff", border: "1px solid #8b4513", fontSize: 11, color: "#8b4513" }}>
-            <EditableTag text={t} c="#8b4513" on={ed?.tag?.(i)} />
+            <EditableTag text={t} c="#8b4513" on={ed?.tag?.(i)} noBorder />
           </span>
         ))}
       </div>

@@ -75,7 +75,7 @@ export function FinanceEnd({ s, a, ed }) {
         <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 12, lineHeight: 1.3, ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
         <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 13, color: "#888", marginBottom: 28, lineHeight: 1.6, ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>
-          {s.tags.map((t, i) => <span key={i} style={{ padding: "6px 14px", background: "#ffd70020", border: "1px solid #ffd70040", fontSize: 11, color: "#ffd700" }}><EditableTag text={t} c="#ffd700" on={ed?.tag?.(i)} /></span>)}
+          {s.tags.map((t, i) => <span key={i} style={{ padding: "6px 14px", background: "#ffd70020", border: "1px solid #ffd70040", fontSize: 11, color: "#ffd700" }}><EditableTag text={t} c="#ffd700" on={ed?.tag?.(i)} noBorder /></span>)}
         </div>
         <div style={{ fontSize: 10, color: "#666", letterSpacing: "2px" }}>— WALL STREET DAILY —</div>
       </div>

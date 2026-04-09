@@ -74,7 +74,7 @@ export function Luxury({ d, ed, drag }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 18, justifyContent: "center" }}>
         {Array.isArray(d.tags) && d.tags.map((t, i) => (
           <span key={i} style={{ padding: "6px 16px", border: `1px solid ${d.a}40`, fontSize: 11, color: d.a, letterSpacing: "1px" }}>
-            <EditableTag text={t} c={d.a} on={ed?.tag?.(i)} />
+            <EditableTag text={t} c={d.a} on={ed?.tag?.(i)} noBorder />
           </span>
         ))}
       </div>
