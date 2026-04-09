@@ -124,7 +124,7 @@ export function EditorialEnd({ s, a, ed }) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 32 }}>
           {s.tags.map((t, i) => (
             <span key={i} style={{ padding: "8px 16px", border: "1px solid rgba(255,255,255,0.3)", fontSize: 11, color: "#fff", letterSpacing: "2px" }}>
-              <EditableTag text={t} c="#fff" on={ed?.tag?.(i)} />
+              <EditableTag text={t} c="#fff" on={ed?.tag?.(i)} noBorder />
             </span>
           ))}
         </div>

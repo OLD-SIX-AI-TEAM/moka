@@ -70,7 +70,7 @@ export function JapaneseEnd({ s, a, ed }) {
         <EditableText v={s.cta} on={ed?.cta} block style={{ fontSize: 24, fontWeight: 800, color: "#1a1a1a", marginBottom: 12, lineHeight: 1.4, fontFamily: "'Noto Serif JP', serif", ...ed?.ctaStyle }} draggable={!!ed?.updateCtaStyle} onStyleChange={ed?.updateCtaStyle} />
         <EditableText v={s.sub} on={ed?.sub} block style={{ fontSize: 13, color: "#666", marginBottom: 28, lineHeight: 1.8, fontFamily: "'Noto Serif JP', serif", ...ed?.subStyle }} draggable={!!ed?.updateSubStyle} onStyleChange={ed?.updateSubStyle} />
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>
-          {s.tags.map((t, i) => <span key={i} style={{ padding: "6px 14px", background: "#fff", border: "1px solid #ddd", fontSize: 11, color: "#333" }}><EditableTag text={t} c="#333" on={ed?.tag?.(i)} /></span>)}
+          {s.tags.map((t, i) => <span key={i} style={{ padding: "6px 14px", background: "#fff", border: "1px solid #ddd", fontSize: 11, color: "#333" }}><EditableTag text={t} c="#333" on={ed?.tag?.(i)} noBorder /></span>)}
         </div>
         <div style={{ fontSize: 10, color: "#999", letterSpacing: "4px" }}>完</div>
       </div>
