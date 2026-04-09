@@ -174,7 +174,7 @@ export const LLM_PROVIDERS = {
   aliyun: {
     name: "阿里云百炼",
     defaultBaseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    defaultModel: "qwen3.5-flash",
+    defaultModel: "qwen3.6-plus",
     requireAuth: true,
     customBaseUrl: true,
     customModel: true,
