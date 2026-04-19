@@ -48,6 +48,7 @@ function main() {
   const pkgPath = resolve(root, 'package.json');
   const cargoPath = resolve(root, 'src-tauri/Cargo.toml');
   const lockPath = resolve(root, 'package-lock.json');
+  const tauriConfPath = resolve(root, 'src-tauri/tauri.conf.json');
 
   const pkg = readJson(pkgPath);
   const current = pkg.version;
@@ -91,8 +92,18 @@ function main() {
     console.log('⚠ src-tauri/Cargo.lock update failed (cargo not available or not a Rust project)');
   }
 
+  // Update tauri.conf.json
+  try {
+    const tauriConf = readJson(tauriConfPath);
+    tauriConf.version = next;
+    writeJson(tauriConfPath, tauriConf);
+    console.log('✓ src-tauri/tauri.conf.json updated');
+  } catch {
+    console.log('⚠ src-tauri/tauri.conf.json not found or failed to update');
+  }
+
   // Git commit
-  execSync('git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock', { stdio: 'inherit', cwd: root });
+  execSync('git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json', { stdio: 'inherit', cwd: root });
   execSync(`git commit -m "chore(release): v${next}"`, { stdio: 'inherit', cwd: root });
 
   // Git tag
