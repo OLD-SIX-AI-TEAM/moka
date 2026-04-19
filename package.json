@@ -14,7 +14,7 @@
     "generate-keys:show": "node scripts/generate-keys.js --show-private",
     "generate-keys:save": "node scripts/generate-keys.js --save",
     "tauri": "tauri",
-    "tauri-dev": "node scripts/tauri-dev.js",
+    "tauri-dev": "tauri dev",
     "tauri-build": "tauri build",
     "version:update": "node scripts/update-version.js"
   },
