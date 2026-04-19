@@ -54,11 +54,11 @@ jobs:
           releaseBody: |
             ## 更新内容
             本次发布包含以下桌面客户端安装包：
-            - Windows (x64): `.msi` / `.exe`
+            - Windows (x64): `.exe`
             - Linux (x64): `.rpm` / `.deb`
 
             ### 安装说明
-            - **Windows**: 运行 `.msi` 安装程序，或下载 `.exe` 免安装版
+            - **Windows**: 运行 `.exe` 安装程序
             - **Linux**: 运行 `.rpm`，或安装 `.deb` 包
 
             ### 首次使用

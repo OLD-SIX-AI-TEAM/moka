@@ -22,9 +22,48 @@ AI驱动的爆款文案排版工具，专为小红书、微信公众号等内容
 
 - **框架**: React 19 + Vite 6
 - **样式**: CSS-in-JS
-- **部署**: Cloudflare Pages + Cloudflare Workers
 - **图片导出**: html-to-image
 - **AI服务**: 支持 Anthropic Claude、OpenAI GPT 等多种 LLM
+
+## 下载安装（推荐）
+
+我们提供桌面客户端，下载到本地使用，无需部署，体验更佳！
+
+### 从 GitHub Releases 下载
+
+访问 [GitHub Releases](https://github.com/renmk/moka/releases) 页面，下载最新版本的安装包：
+
+| 平台 | 安装包类型 | 说明 |
+|------|-----------|------|
+| **Windows** | `.exe` | 下载 `.exe` 安装程序，一键安装 |
+| **Linux** | `.deb` / `.rpm` | Ubuntu/Debian 选 `.deb`，Fedora/RHEL 选 `.rpm` |
+
+### 安装步骤
+
+#### Windows
+1. 下载 `墨卡-Moka_x.x.x_x64-setup.exe`
+2. 双击运行安装程序
+3. 按提示完成安装
+
+#### Linux
+**Debian/Ubuntu:**
+```bash
+sudo dpkg -i moka_x.x.x_amd64.deb
+sudo apt-get install -f  # 修复依赖（如有需要）
+```
+
+**Fedora/RHEL:**
+```bash
+sudo dnf install moka-x.x.x-1.x86_64.rpm
+```
+
+### 首次使用
+
+1. 启动应用后，点击左下角的「设置」按钮
+2. 配置你的 LLM API Key（支持阿里云百炼、OpenAI、Anthropic 等）
+3. 开始创作！
+
+> 💡 **提示**: 桌面版支持所有 Web 版功能，且数据保存在本地，更加安全隐私。
 
 ## 本地开发
 
@@ -95,29 +134,6 @@ npm run preview
 npm run lint
 ```
 
-## 部署
-
-### 部署到 Cloudflare Pages
-
-#### 方法一：通过 Git 集成（推荐）
-
-1. 将代码推送到 GitHub/GitLab 仓库
-2. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
-3. 进入 **Pages** > **Create a project**
-4. 选择你的 Git 仓库
-5. 配置构建设置：
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-   - **Root directory**: `/`
-6. 点击 **Save and Deploy**
-
-#### 方法二：直接上传
-
-1. 本地构建：`npm run build`
-2. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
-3. 进入 **Pages** > **Create a project** > **Upload assets**
-4. 上传 `dist` 文件夹内的所有文件
-
 ## 项目结构
 
 ```
@@ -187,8 +203,7 @@ npm run lint
 ├── eslint.config.js      # ESLint 配置
 ├── index.html            # HTML 入口
 ├── package.json
-├── vite.config.js        # Vite 配置
-└── wrangler.jsonc        # Wrangler 配置
+└── vite.config.js        # Vite 配置
 ```
 
 ## 模板分类
