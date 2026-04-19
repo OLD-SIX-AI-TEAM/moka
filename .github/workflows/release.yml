@@ -13,12 +13,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest'
-            args: '--target aarch64-apple-darwin'
-            target: 'aarch64-apple-darwin'
-          - platform: 'macos-latest'
-            args: '--target x86_64-apple-darwin'
-            target: 'x86_64-apple-darwin'
           - platform: 'ubuntu-22.04'
             args: ''
             target: 'x86_64-unknown-linux-gnu'
@@ -61,14 +55,11 @@ jobs:
             ## 更新内容
             本次发布包含以下桌面客户端安装包：
             - Windows (x64): `.msi` / `.exe`
-            - macOS (Intel): `.dmg` (x86_64)
-            - macOS (Apple Silicon): `.dmg` (aarch64)
-            - Linux (x64): `.AppImage` / `.deb`
+            - Linux (x64): `.rpm` / `.deb`
 
             ### 安装说明
             - **Windows**: 运行 `.msi` 安装程序，或下载 `.exe` 免安装版
-            - **macOS**: 打开 `.dmg`，将应用拖到 Applications 文件夹
-            - **Linux**: 运行 `.AppImage`（需 `chmod +x`），或安装 `.deb` 包
+            - **Linux**: 运行 `.rpm`，或安装 `.deb` 包
 
             ### 首次使用
             启动应用后，在设置中配置您的 LLM API Key 即可开始使用。
