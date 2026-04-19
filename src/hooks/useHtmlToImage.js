@@ -1,4 +1,5 @@
 import { toPng, toJpeg } from "html-to-image";
+import { isTauriEnv } from "../utils/env.js";
 
 /**
  * 等待所有图片加载完成
@@ -65,20 +66,17 @@ export async function snapElementToImage(el, scale = 2, format = "png") {
   try {
     // 等待图片加载
     await waitForImages(el);
-    
+
     // 强制重绘
     el.offsetHeight;
-    
-    // 等待字体加载完成
-    if (document.fonts) {
-      await document.fonts.ready;
+
+    // 等待字体加载完成（Tauri WebView 中可能卡住，加超时或跳过）
+    if (document.fonts && !isTauriEnv()) {
+      await Promise.race([
+        document.fonts.ready,
+        new Promise(r => setTimeout(r, 300)),
+      ]);
     }
-    
-    // 额外等待，确保所有异步渲染完成
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // 再次强制重绘
-    el.offsetHeight;
 
     // 获取展开后的实际尺寸
     const width = el.offsetWidth;
@@ -110,7 +108,7 @@ export async function snapElementToImage(el, scale = 2, format = "png") {
     };
 
     // 导出图片
-    const dataUrl = format === "jpeg" 
+    const dataUrl = format === "jpeg"
       ? await toJpeg(el, options)
       : await toPng(el, options);
 
@@ -130,6 +128,93 @@ export async function snapElementToImage(el, scale = 2, format = "png") {
 }
 
 /**
+ * 将 Data URL 转为 Uint8Array
+ * @param {string} dataUrl
+ * @returns {Uint8Array}
+ */
+function dataUrlToUint8Array(dataUrl) {
+  const base64 = dataUrl.split(',')[1];
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+/**
+ * Tauri 环境下保存图片到本地
+ * @param {string} dataUrl
+ * @param {string} filename
+ * @param {string|null} defaultPath - 可选的默认保存路径（目录+文件名）
+ */
+export async function saveImageInTauri(dataUrl, filename, defaultPath = null) {
+  const { save } = await import('@tauri-apps/plugin-dialog');
+  const { writeFile } = await import('@tauri-apps/plugin-fs');
+
+  const ext = filename.endsWith('.jpeg') || filename.endsWith('.jpg') ? 'jpg' : 'png';
+
+  const filePath = await save({
+    defaultPath: defaultPath || filename,
+    filters: [
+      { name: 'Images', extensions: [ext] },
+      { name: 'All Files', extensions: ['*'] },
+    ],
+  });
+
+  if (!filePath) {
+    // 用户取消了保存
+    return null;
+  }
+
+  const bytes = dataUrlToUint8Array(dataUrl);
+  await writeFile(filePath, bytes);
+
+  return filePath;
+}
+
+/**
+ * Tauri 环境下批量保存图片（只弹一次对话框）
+ * @param {Array<{dataUrl: string, filename: string}>} images
+ * @returns {Promise<string|null>} 保存的目录路径，取消返回 null
+ */
+export async function saveImagesBatchInTauri(images) {
+  if (!images || images.length === 0) return null;
+
+  const { save } = await import('@tauri-apps/plugin-dialog');
+  const { writeFile } = await import('@tauri-apps/plugin-fs');
+
+  // 弹第一次对话框让用户选择保存位置和确认第一张文件名
+  const firstPath = await save({
+    defaultPath: images[0].filename,
+    filters: [
+      { name: 'Images', extensions: ['png'] },
+      { name: 'All Files', extensions: ['*'] },
+    ],
+  });
+
+  if (!firstPath) {
+    return null;
+  }
+
+  // 提取目录路径（兼容 Windows \ 和 Unix /）
+  const sep = firstPath.includes('/') ? '/' : '\\';
+  const lastSepIndex = firstPath.lastIndexOf(sep);
+  const dir = lastSepIndex >= 0 ? firstPath.substring(0, lastSepIndex) : '';
+
+  // 保存第一张
+  await writeFile(firstPath, dataUrlToUint8Array(images[0].dataUrl));
+
+  // 保存剩余文件到同一目录
+  for (let i = 1; i < images.length; i++) {
+    const path = dir ? `${dir}${sep}${images[i].filename}` : images[i].filename;
+    await writeFile(path, dataUrlToUint8Array(images[i].dataUrl));
+  }
+
+  return dir;
+}
+
+/**
  * 导出元素为图片并下载
  * @param {HTMLElement} el - 要导出的元素
  * @param {string} filename - 文件名
@@ -141,10 +226,15 @@ export async function exportElement(el, filename, options = {}) {
 
   const dataUrl = await snapElementToImage(el, scale, format);
 
+  if (isTauriEnv()) {
+    const savedPath = await saveImageInTauri(dataUrl, filename);
+    return { dataUrl, savedPath };
+  }
+
   const link = document.createElement("a");
   link.download = filename;
   link.href = dataUrl;
   link.click();
 
-  return dataUrl;
+  return { dataUrl };
 }

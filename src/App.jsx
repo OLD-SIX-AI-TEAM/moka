@@ -3,7 +3,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 // 环境判断：本地开发使用流式，部署端使用非流式
 const USE_STREAM_MODE = import.meta.env.DEV;
 import { useHtml2Canvas, snapElement } from "./hooks/useHtml2Canvas";
-import { snapElementToImage } from "./hooks/useHtmlToImage";
+import { snapElementToImage, saveImageInTauri, saveImagesBatchInTauri } from "./hooks/useHtmlToImage";
+import { isTauriEnv } from "./utils/env.js";
 import { useDragReorder } from "./hooks/useDragReorder";
 import { useTheme } from "./hooks/useTheme";
 import { useLanguage } from "./hooks/useLanguage";
@@ -871,11 +872,20 @@ function App() {
         dataUrl = canvas.toDataURL("image/png", 1);
       }
 
-      const link = document.createElement("a");
-      link.download = `${name}_${quality}.png`;
-      link.href = dataUrl;
-      link.click();
-      setExpMsg("✓ 已保存");
+      if (isTauriEnv()) {
+        const savedPath = await saveImageInTauri(dataUrl, `${name}_${quality}.png`);
+        if (savedPath) {
+          setExpMsg("✓ 已保存");
+        } else {
+          setExpMsg("已取消");
+        }
+      } else {
+        const link = document.createElement("a");
+        link.download = `${name}_${quality}.png`;
+        link.href = dataUrl;
+        link.click();
+        setExpMsg("✓ 已保存");
+      }
       setTimeout(() => setExpMsg(""), 2000);
     } catch (err) {
       setExpMsg("导出失败");
@@ -903,11 +913,20 @@ function App() {
         dataUrl = canvas.toDataURL("image/png", 1);
       }
 
-      const link = document.createElement("a");
-      link.download = `slide_${idx + 1}_${quality}.png`;
-      link.href = dataUrl;
-      link.click();
-      setExpMsg("✓ 已保存");
+      if (isTauriEnv()) {
+        const savedPath = await saveImageInTauri(dataUrl, `slide_${idx + 1}_${quality}.png`);
+        if (savedPath) {
+          setExpMsg("✓ 已保存");
+        } else {
+          setExpMsg("已取消");
+        }
+      } else {
+        const link = document.createElement("a");
+        link.download = `slide_${idx + 1}_${quality}.png`;
+        link.href = dataUrl;
+        link.click();
+        setExpMsg("✓ 已保存");
+      }
       setTimeout(() => setExpMsg(""), 1500);
     } catch (err) {
       setExpMsg("导出失败");
@@ -922,6 +941,47 @@ function App() {
 
     setExporting(true);
     const scale = 4;
+
+    // Tauri 批量导出：并行渲染所有页面，再一次性保存
+    if (isTauriEnv()) {
+      setExpMsg(`渲染 ${slides.length} 张…`);
+
+      const renderTasks = slides.map((_, i) => {
+        const el = slideRefs.current[i];
+        if (!el) return Promise.resolve(null);
+        return snapElementToImage(el, scale, "png")
+          .then(dataUrl => ({ dataUrl, filename: `slide_${i + 1}_ultra.png` }))
+          .catch(err => {
+            console.error(`第 ${i + 1} 页渲染失败:`, err);
+            return null;
+          });
+      });
+
+      const results = await Promise.all(renderTasks);
+      const images = results.filter(Boolean);
+
+      if (images.length > 0) {
+        setExpMsg("选择保存位置…");
+        try {
+          const savedDir = await saveImagesBatchInTauri(images);
+          if (savedDir) {
+            setExpMsg(`✓ 已保存 ${images.length} 张`);
+          } else {
+            setExpMsg("已取消");
+          }
+        } catch (err) {
+          console.error('批量保存失败:', err);
+          setExpMsg("保存失败");
+        }
+      } else {
+        setExpMsg("没有可导出的内容");
+      }
+      setTimeout(() => setExpMsg(""), 2500);
+      setExporting(false);
+      return;
+    }
+
+    // 浏览器环境：逐张下载
     for (let i = 0; i < slides.length; i++) {
       setExpMsg(`导出 ${i + 1}/${slides.length}…`);
       const el = slideRefs.current[i];
