@@ -1,6 +1,6 @@
 [package]
 name = "moka"
-version = "0.5.0"
+version = "0.6.1"
 description = "墨卡 Moka - AI驱动的爆款文案排版工具"
 authors = ["moka"]
 edition = "2021"

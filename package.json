@@ -1,7 +1,7 @@
 {
   "name": "moka",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.6.1",
   "type": "module",
   "description": "墨卡 Moka - AI驱动的爆款文案排版工具",
   "scripts": {
@@ -15,7 +15,8 @@
     "generate-keys:save": "node scripts/generate-keys.js --save",
     "tauri": "tauri",
     "tauri-dev": "node scripts/tauri-dev.js",
-    "tauri-build": "tauri build"
+    "tauri-build": "tauri build",
+    "version:update": "node scripts/update-version.js"
   },
   "dependencies": {
     "@tauri-apps/plugin-dialog": "^2",
