@@ -83,8 +83,16 @@ function main() {
     console.log('⚠ src-tauri/Cargo.toml not found or failed to update');
   }
 
+  // Update Cargo.lock using cargo
+  try {
+    execSync('cargo update --workspace', { stdio: 'inherit', cwd: resolve(root, 'src-tauri') });
+    console.log('✓ src-tauri/Cargo.lock updated');
+  } catch {
+    console.log('⚠ src-tauri/Cargo.lock update failed (cargo not available or not a Rust project)');
+  }
+
   // Git commit
-  execSync('git add package.json package-lock.json src-tauri/Cargo.toml', { stdio: 'inherit', cwd: root });
+  execSync('git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock', { stdio: 'inherit', cwd: root });
   execSync(`git commit -m "chore(release): v${next}"`, { stdio: 'inherit', cwd: root });
 
   // Git tag
