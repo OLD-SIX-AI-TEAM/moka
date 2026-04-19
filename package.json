@@ -1,7 +1,7 @@
 {
   "name": "moka",
   "private": true,
-  "version": "0.6.2",
+  "version": "0.6.3",
   "type": "module",
   "description": "墨卡 Moka - AI驱动的爆款文案排版工具",
   "scripts": {
