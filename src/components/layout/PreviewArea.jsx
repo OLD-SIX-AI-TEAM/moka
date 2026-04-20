@@ -129,10 +129,13 @@ export function PreviewArea({
         
         <div className="preview-actions">
           {expMsg && (
-            <span style={{ 
-              fontSize: '12px', 
+            <span style={{
+              fontSize: '12px',
               color: expMsg.startsWith("✓") ? 'var(--theme-primary)' : 'var(--text-muted)',
-              fontWeight: 500
+              fontWeight: 500,
+              display: 'inline-flex',
+              alignItems: 'center',
+              lineHeight: 1,
             }}>
               {expMsg}
             </span>

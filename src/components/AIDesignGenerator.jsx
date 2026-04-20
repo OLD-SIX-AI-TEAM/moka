@@ -113,6 +113,117 @@ function tryParsePartialJSON(text) {
   }
 }
 
+// AI设计系统提示词
+const AI_DESIGN_PROMPT = `你是专业的小红书视觉设计师和排版专家。
+
+你的任务是根据用户提供的文案内容，生成一个完整的视觉设计方案。
+
+【输出要求】
+1. 必须返回有效的JSON格式
+2. 所有字符串值必须用双引号包裹
+3. 属性之间必须有逗号分隔
+4. 最后一个属性后面不能有逗号
+5. 不要包含任何注释或markdown标记
+
+【输出格式示例】
+{
+  "styleConfig": {
+    "container": {
+      "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      "padding": "28px",
+      "borderRadius": "12px"
+    },
+    "header": {
+      "emoji": "✨",
+      "category": "生活",
+      "title": {
+        "fontSize": "24px",
+        "fontWeight": "700",
+        "color": "#1a1a1a",
+        "marginBottom": "12px"
+>>>>>>> 2f4011828c1d2929d89c5f846a804e5431dbab79
+      }
+      
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      
+      if (char === '"' && !escaped) {
+        inString = !inString;
+        continue;
+      }
+      
+      if (!inString) {
+        if (char === '{') {
+          braceCount++;
+        } else if (char === '}') {
+          braceCount--;
+          if (braceCount === 0) {
+            endIdx = i;
+            break;
+          }
+        }
+      }
+    }
+    
+    // 尝试解析完整的JSON
+    let jsonText = text.substring(startIdx, endIdx !== -1 ? endIdx + 1 : undefined);
+    
+    // 如果JSON不完整，尝试补全
+    if (endIdx === -1) {
+      // 计算未闭合的括号
+      let openBraces = 0;
+      let openBrackets = 0;
+      let inString = false;
+      let escaped = false;
+      
+      for (let i = 0; i < jsonText.length; i++) {
+        const char = jsonText[i];
+        
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        
+        if (char === '\\') {
+          escaped = true;
+          continue;
+        }
+        
+        if (char === '"' && !escaped) {
+          inString = !inString;
+          continue;
+        }
+        
+        if (!inString) {
+          if (char === '{') openBraces++;
+          else if (char === '}') openBraces--;
+          else if (char === '[') openBrackets++;
+          else if (char === ']') openBrackets--;
+        }
+      }
+      
+      // 补全未闭合的括号
+      while (openBrackets > 0) {
+        jsonText += ']';
+        openBrackets--;
+      }
+      while (openBraces > 0) {
+        jsonText += '}';
+        openBraces--;
+      }
+    }
+    
+    // 清理尾部逗号
+    jsonText = jsonText.replace(/,\s*([}\]])/g, '$1');
+    
+    return JSON.parse(jsonText);
+  } catch (e) {
+    return null;
+  }
+}
+
 // 版本历史存储键
 const VERSION_HISTORY_KEY = 'moka_ai_design_history';
 

@@ -1,7 +1,7 @@
 {
   "name": "moka",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.6.4",
   "type": "module",
   "description": "墨卡 Moka - AI驱动的爆款文案排版工具",
   "scripts": {
@@ -12,9 +12,15 @@
     "deploy": "npm run build && wrangler deploy",
     "generate-keys": "node scripts/generate-keys.js",
     "generate-keys:show": "node scripts/generate-keys.js --show-private",
-    "generate-keys:save": "node scripts/generate-keys.js --save"
+    "generate-keys:save": "node scripts/generate-keys.js --save",
+    "tauri": "tauri",
+    "tauri-dev": "tauri dev",
+    "tauri-build": "tauri build",
+    "version:update": "node scripts/update-version.js"
   },
   "dependencies": {
+    "@tauri-apps/plugin-dialog": "^2",
+    "@tauri-apps/plugin-fs": "^2",
     "html-to-image": "^1.11.13",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
@@ -22,6 +28,8 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.30.0",
     "@eslint/js": "^9.39.4",
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/cli": "^2.10.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",

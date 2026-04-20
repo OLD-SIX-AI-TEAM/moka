@@ -3,7 +3,7 @@
  * 使用 RSA 加密存储 API Key
  */
 
-import { isLocalDevEnv } from './env.js';
+import { isLocalDevEnv, isTauriEnv } from './env.js';
 
 // 缓存从服务器获取的公钥
 let cachedServerPublicKey = null;
@@ -137,9 +137,9 @@ export async function decryptWithPrivateKey(encryptedBase64, privateKeyBase64) {
 export async function storeEncryptedApiKey(apiKey, provider) {
   console.log('[Crypto] 存储 API Key，hostname:', window.location.hostname);
 
-  // 本地开发时使用明文存储（包括局域网 IP）
-  if (isLocalDevEnv()) {
-    console.log('[Crypto] 本地开发环境，使用明文存储');
+  // 本地开发或 Tauri 桌面客户端使用明文存储
+  if (isLocalDevEnv() || isTauriEnv()) {
+    console.log('[Crypto] 本地/Tauri 环境，使用明文存储');
     localStorage.setItem(`llm_config_${provider}`, apiKey);
     return;
   }
@@ -184,9 +184,9 @@ export async function getDecryptedApiKey(provider) {
   const encryptedKey = getEncryptedApiKey(provider);
   if (!encryptedKey) return null;
 
-  // 本地开发模式：直接使用明文（包括局域网 IP）
-  if (isLocalDevEnv()) {
-    console.log('[Crypto] 本地开发环境，直接使用明文 API Key');
+  // 本地开发或 Tauri 桌面客户端：直接使用明文
+  if (isLocalDevEnv() || isTauriEnv()) {
+    console.log('[Crypto] 本地/Tauri 环境，直接使用明文 API Key');
     return encryptedKey;
   }
 

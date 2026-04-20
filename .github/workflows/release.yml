@@ -1,0 +1,68 @@
+name: Release Tauri Desktop App
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'ubuntu-22.04'
+            args: ''
+            target: 'x86_64-unknown-linux-gnu'
+          - platform: 'windows-latest'
+            args: ''
+            target: 'x86_64-pc-windows-msvc'
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Tauri App
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: '墨卡 Moka ${{ github.ref_name }}'
+          releaseBody: |
+            ## 更新内容
+            本次发布包含以下桌面客户端安装包：
+            - Windows (x64): `.exe`
+            - Linux (x64): `.rpm` / `.deb`
+
+            ### 安装说明
+            - **Windows**: 运行 `.exe` 安装程序
+            - **Linux**: 运行 `.rpm`，或安装 `.deb` 包
+
+            ### 首次使用
+            启动应用后，在设置中配置您的 LLM API Key 即可开始使用。
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}

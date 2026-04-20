@@ -4,13 +4,46 @@
  */
 
 import { storeEncryptedApiKey, getEncryptedApiKey, hasEncryptedApiKey, getDecryptedApiKey, clearCachedPublicKey } from "../utils/crypto";
-import { isLocalDevEnv } from "../utils/env.js";
+import { isLocalDevEnv, isTauriEnv } from "../utils/env.js";
 import { extractJSON } from "./json-extractor";
 
 const STORAGE_KEY = "moka_llm_config";
 
 // Pages Function 代理地址（直接代理，不经过独立 Worker）
 const PAGES_PROXY_URL = "/api/llm";
+
+/**
+ * Tauri 环境下直接调用 LLM API
+ * @param {string} provider - 提供商
+ * @param {string} baseUrl - API 基础 URL
+ * @param {string} apiKey - API 密钥
+ * @param {Object} requestBody - 请求体
+ * @returns {Promise<Response>} - fetch Response
+ */
+async function tauriDirectFetch(provider, baseUrl, apiKey, requestBody) {
+  let targetUrl, headers;
+
+  if (provider === 'anthropic') {
+    targetUrl = `${baseUrl.replace(/\/$/, '')}/messages`;
+    headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    };
+  } else {
+    targetUrl = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
+    headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    };
+  }
+
+  return fetch(targetUrl, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(requestBody),
+  });
+}
 
 // 从环境变量读取配置
 const ENV_CONFIG = {
@@ -267,11 +300,19 @@ export async function testLLMConfig(config) {
   }
 
   try {
-    const response = await fetch(PAGES_PROXY_URL, {
-      method: "POST",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    let response;
+    if (isTauriEnv()) {
+      const directBody = provider === 'anthropic'
+        ? { model: finalModel, max_tokens: 10, system: "You are a helpful assistant.", messages: testMessages, stream: false }
+        : { model: finalModel, messages: testMessages, max_tokens: 10, temperature: 0.7, stream: false };
+      response = await tauriDirectFetch(provider, finalBaseUrl, apiKey, directBody);
+    } else {
+      response = await fetch(PAGES_PROXY_URL, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -359,10 +400,11 @@ export function createLLMClient(config) {
     async chat(params) {
       // 检测环境
       const isLocalDev = typeof window !== 'undefined' && (
-        window.location.hostname === 'localhost' || 
+        window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1'
       );
-      const { system, messages, maxTokens = 1000, webSearch = true, stream = isLocalDev ? true : false, onStream } = params;
+      const tauriEnv = isTauriEnv();
+      const { system, messages, maxTokens = 1000, webSearch = true, stream = (isLocalDev || tauriEnv) ? true : false, onStream } = params;
 
       if (this.provider === "openai") {
         return this._callOpenAI({ system, messages, maxTokens, webSearch, stream, onStream });
@@ -382,36 +424,43 @@ export function createLLMClient(config) {
     async _callOpenAI({ system, messages, maxTokens, webSearch, stream, onStream }) {
       // 使用统一的本地开发环境检测（包含局域网 IP）
       const isLocalDev = isLocalDevEnv();
-
-      // 统一使用代理
-      const url = PAGES_PROXY_URL;
-      const headers = {
-        'Content-Type': 'application/json',
-      };
+      const tauriEnv = isTauriEnv();
 
       // 本地开发获取明文 API Key，生产环境使用加密 key
-      const apiKey = isLocalDev ? await getDecryptedApiKey('openai') : null;
-
-      const body = {
-        provider: 'openai',
-        model: this.model,
-        messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-        max_tokens: maxTokens,
-        temperature: 0.7,
-        stream,
-        ...(this.baseUrl && { baseUrl: this.baseUrl }),
-        ...(isLocalDev && apiKey ? { apiKey } : { encryptedApiKey: this.encryptedApiKey }),
-      };
-
-
+      const apiKey = (isLocalDev || tauriEnv) ? await getDecryptedApiKey('openai') : null;
 
       let response;
       try {
-        response = await fetch(url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(body),
-        });
+        if (tauriEnv) {
+          const directBody = {
+            model: this.model,
+            messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+            max_tokens: maxTokens,
+            temperature: 0.7,
+            stream,
+          };
+          response = await tauriDirectFetch('openai', this.baseUrl || LLM_PROVIDERS.openai.defaultBaseUrl, apiKey, directBody);
+        } else {
+          const url = PAGES_PROXY_URL;
+          const headers = {
+            'Content-Type': 'application/json',
+          };
+          const body = {
+            provider: 'openai',
+            model: this.model,
+            messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+            max_tokens: maxTokens,
+            temperature: 0.7,
+            stream,
+            ...(this.baseUrl && { baseUrl: this.baseUrl }),
+            ...(isLocalDev && apiKey ? { apiKey } : { encryptedApiKey: this.encryptedApiKey }),
+          };
+          response = await fetch(url, {
+            method: "POST",
+            headers,
+            body: JSON.stringify(body),
+          });
+        }
       } catch (fetchError) {
         console.error('[LLM Client] Fetch error:', fetchError);
         throw new Error(`网络请求失败: ${fetchError.message}`);
@@ -516,34 +565,45 @@ export function createLLMClient(config) {
     async _callAliyun({ system, messages, maxTokens, webSearch, stream, onStream }) {
       // 使用统一的本地开发环境检测（包含局域网 IP）
       const isLocalDev = isLocalDevEnv();
-
-      // 统一使用代理
-      const url = PAGES_PROXY_URL;
-      const headers = {
-        'Content-Type': 'application/json',
-      };
+      const tauriEnv = isTauriEnv();
 
       // 本地开发获取明文 API Key，生产环境使用加密 key
-      const apiKey = isLocalDev ? await getDecryptedApiKey('aliyun') : null;
+      const apiKey = (isLocalDev || tauriEnv) ? await getDecryptedApiKey('aliyun') : null;
 
-      const body = {
-        provider: 'aliyun',
-        model: this.model,
-        messages: system ? [{ role: "system", content: system }, ...messages] : messages,
-        max_tokens: maxTokens,
-        temperature: 0.7,
-        enable_search: webSearch,
-        stream,
-        ...(this.baseUrl && { baseUrl: this.baseUrl }),
-        ...(isLocalDev && apiKey ? { apiKey } : { encryptedApiKey: this.encryptedApiKey }),
-      };
-
-      console.log('[Anthropic Debug] 开始发送请求...');
-      const response = await fetch(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
+      let response;
+      if (tauriEnv) {
+        const directBody = {
+          model: this.model,
+          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+          max_tokens: maxTokens,
+          temperature: 0.7,
+          enable_search: webSearch,
+          stream,
+        };
+        response = await tauriDirectFetch('aliyun', this.baseUrl || LLM_PROVIDERS.aliyun.defaultBaseUrl, apiKey, directBody);
+      } else {
+        const url = PAGES_PROXY_URL;
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+        const body = {
+          provider: 'aliyun',
+          model: this.model,
+          messages: system ? [{ role: "system", content: system }, ...messages] : messages,
+          max_tokens: maxTokens,
+          temperature: 0.7,
+          enable_search: webSearch,
+          stream,
+          ...(this.baseUrl && { baseUrl: this.baseUrl }),
+          ...(isLocalDev && apiKey ? { apiKey } : { encryptedApiKey: this.encryptedApiKey }),
+        };
+        console.log('[Anthropic Debug] 开始发送请求...');
+        response = await fetch(url, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body),
+        });
+      }
       console.log('[Anthropic Debug] 响应状态:', response.status, response.statusText);
 
       if (!response.ok) {
@@ -631,46 +691,48 @@ export function createLLMClient(config) {
     async _callAnthropic({ system, messages, maxTokens, webSearch, stream, onStream }) {
       // 使用统一的本地开发环境检测（包含局域网 IP）
       const isLocalDev = isLocalDevEnv();
+      const tauriEnv = isTauriEnv();
 
-      let url;
-      let headers;
-      let body;
-
-      // 构建 tools 参数（如果启用 web 搜索）
-      const tools = undefined;
-
-      // 统一使用代理
-      url = PAGES_PROXY_URL;
-      headers = {
-        'Content-Type': 'application/json',
-      };
-      
       // 本地开发获取明文 API Key，生产环境使用加密 key
-      const apiKey = isLocalDev ? await getDecryptedApiKey('anthropic') : null;
-      
-      body = {
-        provider: 'anthropic',
-        model: this.model,
-        system,
-        messages: messages.map((m) => ({
-          role: m.role,
-          content: m.content,
-        })),
-        max_tokens: maxTokens,
-        stream,
-        ...(tools && { tools }),
-        ...(this.baseUrl && { baseUrl: this.baseUrl }),
-        // 本地开发传递明文 key，生产环境传递加密 key
-        ...(isLocalDev && apiKey ? { apiKey } : { encryptedApiKey: this.encryptedApiKey }),
-      };
+      const apiKey = (isLocalDev || tauriEnv) ? await getDecryptedApiKey('anthropic') : null;
 
-  
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
+      let response;
+      if (tauriEnv) {
+        const directBody = {
+          model: this.model,
+          system,
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+          max_tokens: maxTokens,
+          stream,
+        };
+        response = await tauriDirectFetch('anthropic', this.baseUrl || LLM_PROVIDERS.anthropic.defaultBaseUrl, apiKey, directBody);
+      } else {
+        const url = PAGES_PROXY_URL;
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+        const body = {
+          provider: 'anthropic',
+          model: this.model,
+          system,
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+          max_tokens: maxTokens,
+          stream,
+          ...(this.baseUrl && { baseUrl: this.baseUrl }),
+          ...(isLocalDev && apiKey ? { apiKey } : { encryptedApiKey: this.encryptedApiKey }),
+        };
+        response = await fetch(url, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body),
+        });
+      }
 
       if (!response.ok) {
         await handleAPIError(response);

@@ -26,6 +26,46 @@ AI驱动的爆款文案排版工具，专为小红书、微信公众号等内容
 - **图片导出**: html-to-image
 - **AI服务**: 支持 Anthropic Claude、OpenAI GPT 等多种 LLM
 
+## 下载安装（推荐）
+
+我们提供桌面客户端，下载到本地使用，无需部署，体验更佳！
+
+### 从 GitHub Releases 下载
+
+访问 [GitHub Releases](https://github.com/renmk/moka/releases) 页面，下载最新版本的安装包：
+
+| 平台 | 安装包类型 | 说明 |
+|------|-----------|------|
+| **Windows** | `.exe` | 下载 `.exe` 安装程序，一键安装 |
+| **Linux** | `.deb` / `.rpm` | Ubuntu/Debian 选 `.deb`，Fedora/RHEL 选 `.rpm` |
+
+### 安装步骤
+
+#### Windows
+1. 下载 `墨卡-Moka_x.x.x_x64-setup.exe`
+2. 双击运行安装程序
+3. 按提示完成安装
+
+#### Linux
+**Debian/Ubuntu:**
+```bash
+sudo dpkg -i moka_x.x.x_amd64.deb
+sudo apt-get install -f  # 修复依赖（如有需要）
+```
+
+**Fedora/RHEL:**
+```bash
+sudo dnf install moka-x.x.x-1.x86_64.rpm
+```
+
+### 首次使用
+
+1. 启动应用后，点击左下角的「设置」按钮
+2. 配置你的 LLM API Key（支持阿里云百炼、OpenAI、Anthropic 等）
+3. 开始创作！
+
+> 💡 **提示**: 桌面版支持所有 Web 版功能，且数据保存在本地，更加安全隐私。
+
 ## 本地开发
 
 ### 环境要求

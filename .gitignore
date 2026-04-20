@@ -33,3 +33,7 @@ dist-ssr
 .dev.vars*
 !.dev.vars.example
 !.env.example
+
+# Tauri
+src-tauri/target
+src-tauri/gen/schemas
