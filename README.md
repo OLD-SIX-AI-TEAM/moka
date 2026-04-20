@@ -39,38 +39,6 @@ AI驱动的爆款文案排版工具，专为小红书、微信公众号等内容
 npm install
 ```
 
-### 配置环境变量
-
-复制 `.env.example` 为 `.env` 并配置你的 LLM API 密钥：
-
-```bash
-cp .env.example .env
-```
-
-编辑 `.env` 文件：
-
-```env
-# LLM 配置
-# 提供商：openai、anthropic 或 aliyun
-VITE_LLM_PROVIDER=aliyun
-
-# API 基础 URL (可选，留空使用默认值)
-# OpenAI 默认：https://api.openai.com/v1
-# Anthropic 默认：https://api.anthropic.com/v1
-# 阿里云百炼默认：https://dashscope.aliyuncs.com/compatible-mode/v1
-VITE_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-
-# API 密钥 (必填)
-# 阿里云百炼请使用 DASHSCOPE_API_KEY
-VITE_LLM_API_KEY=sk-xxx
-
-# 模型 ID (可选，留空使用默认值)
-# OpenAI 默认：gpt-4o-mini
-# Anthropic 默认：claude-sonnet-4-20250514
-# 阿里云百炼推荐：qwen-plus, qwen-max, qwen-turbo
-VITE_LLM_MODEL=qwen-plus
-```
-
 ### 启动开发服务器
 
 ```bash
@@ -210,9 +178,20 @@ npm run lint
 
 ## 使用说明
 
+### API 配置
+
+首次使用时，系统会弹出 API 配置弹窗，你需要配置 LLM 服务：
+
+1. **选择提供商**：支持 OpenAI、Anthropic、阿里云百炼等
+2. **配置 API Key**：输入你的 API 密钥
+3. **设置 API 地址**：系统会自动填充默认地址，也可自定义
+4. **选择模型**：选择要使用的模型（如 qwen-plus、gpt-4o-mini 等）
+
+配置会自动保存在浏览器本地存储中，下次使用无需重复配置。
+
 ### 基础使用
 
-1. 在左侧输入框中粘贴你的文案或话题
+1. 完成 API 配置后，在左侧输入框中粘贴你的文案或话题
 2. 选择模板风格（单页版）或卡片风格（分页版）
 3. 选择配色方案
 4. 点击「生成排版图」或「生成分页卡片」
@@ -239,7 +218,7 @@ npm run lint
 
 ## 注意事项
 
-1. **API Key 安全**: 请妥善保管你的 API Key，不要将其提交到代码仓库
+1. **API Key 安全**: API 密钥存储在浏览器本地存储中，请勿在公共设备上使用
 2. **图片导出**: 使用 html-to-image 生成高清图片
 3. **浏览器兼容**: 推荐使用 Chrome、Edge、Safari 最新版本
 4. **移动端**: 支持移动端浏览器访问，但建议使用桌面端获得最佳编辑体验

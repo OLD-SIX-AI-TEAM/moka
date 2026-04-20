@@ -26,7 +26,7 @@ import {
   FoodCover, FoodContent, FoodEnd, TravelCover, TravelContent, TravelEnd,
   FashionCover, FashionContent, FashionEnd, MomCover, MomContent, MomEnd
 } from "./components/templates/split";
-import { createLLMClient, SYSTEM_PROMPTS, extractJSON, getEnvLLMConfig, isEnvConfigValid, saveLLMConfig, clearLLMConfig } from "./services/llm";
+import { createLLMClient, extractJSON, getEnvLLMConfig, isEnvConfigValid, saveLLMConfig, clearLLMConfig } from "./services/llm";
 import { AIStyleRenderer } from "./components/AIStyleRenderer";
 import { AISplitStyleRenderer } from "./components/AISplitStyleRenderer";
 import { checkBannedWords, getBannedWordWarning } from "./utils/bannedWords";
@@ -36,7 +36,7 @@ import { ThemePanel } from "./components/layout/ThemePanel";
 import { PreviewArea } from "./components/layout/PreviewArea";
 import { ContentPanel } from "./components/layout/ContentPanel";
 import { SPLIT_STYLES, TEMPLATES, PALETTES, MAX_TOKENS, AI_DESIGN_TEMPLATE, AI_DESIGN_SPLIT_STYLE } from "./constants";
-import { AI_DESIGN_PROMPT_SINGLE, AI_DESIGN_PROMPT_SPLIT } from "./prompts/aiDesignPrompt";
+import { SYSTEM_PROMPTS, AI_DESIGN_PROMPT_SINGLE, AI_DESIGN_PROMPT_SPLIT } from "./prompts";
 import "./App.css";
 
 // 单页模板渲染器映射

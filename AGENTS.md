@@ -8,12 +8,10 @@ AI驱动的爆款文案排版工具，专为小红书、微信公众号等内容
 # Install dependencies
 npm install
 
-# Setup environment
-cp .env.example .env
-# Edit .env with your LLM API keys
-
 # Start dev server
 npm run dev        # http://localhost:5173
+
+# API keys are configured in the web UI (stored in browser localStorage)
 ```
 
 ## Project Structure
@@ -44,13 +42,15 @@ npm run start -- generate -t "文案内容" -o output.png
 
 ## Environment Configuration
 
-Copy `.env.example` → `.env` and configure:
+**用户 API 配置通过页面完成**：首次访问时会弹出配置弹窗，支持 OpenAI、Anthropic、阿里云百炼等提供商。配置保存在浏览器 localStorage 中。
+
+**生产环境部署配置**（用于 Cloudflare Workers）：
 
 ```env
-VITE_LLM_PROVIDER=aliyun|openai|anthropic
-VITE_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-VITE_LLM_API_KEY=sk-xxx
-VITE_LLM_MODEL=qwen-plus
+# 可选：默认 LLM API 密钥（当用户未配置时的备用）
+DASHSCOPE_API_KEY=sk-xxx
+OPENAI_API_KEY=sk-xxx
+ANTHROPIC_API_KEY=sk-ant-xxx
 ```
 
 **Important:**
